@@ -37,38 +37,83 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
   error: null,
 
   fetchProjects: async () => {
+    console.log('🔵 Starting fetchProjects')
     set({ isLoading: true, error: null })
+    
+    // Create an abort controller for the timeout
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), 10000) // 10 second timeout
+    
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false })
+      console.log('📡 Making Supabase request to fetch projects')
+      const result = await Promise.race([
+        supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .abortSignal(abortController.signal),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('Request timed out')), 10000)
+        )
+      ])
 
-      if (error) throw error
-      set({ projects: data || [] })
-    } catch (error) {
-      set({ error: 'Failed to fetch projects' })
-      console.error('Error fetching projects:', error)
+      clearTimeout(timeoutId)
+      console.log('📥 Raw Supabase response received:', result)
+
+      if (result.error) {
+        console.error('❌ Supabase error:', result.error)
+        throw new Error(`Failed to fetch projects: ${result.error.message}`)
+      }
+      
+      if (!result.data) {
+        console.warn('⚠️ No data returned from Supabase')
+        set({ projects: [] }) // Set empty array instead of throwing error
+        return
+      }
+      
+      console.log('✅ Setting projects:', result.data.length, 'projects found')
+      set({ projects: result.data })
+    } catch (err) {
+      console.error('❌ Error in fetchProjects:', err)
+      const error = err as Error
+      const errorMessage = error.message || 'Failed to fetch projects'
+      
+      if (error.name === 'AbortError' || errorMessage.includes('timeout')) {
+        set({ error: 'Request timed out. Please try again.' })
+      } else {
+        set({ error: errorMessage })
+      }
     } finally {
+      clearTimeout(timeoutId)
+      console.log('🏁 Finishing fetchProjects, setting isLoading to false')
       set({ isLoading: false })
     }
   },
 
   fetchProjectById: async (id: string) => {
+    console.log('🔵 Starting fetchProjectById:', id)
     set({ isLoading: true, error: null })
     try {
+      console.log('📡 Making Supabase request to fetch project:', id)
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .eq('id', id)
         .single()
 
-      if (error) throw error
+      console.log('📥 Supabase response:', { data, error })
+
+      if (error) {
+        console.error('❌ Supabase error:', error)
+        throw error
+      }
+      console.log('✅ Setting currentProject:', data)
       set({ currentProject: data })
     } catch (error) {
+      console.error('❌ Error in fetchProjectById:', error)
       set({ error: 'Failed to fetch project' })
-      console.error('Error fetching project:', error)
     } finally {
+      console.log('🏁 Finishing fetchProjectById, setting isLoading to false')
       set({ isLoading: false })
     }
   },
@@ -112,11 +157,23 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
   },
 
   createProject: async (title: string, description?: string) => {
+    console.log('🔵 Starting createProject:', { title, description })
     set({ isLoading: true, error: null })
     try {
-      const user = (await supabase.auth.getUser()).data.user
-      if (!user) throw new Error('No user found')
+      console.log('📡 Getting current user')
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      
+      if (userError) {
+        console.error('❌ Error getting user:', userError)
+        throw userError
+      }
+      
+      if (!user) {
+        console.error('❌ No user found')
+        throw new Error('No user found')
+      }
 
+      console.log('📡 Making Supabase request to create project')
       const { data, error } = await supabase
         .from('projects')
         .insert({
@@ -127,14 +184,21 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
         .select()
         .single()
 
-      if (error) throw error
+      console.log('📥 Supabase response:', { data, error })
+
+      if (error) {
+        console.error('❌ Supabase error:', error)
+        throw error
+      }
 
       const { projects } = get()
+      console.log('✅ Adding new project to projects list')
       set({ projects: [data, ...projects] })
     } catch (error) {
+      console.error('❌ Error in createProject:', error)
       set({ error: 'Failed to create project' })
-      console.error('Error creating project:', error)
     } finally {
+      console.log('🏁 Finishing createProject, setting isLoading to false')
       set({ isLoading: false })
     }
   },

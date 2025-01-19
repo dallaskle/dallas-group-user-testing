@@ -23,54 +23,92 @@ function App() {
   useEffect(() => {
     // Check active sessions and sets the user
     const initializeAuth = async () => {
+      console.log('🔵 Starting auth initialization')
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+          console.error('❌ Error getting session:', sessionError)
+          throw sessionError
+        }
+        
+        console.log('📥 Session response:', session ? 'Session exists' : 'No session')
         setSession(session)
+        
         if (session?.user) {
-          const { data } = await supabase
+          console.log('👤 User found in session, fetching user data')
+          const { data, error } = await supabase
             .from('users')
             .select('*')
             .eq('id', session.user.id)
             .single()
           
-          if (data) setUser(data)
-          else setLoading(false)
+          if (error) {
+            console.error('❌ Error fetching user data:', error)
+            throw error
+          }
+          
+          if (data) {
+            console.log('✅ User data found, setting user')
+            setUser(data)
+          } else {
+            console.warn('⚠️ No user data found')
+            setLoading(false)
+          }
         } else {
+          console.log('ℹ️ No session user, setting loading false')
           setLoading(false)
         }
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        console.error('❌ Auth initialization error:', error)
         setLoading(false)
       }
     }
 
+    console.log('🔄 App useEffect triggered')
     initializeAuth()
 
     // Listen for changes on auth state
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log('🔔 Auth state changed:', { event: _event, hasSession: !!session })
       setSession(session)
       if (session?.user) {
         try {
-          const { data } = await supabase
+          console.log('👤 Fetching user data after auth state change')
+          const { data, error } = await supabase
             .from('users')
             .select('*')
             .eq('id', session.user.id)
             .single()
           
-          if (data) setUser(data)
-          else setLoading(false)
+          if (error) {
+            console.error('❌ Error fetching user data:', error)
+            throw error
+          }
+          
+          if (data) {
+            console.log('✅ User data found, setting user')
+            setUser(data)
+          } else {
+            console.warn('⚠️ No user data found')
+            setLoading(false)
+          }
         } catch (error) {
-          console.error('Auth state change error:', error)
+          console.error('❌ Auth state change error:', error)
           setLoading(false)
         }
       } else {
+        console.log('ℹ️ No session user, setting loading false')
         setLoading(false)
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      console.log('🧹 Cleaning up auth subscription')
+      subscription.unsubscribe()
+    }
   }, [setSession, setUser, setLoading])
 
   return (
