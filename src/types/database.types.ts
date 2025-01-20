@@ -215,6 +215,102 @@ export interface Database {
           updated_at?: string
         }
       }
+      tickets: {
+        Row: {
+          id: string
+          type: 'testing' | 'support' | 'question'
+          status: 'open' | 'in_progress' | 'resolved' | 'closed'
+          title: string
+          description: string
+          priority: 'low' | 'medium' | 'high'
+          created_by: string
+          assigned_to: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          type: 'testing' | 'support' | 'question'
+          status?: 'open' | 'in_progress' | 'resolved' | 'closed'
+          title: string
+          description: string
+          priority?: 'low' | 'medium' | 'high'
+          created_by: string
+          assigned_to?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          type?: 'testing' | 'support' | 'question'
+          status?: 'open' | 'in_progress' | 'resolved' | 'closed'
+          title?: string
+          description?: string
+          priority?: 'low' | 'medium' | 'high'
+          created_by?: string
+          assigned_to?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      testing_tickets: {
+        Row: {
+          id: string
+          feature_id: string
+          validation_id: string | null
+          deadline: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          feature_id: string
+          validation_id?: string | null
+          deadline: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          feature_id?: string
+          validation_id?: string | null
+          deadline?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      support_tickets: {
+        Row: {
+          id: string
+          category: 'project' | 'feature' | 'testing' | 'other'
+          project_id: string | null
+          feature_id: string | null
+          ai_response: string | null
+          resolution_notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          category: 'project' | 'feature' | 'testing' | 'other'
+          project_id?: string | null
+          feature_id?: string | null
+          ai_response?: string | null
+          resolution_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          category?: 'project' | 'feature' | 'testing' | 'other'
+          project_id?: string | null
+          feature_id?: string | null
+          ai_response?: string | null
+          resolution_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -223,7 +319,10 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      ticket_type: 'testing' | 'support' | 'question'
+      ticket_status: 'open' | 'in_progress' | 'resolved' | 'closed'
+      ticket_priority: 'low' | 'medium' | 'high'
+      support_category: 'project' | 'feature' | 'testing' | 'other'
     }
   }
 } 

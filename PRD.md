@@ -63,6 +63,22 @@ The Group User Testing App aims to address these issues by creating a shared env
 - **Admin:** Has permissions to view all projects, see dashboards, and possibly override or finalize feature statuses.
 - **Tester:** Can view test requests, upload test videos, and validate others' features.
 
+### Ticket Management System
+
+- **Testing Tickets**
+  - Automatically created when features are ready for testing
+  - Tracks feature validation status and assignments
+  - Links to completed validations
+  - Provides deadline management for testing tasks
+  - Enables efficient distribution of testing workload
+
+- **Support & Question Tickets**
+  - AI-powered support bot provides immediate responses
+  - Categorized by project, feature, or testing context
+  - Escalation path to human support when needed
+  - Knowledge base integration for common questions
+  - Historical tracking of similar issues and resolutions
+
 ## 4. User Stories
 
 ### Admin
@@ -125,6 +141,14 @@ The Group User Testing App aims to address these issues by creating a shared env
 - FR-17: Admin users have full read/write access to all projects and features.
 - FR-18: Students only have edit permissions for their own projects, though they can test and comment on any project.
 - FR-19: Testers can only validate features and upload validation videos.
+
+### 5.7 Additional Functional Requirements
+
+- FR-20: The system shall automatically create testing tickets when features are marked ready for testing
+- FR-21: The system shall provide an AI-powered support bot for immediate response to support tickets
+- FR-22: The system shall track ticket metrics including resolution time and satisfaction
+- FR-23: The system shall enable ticket assignment and reassignment to appropriate testers
+- FR-24: The system shall maintain relationships between tickets, features, and validations
 
 ## 6. Non-Functional Requirements
 

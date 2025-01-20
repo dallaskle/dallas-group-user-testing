@@ -53,3 +53,25 @@
 - `GET /admin/projects/:id`: Fetch detailed status of a project.
 - `GET /admin/users`: List all users and their activity metrics.
 - `PUT /admin/features/:featureId`: Override or finalize feature status.
+
+### **Tickets**
+
+- `GET /tickets`: Fetch all tickets visible to the user
+- `POST /tickets`: Create a new ticket
+- `GET /tickets/:id`: Get ticket details
+- `PUT /tickets/:id`: Update ticket status/details
+- `DELETE /tickets/:id`: Delete a ticket
+
+### **Testing Tickets**
+
+- `GET /features/:featureId/testing-tickets`: Get testing tickets for a feature
+- `POST /features/:featureId/testing-tickets`: Create testing ticket for feature
+- `PUT /testing-tickets/:id/assign`: Assign testing ticket to tester
+- `PUT /testing-tickets/:id/validate`: Link validation to testing ticket
+
+### **Support Tickets**
+
+- `GET /support-tickets`: Get all support tickets
+- `POST /support-tickets`: Create new support ticket
+- `GET /support-tickets/:id/ai-response`: Get AI-generated response
+- `PUT /support-tickets/:id/resolve`: Mark support ticket as resolved
