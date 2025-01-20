@@ -1,0 +1,106 @@
+I'll create a comprehensive testing checklist for the current authentication implementation:
+1. Registration Testing
+[ ] Test valid registration with student role
+1. Fill out registration form with valid data
+Verify success message
+3. Check email for verification link
+Verify database entry created with correct role
+[ ] Test valid registration with tester role
+Fill out registration form with valid data
+2. Verify success message
+3. Check email for verification link
+Verify database entry created with correct role
+[ ] Test form validation
+[ ] Empty fields
+[ ] Invalid email format
+[ ] Password requirements (length, uppercase, lowercase, number)
+[ ] Password mismatch
+[ ] Missing role selection
+2. Email Verification Testing
+[ ] Test verification flow
+Register new account
+Click verification link in email
+Verify redirect to login
+Verify user status updated in database
+[ ] Test resend verification
+Click resend verification button
+Verify countdown timer
+3. Verify new email received
+Verify old verification link is invalidated
+[ ] Test invalid verification scenarios
+[ ] Expired token
+[ ] Already verified email
+[ ] Invalid token
+[ ] Missing token
+3. Login Testing
+[ ] Test valid login
+Enter valid credentials
+Verify successful login
+3. Verify correct redirect to dashboard
+Verify session stored in auth store
+[ ] Test invalid login scenarios
+[ ] Wrong password
+[ ] Non-existent email
+[ ] Unverified email
+[ ] Empty fields
+4. Authentication State
+[ ] Test session persistence
+Login successfully
+Refresh page
+Verify still logged in
+Verify user data preserved
+[ ] Test session expiry
+Login successfully
+Wait for token expiration
+Verify automatic refresh
+Verify graceful handling of failed refresh
+5. Role-Based Access
+[ ] Test student access
+[ ] Can access student routes
+[ ] Cannot access admin routes
+[ ] Cannot access tester routes
+[ ] Redirected to unauthorized page
+[ ] Test tester access
+[ ] Can access tester routes
+[ ] Cannot access admin routes
+[ ] Cannot access student routes
+[ ] Redirected to unauthorized page
+6. Route Protection
+[ ] Test protected routes
+Logout
+Try accessing protected routes directly
+Verify redirect to login
+Verify return to intended route after login
+[ ] Test public routes
+[ ] Can access login while logged out
+[ ] Can access register while logged out
+[ ] Redirected from public routes when logged in
+7. Logout Testing
+[ ] Test manual logout
+1. Click logout
+Verify session cleared
+Verify redirect to login
+4. Verify cannot access protected routes
+[ ] Test automatic logout
+Simulate token expiration
+Verify session cleared
+Verify redirect to login
+8. Error Handling
+[ ] Test network errors
+[ ] Server unavailable
+[ ] Timeout
+[ ] Verify error messages displayed
+[ ] Test validation errors
+[ ] Verify clear error messages
+[ ] Verify form state preserved
+[ ] Verify can retry after error
+Test Environment Setup
+1. Configure test database
+Set up test email service
+Create test accounts for each role
+Document test credentials
+Testing Tools Needed
+1. Browser dev tools for network requests
+Database access to verify data
+Email testing service (e.g., Mailtrap)
+Test user accounts
