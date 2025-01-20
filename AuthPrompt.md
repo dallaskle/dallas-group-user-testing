@@ -6,6 +6,9 @@
 - Use Supabase Auth for handling user authentication
 - Role-based access control to differentiate between Admin, Student, and Tester
 - Secure login/logout endpoints for all users
+- Email verification required before account activation
+- Automatic verification email sent upon registration
+- Custom email templates for verification process
 
 ### User Roles and Permissions
 
@@ -46,6 +49,12 @@ Maintain structured user data in Supabase PostgreSQL, including:
 - Support OAuth (Google, GitHub) for easy onboarding
 - Include standard email/password registration
 - Role assigned by Admin during user creation
+- Email verification flow:
+  1. User registers with email/password
+  2. Automatic verification email sent via Supabase
+  3. User clicks verification link in email
+  4. Email verified status updated in Supabase
+  5. User redirected to dashboard after verification
 
 ### Role-Based Dashboards
 
@@ -80,6 +89,13 @@ Maintain structured user data in Supabase PostgreSQL, including:
 - `/auth/login`: Handle user login
 - `/auth/register`: Register new users (Admin-only for assigning roles)
 - `/auth/logout`: Log out the current session
+- `/auth/verify-email`: Verify user's email address
+  - Accepts verification token
+  - Updates user's verified status
+  - Returns success/error message
+- `/auth/resend-verification`: Resend verification email
+  - Rate limited to prevent abuse
+  - Available only for unverified users
 
 ### User Management
 - `/users`: Get all users (Admin-only)
@@ -88,5 +104,20 @@ Maintain structured user data in Supabase PostgreSQL, including:
 
 ### Notifications
 - `/notifications`: Send notifications (e.g., test validation updates)
+
+## Email Templates
+- **Verification Email**
+  - Customizable template in Supabase dashboard
+  - Include clear instructions and branding
+  - Verification link with secure token
+  - Expiration time for security
+
+## Implementation Notes
+- Configure Supabase email settings in dashboard
+- Set appropriate redirect URLs for verification
+- Handle expired/invalid verification tokens
+- Implement email verification checks on protected routes
+- Store verification status in user metadata
+- Log verification attempts for security monitoring
 
 By focusing on these points, an engineer can efficiently implement authentication and user management for the Group User Testing App.
