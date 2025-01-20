@@ -5,11 +5,11 @@
 - `POST /auth/login`: Login a user.
 - `POST /auth/register`: Register a new user.
 - `POST /auth/verify-email`: Verify a user's email address.
-- `/auth/verify-email`: Verify user's email address
+- `POST /auth/verify-email`: Verify user's email address
   - Accepts verification token
   - Updates user's verified status
   - Returns success/error message
-- `/auth/resend-verification`: Resend verification email
+- `POST /auth/resend-verification`: Resend verification email
   - Rate limited to prevent abuse
   - Available only for unverified users
 
