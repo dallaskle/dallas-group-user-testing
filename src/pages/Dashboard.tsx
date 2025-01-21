@@ -35,14 +35,16 @@ const Dashboard = () => {
           </div>
 
           <div className="space-y-4">
-            <div>
-              <h2 className="text-lg font-medium text-gray-900">Your Role</h2>
-              <p className="mt-1 text-sm text-gray-500">
-                {user?.is_admin && 'Administrator'}
+            {user?.is_admin || user?.is_student || user?.is_tester && (
+              <div>
+                <h2 className="text-lg font-medium text-gray-900">Your Role</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  {user?.is_admin && 'Administrator'}
                 {user?.is_student && 'Student'}
-                {user?.is_tester && 'Tester'}
-              </p>
-            </div>
+                  {user?.is_tester && 'Tester'}
+                </p>
+              </div>
+            )}
 
             <div>
               <h2 className="text-lg font-medium text-gray-900">Email</h2>

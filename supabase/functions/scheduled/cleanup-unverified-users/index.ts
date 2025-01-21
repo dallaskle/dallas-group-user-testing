@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { Database } from '../../../src/types/database.types'
+import { Database } from '../../../../src/types/database.types'
 
 // Initialize Supabase client with service role key for admin operations
 const supabase = createClient<Database>(

@@ -33,15 +33,14 @@ export const register = async (req: Request) => {
       )
     }
 
-    // Create auth user with email confirmation
+    // Create auth user without email confirmation
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: false,
+      email_confirm: true, // Skip email verification
       user_metadata: { 
         name, 
-        role,
-        email_redirect_to: `${req.headers.get('origin')}/verify-email`
+        role
       }
     })
 
@@ -73,10 +72,40 @@ export const register = async (req: Request) => {
       )
     }
 
+    // Sign in the user to create a session
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+
+    if (signInError) {
+      return new Response(
+        JSON.stringify({ error: 'Failed to create session' }),
+        { status: 500 }
+      )
+    }
+
+    // Get user data from database
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', authData.user.id)
+      .single()
+
+    if (userError || !userData) {
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch user data' }),
+        { status: 500 }
+      )
+    }
+
     return new Response(
       JSON.stringify({ 
-        message: 'Registration successful. Please check your email to verify your account.',
-        user: authData.user
+        session: signInData.session,
+        user: {
+          ...authData.user,
+          ...userData
+        }
       }),
       { status: 201 }
     )
