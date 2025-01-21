@@ -22,13 +22,17 @@ interface RegisterData {
 }
 
 class AuthService {
+  async getUserData(userId: string) {
+    return await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single()
+  }
+
   private async setUserData(session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']>) {
     try {
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', session.user.id)
-        .single()
+      const { data: userData, error: userError } = await this.getUserData(session.user.id)
 
       if (userError) throw userError
 
@@ -210,17 +214,40 @@ class AuthService {
   async initializeAuth() {
     const store = useAuthStore.getState()
     try {
-      store.setLoading(true)
+      // Initialize Supabase auth and get session
+      await supabase.auth.initialize()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
-      // Check active session
-      const { data: { session } } = await supabase.auth.getSession()
-      
+      if (sessionError) throw sessionError
+
       if (session) {
-        await this.setUserData(session)
+        // Set session in store first
+        store.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          expires_at: session.expires_at ?? null
+        })
+
+        // Then fetch and set user data
+        const { data: userData, error: userError } = await this.getUserData(session.user.id)
+        if (userError) throw userError
+
+        if (userData) {
+          store.setUser({
+            ...session.user,
+            ...userData
+          } as User & Tables<'users'>)
+        }
+      } else {
+        // No session, clear store
+        store.setSession(null)
+        store.setUser(null)
       }
     } catch (error) {
+      console.error('Auth initialization error:', error)
       store.setError(error instanceof Error ? error.message : 'Failed to initialize auth')
-      store.logout()
+      store.setSession(null)
+      store.setUser(null)
     } finally {
       store.setLoading(false)
       store.setInitialized(true)
@@ -229,6 +256,14 @@ class AuthService {
 
   subscribeToAuthChanges(callback: (event: string, session: any) => void) {
     return supabase.auth.onAuthStateChange(callback)
+  }
+
+  async getSession() {
+    return supabase.auth.getSession()
+  }
+
+  async getUser() {
+    return supabase.auth.getUser()
   }
 }
 

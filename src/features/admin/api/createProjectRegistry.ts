@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 
 interface CreateProjectRegistryParams {
   name: string
@@ -9,11 +10,13 @@ export const createProjectRegistry = async ({
   name,
   description,
 }: CreateProjectRegistryParams) => {
-  const { data: sessionData } = await supabase.auth.getSession()
+  const session = useAuthStore.getState().session
   
-  if (!sessionData.session?.access_token) {
-    throw new Error('Unauthorized')
+  if (!session?.access_token) {
+    throw new Error('No active session found. Please log in again.')
   }
+
+  console.log('session', session)
 
   const response = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-create-project-registry`,
@@ -21,7 +24,7 @@ export const createProjectRegistry = async ({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionData.session.access_token}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         name,
