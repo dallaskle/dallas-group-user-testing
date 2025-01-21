@@ -46,10 +46,19 @@ export const CreateFeature = ({ projectId, onSuccess }: CreateFeatureProps) => {
   const handleSubmit = async (data: FeatureForm) => {
     try {
       setIsLoading(true)
-      await createFeature({
+      console.log('Creating feature with data:', {
         project_id: projectId,
         ...data,
+        status: 'Not Started',
+        current_validations: 0,
       })
+      const result = await createFeature({
+        project_id: projectId,
+        ...data,
+        status: 'Not Started',
+        current_validations: 0,
+      })
+      console.log('Feature created successfully:', result)
       toast({
         title: 'Success',
         description: 'Feature created successfully',
@@ -57,6 +66,7 @@ export const CreateFeature = ({ projectId, onSuccess }: CreateFeatureProps) => {
       form.reset()
       onSuccess?.()
     } catch (error) {
+      console.error('Error creating feature:', error)
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to create feature',

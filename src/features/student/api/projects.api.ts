@@ -15,6 +15,8 @@ interface CreateFeatureParams {
   name: string
   description: string
   required_validations?: number
+  status?: 'Not Started' | 'In Progress' | 'Successful Test' | 'Failed Test'
+  current_validations?: number
 }
 
 export const projectsApi = {
@@ -90,6 +92,7 @@ export const projectsApi = {
   },
 
   async createFeature(params: CreateFeatureParams): Promise<Feature> {
+    console.log('Creating feature with API:', params)
     const session = await supabase.auth.getSession()
     if (!session.data.session?.access_token) {
       throw new Error('No active session')
@@ -109,10 +112,13 @@ export const projectsApi = {
 
     if (!response.ok) {
       const error = await response.json()
+      console.error('Feature creation failed:', error)
       throw new Error(error.error || 'Failed to create feature')
     }
 
-    return response.json()
+    const result = await response.json()
+    console.log('Feature created via API:', result)
+    return result
   },
 
   async updateFeature(id: string, updates: Partial<Feature>): Promise<Feature> {

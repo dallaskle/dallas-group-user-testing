@@ -6,16 +6,26 @@ import { useAuthStore } from '@/features/auth/store/auth.store'
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import type { Database } from '@/shared/types/database.types'
 
-type ProjectPayload = RealtimePostgresChangesPayload<Database['public']['Tables']['projects']['Row']>
-type FeaturePayload = RealtimePostgresChangesPayload<Database['public']['Tables']['features']['Row']>
+type Project = Database['public']['Tables']['projects']['Row']
+type Feature = Database['public']['Tables']['features']['Row']
+type ProjectPayload = RealtimePostgresChangesPayload<Project>
+type FeaturePayload = RealtimePostgresChangesPayload<Feature>
 
 interface ProjectsProviderProps {
   children: React.ReactNode
 }
 
+const isFeature = (record: unknown): record is Feature => {
+  return record != null && 
+    typeof record === 'object' && 
+    'project_id' in record && 
+    typeof (record as Feature).project_id === 'string'
+}
+
 export const ProjectsProvider = ({ children }: ProjectsProviderProps) => {
   const { user } = useAuthStore()
   const {
+    projects,
     setProjects,
     addProject,
     updateProject,
@@ -78,9 +88,11 @@ export const ProjectsProvider = ({ children }: ProjectsProviderProps) => {
               }
             }
           )
-          .subscribe()
+          .subscribe((status) => {
+            console.log('Project subscription status:', status)
+          })
 
-        // Subscribe to feature changes
+        // Subscribe to feature changes for all user's projects
         const featureSubscription = supabase
           .channel('features-channel')
           .on(
@@ -89,36 +101,65 @@ export const ProjectsProvider = ({ children }: ProjectsProviderProps) => {
               event: '*',
               schema: 'public',
               table: 'features',
-              filter: `project_id=in.(${projects.map(p => p.id).join(',')})`,
+              filter: `project_id=in.(${projects.map(p => `'${p.id}'`).join(',')})`,
             },
-            (payload: FeaturePayload) => {
+            async (payload: FeaturePayload) => {
               if (!mounted) return
 
               const { eventType, new: newRecord, old: oldRecord } = payload
+              console.log('Feature change detected:', { eventType, newRecord, oldRecord })
 
+              // Since we're filtering by project_id, we can skip the ownership check
               switch (eventType) {
                 case 'INSERT':
-                  if (newRecord) {
+                  if (isFeature(newRecord)) {
+                    console.log('Adding new feature to store:', newRecord)
                     addFeature(newRecord.project_id, newRecord)
                   }
                   break
                 case 'UPDATE':
-                  if (oldRecord?.id && newRecord) {
+                  if (isFeature(oldRecord) && isFeature(newRecord) && oldRecord.id) {
+                    console.log('Updating feature in store:', { old: oldRecord, new: newRecord })
                     updateFeature(newRecord.project_id, oldRecord.id, newRecord)
                   }
                   break
                 case 'DELETE':
-                  if (oldRecord?.id && oldRecord.project_id) {
+                  if (isFeature(oldRecord) && oldRecord.id) {
+                    console.log('Removing feature from store:', oldRecord)
                     removeFeature(oldRecord.project_id, oldRecord.id)
                   }
                   break
               }
             }
           )
-          .subscribe()
+          .subscribe((status) => {
+            console.log('Feature subscription status:', status)
+          })
+
+        // Log subscription states periodically until they're ready
+        const checkSubscriptions = setInterval(() => {
+          const status = {
+            projectChannel: projectSubscription.state,
+            featureChannel: featureSubscription.state
+          }
+          console.log('Subscription status:', status)
+          
+          // Check if both channels are in a connected state
+          if (status.projectChannel === 'joined' && status.featureChannel === 'joined') {
+            console.log('All subscriptions ready!')
+            clearInterval(checkSubscriptions)
+          }
+        }, 1000)
+
+        // Also check if we're already connected
+        if (projectSubscription.state === 'joined' && featureSubscription.state === 'joined') {
+          console.log('Subscriptions already ready!')
+          clearInterval(checkSubscriptions)
+        }
 
         return () => {
           mounted = false
+          clearInterval(checkSubscriptions)
           projectSubscription.unsubscribe()
           featureSubscription.unsubscribe()
         }
@@ -149,14 +190,13 @@ export const useProjects = () => {
   
   const createFeature = async (params: Parameters<typeof projectsApi.createFeature>[0]) => {
     try {
-      store.setLoading(true)
       const result = await projectsApi.createFeature(params)
+      // Manually update the store since realtime events might be delayed
+      store.addFeature(params.project_id, result)
       return result
     } catch (error) {
       store.setError(new Error(error instanceof Error ? error.message : 'Failed to create feature'))
       throw error
-    } finally {
-      store.setLoading(false)
     }
   }
 

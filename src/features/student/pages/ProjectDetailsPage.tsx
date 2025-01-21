@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { supabase } from '@/lib/supabase'
 import { Database } from '@/shared/types/database.types'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,72 +9,26 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Plus } from 'lucide-react'
 import { CreateFeature } from '../components/CreateFeature'
+import { useProjects } from '../components/ProjectsProvider'
 
-type Project = Database['public']['Tables']['projects']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
-
-type ProjectWithFeatures = Project & {
-  features: Feature[]
-  registry: Database['public']['Tables']['project_registry']['Row']
-}
 
 export const ProjectDetailsPage = () => {
   const { id } = useParams<{ id: string }>()
-  const [project, setProject] = useState<ProjectWithFeatures | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { projects, isLoading } = useProjects()
   const [isAddFeatureOpen, setIsAddFeatureOpen] = useState(false)
 
-  useEffect(() => {
-    const fetchProject = async () => {
-      if (!id) return
-
-      try {
-        const { data: projectData, error: projectError } = await supabase
-          .from('projects')
-          .select(`
-            *,
-            registry:project_registry(*),
-            features(*)
-          `)
-          .eq('id', id)
-          .single()
-
-        if (projectError) throw projectError
-
-        setProject(projectData)
-      } catch (error) {
-        toast.error('Failed to load project')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchProject()
-  }, [id])
+  const project = projects.find(p => p.id === id)
+  console.log('ProjectDetailsPage - Current project:', { 
+    id, 
+    project, 
+    features: project?.features,
+    allProjects: projects
+  })
 
   const handleFeatureAdded = () => {
     setIsAddFeatureOpen(false)
-    // Refresh project data
-    if (id) {
-      setIsLoading(true)
-      supabase
-        .from('projects')
-        .select(`
-          *,
-          registry:project_registry(*),
-          features(*)
-        `)
-        .eq('id', id)
-        .single()
-        .then(({ data, error }) => {
-          if (error) {
-            toast.error('Failed to refresh project data')
-          } else {
-            setProject(data)
-          }
-          setIsLoading(false)
-        })
-    }
+    console.log('Feature added callback triggered')
   }
 
   if (isLoading) {
