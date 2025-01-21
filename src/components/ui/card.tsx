@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const cardVariants = cva(
-  "rounded-lg border p-natural-lg transition-natural focus-within:ring-2 focus-within:ring-forest focus-within:ring-opacity-50",
+  "rounded-lg border p-4 transition-natural focus-within:ring-2 focus-within:ring-forest focus-within:ring-opacity-50",
   {
     variants: {
       variant: {
@@ -52,7 +52,7 @@ const CardHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex flex-col space-y-natural-sm p-natural-lg border-b border-clay/10 dark:border-clay/5",
+      "flex flex-col space-y-2 p-2 border-b border-clay/10 dark:border-clay/5",
       className
     )}
     {...props}
@@ -96,7 +96,7 @@ const CardContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div 
     ref={ref} 
-    className={cn("p-natural-lg pt-0", className)} 
+    className={cn("p-2 pt-0", className)} 
     {...props} 
   />
 ));
@@ -109,7 +109,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex items-center p-natural-lg pt-0 border-t border-clay/20 dark:border-clay/10", 
+      "flex items-center p-2 pt-0 border-t border-clay/20 dark:border-clay/10", 
       className
     )}
     {...props}

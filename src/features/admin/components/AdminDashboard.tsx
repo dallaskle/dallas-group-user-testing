@@ -35,15 +35,15 @@ export const AdminDashboard = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Summary Cards */}
-            <Card className="p-4">
+            <Card className="p-4 mb-4">
               <h3 className="font-semibold mb-2">Total Projects</h3>
               <div className="text-2xl font-bold">{projectRegistries.length}</div>
             </Card>
-            <Card className="p-4">
+            <Card className="p-4 mb-4">
               <h3 className="font-semibold mb-2">Total Features</h3>
               <div className="text-2xl font-bold">{featureRegistries.length}</div>
             </Card>
-            <Card className="p-4">
+            <Card className="p-4 mb-4">
               <h3 className="font-semibold mb-2">Pending Validations</h3>
               <div className="text-2xl font-bold">45</div>
             </Card>

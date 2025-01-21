@@ -10,9 +10,9 @@ const tabsListVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-pearl dark:bg-charcoal p-1",
-        subtle: "bg-clay/10 dark:bg-clay/5 p-1",
-        outline: "border border-clay/20 dark:border-clay/10 p-1",
+        default: "bg-pearl dark:bg-charcoal p-2",
+        subtle: "bg-clay/10 dark:bg-clay/5 p-2",
+        outline: "border border-clay/20 dark:border-clay/10 p-2",
       },
       size: {
         default: "h-10",
@@ -44,7 +44,7 @@ const TabsList = React.forwardRef<
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const tabsTriggerVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-natural focus-natural disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-natural focus-natural disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -97,7 +97,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-natural-sm focus-natural",
+      "mt-4 focus-natural",
       className
     )}
     {...props}

@@ -110,8 +110,8 @@ export const VerifyEmailForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-natural-md">
-          <div className="rounded-md bg-yellow-50 p-natural-md">
+        <div className="space-y-4">
+          <div className="rounded-md bg-yellow-50 p-4">
             <div className="flex">
               <svg
                 className="h-5 w-5 text-yellow-400"
