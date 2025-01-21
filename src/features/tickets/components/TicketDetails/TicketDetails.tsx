@@ -75,9 +75,16 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
   }
 
   const handleAssign = async (userId: string | null) => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    await assignTicket(ticket.id, user.id)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('No authenticated user found')
+      }
+      await assignTicket(ticket.id, userId ?? user.id)
+    } catch (error) {
+      console.error('Failed to assign ticket:', error)
+      // You might want to add toast notification here
+    }
   }
 
   return (

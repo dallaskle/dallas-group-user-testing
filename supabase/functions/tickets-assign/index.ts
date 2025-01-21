@@ -76,7 +76,16 @@ serve(async (req) => {
 
     console.log('Ticket assigned successfully:', ticket.id)
 
-    return new Response(JSON.stringify(ticket as TicketResponse), {
+    // Format response to match frontend's TicketResponse type
+    const response: TicketResponse = {
+      ticket_data: {
+        ticket,
+        assignedToUser: null, // This will be populated by the frontend if needed
+        createdByUser: null  // This will be populated by the frontend if needed
+      }
+    }
+
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
