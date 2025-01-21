@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -32,6 +32,10 @@ export interface TicketDetailsProps {
 }
 
 export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
+  // Move hooks to the top
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  
   const {
     selectedTicket,
     isLoading,
@@ -44,6 +48,23 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
   useEffect(() => {
     fetchTicketById(ticketId)
   }, [ticketId, fetchTicketById])
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUser(user)
+        // Get user data including is_admin
+        const { data: userData } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single()
+        setIsAdmin(userData?.is_admin ?? false)
+      }
+    }
+    getCurrentUser()
+  }, [])
 
   if (isLoading) {
     return (
@@ -80,12 +101,14 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
       if (!user) {
         throw new Error('No authenticated user found')
       }
-      await assignTicket(ticket.id, userId ?? user.id)
+      await assignTicket(ticket.id, userId)
     } catch (error) {
       console.error('Failed to assign ticket:', error)
       // You might want to add toast notification here
     }
   }
+
+  const isAssignedToCurrentUser = currentUser && assignedToUser?.id === currentUser.id
 
   return (
     <Card className={className}>
@@ -180,14 +203,26 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
                   Move to {status.replace('_', ' ')}
                 </Button>
               ))}
-              {!assignedToUser && (
-                <Button
-                  variant="outline"
-                  onClick={() => handleAssign(null)}
-                >
-                  Assign to me
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {/* Show unassign button if admin or if assigned to current user */}
+                {(isAdmin || isAssignedToCurrentUser) && assignedToUser && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleAssign(null)}
+                  >
+                    Unassign
+                  </Button>
+                )}
+                {/* Show assign/reassign button if ticket is unassigned OR if admin */}
+                {(!assignedToUser || isAdmin) && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleAssign(currentUser?.id ?? null)}
+                  >
+                    {assignedToUser ? 'Reassign to me' : 'Assign to me'}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
