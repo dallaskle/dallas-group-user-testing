@@ -11,7 +11,7 @@ export default function TicketDetailsPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 max-w-[1400px]">
       <div className="mb-8">
         <Button
           variant="outline"
@@ -23,7 +23,7 @@ export default function TicketDetailsPage() {
         <h1 className="text-3xl font-bold">Ticket Details</h1>
       </div>
 
-      <TicketDetails ticketId={id} className="max-w-3xl" />
+      <TicketDetails ticketId={id} />
     </div>
   )
 } 

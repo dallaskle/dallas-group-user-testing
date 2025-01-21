@@ -114,7 +114,7 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
   const isAssignedToCurrentUser = currentUser && assignedToUser?.id === currentUser.id
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-6">
       <Card className={className}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-2xl font-bold">{ticket.title}</CardTitle>
@@ -236,17 +236,11 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
       </Card>
 
       <Card className={className}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardHeader>
           <CardTitle className="text-xl">Audit Log</CardTitle>
-          <Button 
-            variant="outline" 
-            onClick={() => setShowAuditLog(!showAuditLog)}
-          >
-            {showAuditLog ? 'Hide' : 'Show'} Audit Log
-          </Button>
         </CardHeader>
-        <CardContent>
-          {showAuditLog && <TicketAuditLog ticketId={ticketId} />}
+        <CardContent className="p-0">
+          <TicketAuditLog ticketId={ticketId} />
         </CardContent>
       </Card>
     </div>
