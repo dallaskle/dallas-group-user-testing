@@ -3,16 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { CreateFeatureRegistry } from '../components/CreateFeatureRegistry';
-import { Plus, ArrowLeft } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useRegistry } from '../components/RegistryProvider';
+import { registryService } from '../services/registry.service';
 
 const ProjectRegistryView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isAddFeatureOpen, setIsAddFeatureOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const { 
     projectRegistries, 
@@ -36,6 +39,29 @@ const ProjectRegistryView = () => {
       title: 'Success',
       description: 'Feature added successfully',
     });
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    try {
+      setIsDeleting(true);
+      await registryService.deleteProjectRegistry(id);
+      toast({
+        title: 'Success',
+        description: 'Project deleted successfully',
+      });
+      navigate('/admin');
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete project',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
   };
 
   if (isLoading) {
@@ -68,14 +94,25 @@ const ProjectRegistryView = () => {
 
   return (
     <div className="container mx-auto py-8 space-y-6">
-      <Button 
-        variant="ghost" 
-        className="gap-2 mb-4"
-        onClick={() => navigate('/admin')}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Dashboard
-      </Button>
+      <div className="flex justify-between items-center">
+        <Button 
+          variant="ghost" 
+          className="gap-2"
+          onClick={() => navigate('/admin')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Button>
+        <Button
+          variant="destructive"
+          className="gap-2"
+          onClick={() => setIsDeleteDialogOpen(true)}
+          disabled={isDeleting}
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete Project
+        </Button>
+      </div>
 
       <div className="flex justify-between items-start">
         <div>
@@ -167,6 +204,34 @@ const ProjectRegistryView = () => {
             projectRegistryId={id!} 
             onSuccess={handleFeatureAdded}
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Project</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this project? This action cannot be undone.
+              All associated features will also be deleted.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Project'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
