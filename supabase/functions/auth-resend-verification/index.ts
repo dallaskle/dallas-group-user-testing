@@ -1,5 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+// @ts-nocheck
+import { serve, createClient } from '../_shared/deps.ts'
 import { corsHeaders } from '../_shared/cors.ts'
 
 console.log("Auth resend-verification function started")

@@ -6,8 +6,8 @@ import { login } from '../api/login'
 import type { LoginResponse } from '../api/login'
 import { register } from '../api/register'
 import type { RegisterResponse } from '../api/register'
-import { resendVerification, verifyEmail } from '../api/verify'
-import type { ResendVerificationResponse, VerifyEmailResponse } from '../api/verify'
+import { resendVerification } from '../api/verify'
+import type { ResendVerificationResponse } from '../api/verify'
 
 interface LoginData {
   email: string
