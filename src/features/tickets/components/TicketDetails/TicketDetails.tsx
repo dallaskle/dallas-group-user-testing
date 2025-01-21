@@ -215,8 +215,10 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
                     Unassign
                   </Button>
                 )}
-                {/* Show assign/reassign button if ticket is unassigned OR if admin */}
-                {(!assignedToUser || isAdmin) && (
+                {/* Show assign/reassign button if:
+                    - Ticket is unassigned OR
+                    - Admin and ticket is assigned to someone else */}
+                {(!assignedToUser || (isAdmin && !isAssignedToCurrentUser)) && (
                   <Button
                     variant="outline"
                     onClick={() => handleAssign(currentUser?.id ?? null)}

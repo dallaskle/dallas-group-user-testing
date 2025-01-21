@@ -116,17 +116,17 @@ BEGIN
     IF TG_OP = 'UPDATE' THEN
         IF NEW.status <> OLD.status THEN
             INSERT INTO ticket_audit_log (ticket_id, changed_by, field_name, old_value, new_value)
-            VALUES (NEW.id, NEW.assigned_to, 'status', OLD.status::TEXT, NEW.status::TEXT);
+            VALUES (NEW.id, auth.uid(), 'status', OLD.status::TEXT, NEW.status::TEXT);
         END IF;
 
         IF NEW.assigned_to IS DISTINCT FROM OLD.assigned_to THEN
             INSERT INTO ticket_audit_log (ticket_id, changed_by, field_name, old_value, new_value)
-            VALUES (NEW.id, NEW.assigned_to, 'assigned_to', OLD.assigned_to::TEXT, NEW.assigned_to::TEXT);
+            VALUES (NEW.id, auth.uid(), 'assigned_to', OLD.assigned_to::TEXT, NEW.assigned_to::TEXT);
         END IF;
 
         IF NEW.priority <> OLD.priority THEN
             INSERT INTO ticket_audit_log (ticket_id, changed_by, field_name, old_value, new_value)
-            VALUES (NEW.id, NEW.assigned_to, 'priority', OLD.priority::TEXT, NEW.priority::TEXT);
+            VALUES (NEW.id, auth.uid(), 'priority', OLD.priority::TEXT, NEW.priority::TEXT);
         END IF;
     END IF;
 
