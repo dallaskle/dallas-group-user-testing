@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Plus } from 'lucide-react'
 import { CreateFeature } from '../components/CreateFeature'
+import { FeatureDetailsPanel } from '../components/FeatureDetailsPanel'
 import { useProjects } from '../components/ProjectsProvider'
 
 type Feature = Database['public']['Tables']['features']['Row']
@@ -17,18 +18,16 @@ export const ProjectDetailsPage = () => {
   const { id } = useParams<{ id: string }>()
   const { projects, isLoading } = useProjects()
   const [isAddFeatureOpen, setIsAddFeatureOpen] = useState(false)
+  const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null)
 
   const project = projects.find(p => p.id === id)
-  console.log('ProjectDetailsPage - Current project:', { 
-    id, 
-    project, 
-    features: project?.features,
-    allProjects: projects
-  })
+
+  const handleFeatureClick = (feature: Feature) => {
+    setSelectedFeature(feature)
+  }
 
   const handleFeatureAdded = () => {
     setIsAddFeatureOpen(false)
-    console.log('Feature added callback triggered')
   }
 
   if (isLoading) {
@@ -113,6 +112,11 @@ export const ProjectDetailsPage = () => {
                   <div
                     key={feature.id}
                     className="p-3 rounded-lg border border-gray-200 hover:border-primary/50 cursor-pointer transition-colors"
+                    onClick={() => handleFeatureClick(feature)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleFeatureClick(feature)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`View details for ${feature.name}`}
                   >
                     <h3 className="font-medium">{feature.name}</h3>
                     <p className="text-sm text-gray-500 mt-1">{feature.description}</p>
@@ -141,6 +145,12 @@ export const ProjectDetailsPage = () => {
           />
         </DialogContent>
       </Dialog>
+
+      <FeatureDetailsPanel
+        feature={selectedFeature}
+        isOpen={!!selectedFeature}
+        onClose={() => setSelectedFeature(null)}
+      />
     </div>
   )
 }
