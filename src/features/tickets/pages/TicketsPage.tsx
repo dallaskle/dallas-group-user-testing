@@ -15,9 +15,9 @@ export default function TicketsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 
   return (
-    <div className="container mx-auto py-8">
+    <div>
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Tickets</h1>
+        <h1 className="text-2xl font-semibold">Ticket Management</h1>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>Create Ticket</Button>

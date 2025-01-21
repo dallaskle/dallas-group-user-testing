@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CreateProjectRegistry } from './CreateProjectRegistry'
 import { Plus } from 'lucide-react'
 import { useRegistry } from './RegistryProvider'
+import TicketsPage from '@/features/tickets/pages/TicketsPage'
 
 export const AdminDashboard = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -110,7 +111,7 @@ export const AdminDashboard = () => {
         
         <TabsContent value="tickets">
           {/* Tickets Tab Content */}
-          <div>Tickets management coming soon...</div>
+          <TicketsPage />
         </TabsContent>
       </Tabs>
 

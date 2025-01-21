@@ -49,6 +49,12 @@ export function TicketForm({ onSuccess, className }: TicketFormProps) {
     defaultValues: {
       type: 'support',
       priority: 'medium',
+      title: '',
+      description: '',
+      featureId: '',
+      deadline: '',
+      category: 'project',
+      projectId: '',
     },
   })
 
