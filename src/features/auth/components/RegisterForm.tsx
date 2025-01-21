@@ -5,6 +5,8 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -58,120 +60,171 @@ export const RegisterForm = () => {
   }
 
   return (
-    <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-      <div className="rounded-md shadow-sm space-y-4">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Full Name
-          </label>
-          <input
-            {...register('name')}
-            id="name"
-            type="text"
-            autoComplete="name"
-            required
-            className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="John Doe"
-          />
-          {errors.name && (
-            <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-          )}
-        </div>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Create Account</CardTitle>
+        <CardDescription>Sign up for a new account to get started</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form className="space-y-natural-lg" onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-natural-md">
+            <div>
+              <label 
+                htmlFor="name" 
+                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
+              >
+                Full Name
+              </label>
+              <input
+                {...register('name')}
+                id="name"
+                type="text"
+                autoComplete="name"
+                required
+                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
+                         bg-pearl dark:bg-charcoal 
+                         text-slate dark:text-slate-light
+                         placeholder:text-stone/50 dark:placeholder:text-stone-light/50
+                         focus-natural"
+                placeholder="Enter your full name"
+              />
+              {errors.name && (
+                <p className="mt-2 text-sm text-destructive">{errors.name.message}</p>
+              )}
+            </div>
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            Email address
-          </label>
-          <input
-            {...register('email')}
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="john@example.com"
-          />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-          )}
-        </div>
+            <div>
+              <label 
+                htmlFor="email" 
+                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
+              >
+                Email address
+              </label>
+              <input
+                {...register('email')}
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
+                         bg-pearl dark:bg-charcoal 
+                         text-slate dark:text-slate-light
+                         placeholder:text-stone/50 dark:placeholder:text-stone-light/50
+                         focus-natural"
+                placeholder="Enter your email"
+              />
+              {errors.email && (
+                <p className="mt-2 text-sm text-destructive">{errors.email.message}</p>
+              )}
+            </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <input
-            {...register('password')}
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            required
-            className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="••••••••"
-          />
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-          )}
-        </div>
+            <div>
+              <label 
+                htmlFor="password" 
+                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
+              >
+                Password
+              </label>
+              <input
+                {...register('password')}
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
+                         bg-pearl dark:bg-charcoal 
+                         text-slate dark:text-slate-light
+                         placeholder:text-stone/50 dark:placeholder:text-stone-light/50
+                         focus-natural"
+                placeholder="Create a password"
+              />
+              {errors.password && (
+                <p className="mt-2 text-sm text-destructive">{errors.password.message}</p>
+              )}
+            </div>
 
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-            Confirm Password
-          </label>
-          <input
-            {...register('confirmPassword')}
-            id="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            required
-            className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="••••••••"
-          />
-          {errors.confirmPassword && (
-            <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
-          )}
-        </div>
+            <div>
+              <label 
+                htmlFor="confirmPassword" 
+                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
+              >
+                Confirm Password
+              </label>
+              <input
+                {...register('confirmPassword')}
+                id="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
+                         bg-pearl dark:bg-charcoal 
+                         text-slate dark:text-slate-light
+                         placeholder:text-stone/50 dark:placeholder:text-stone-light/50
+                         focus-natural"
+                placeholder="Confirm your password"
+              />
+              {errors.confirmPassword && (
+                <p className="mt-2 text-sm text-destructive">{errors.confirmPassword.message}</p>
+              )}
+            </div>
 
-        <div>
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-            Role
-          </label>
-          <select
-            {...register('role')}
-            id="role"
-            required
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            <div>
+              <label 
+                htmlFor="role" 
+                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
+              >
+                Role
+              </label>
+              <select
+                {...register('role')}
+                id="role"
+                required
+                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
+                         bg-pearl dark:bg-charcoal 
+                         text-slate dark:text-slate-light
+                         focus-natural"
+              >
+                <option value="">Select a role</option>
+                <option value="student">Student</option>
+                <option value="tester">Tester</option>
+              </select>
+              {errors.role && (
+                <p className="mt-2 text-sm text-destructive">{errors.role.message}</p>
+              )}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-2 px-natural-md rounded-md 
+                     bg-forest hover:bg-forest-light dark:bg-forest-light dark:hover:bg-forest
+                     text-pearl font-medium
+                     transition-natural focus-natural
+                     disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <option value="">Select a role</option>
-            <option value="student">Student</option>
-            <option value="tester">Tester</option>
-          </select>
-          {errors.role && (
-            <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
-          )}
-        </div>
-      </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center space-x-2">
+                <Progress value={100} className="w-4 h-4" />
+                <span>Creating account...</span>
+              </div>
+            ) : (
+              'Create account'
+            )}
+          </button>
 
-      <div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? 'Creating account...' : 'Create account'}
-        </button>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="text-sm">
-          <Link
-            to="/login"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-          >
-            Already have an account? Sign in
-          </Link>
-        </div>
-      </div>
-    </form>
+          <div className="flex items-center justify-between pt-natural-md">
+            <Link
+              to="/login"
+              className="text-sm font-medium text-copper hover:text-copper-light 
+                       dark:text-copper-light dark:hover:text-copper
+                       transition-natural focus-natural"
+            >
+              Already have an account? Sign in
+            </Link>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   )
 } 

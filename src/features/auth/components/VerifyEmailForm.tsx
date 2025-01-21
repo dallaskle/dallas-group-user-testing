@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
 import { authService } from '../services/auth.service'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 
 export const VerifyEmailForm = () => {
   const location = useLocation()
@@ -90,9 +92,9 @@ export const VerifyEmailForm = () => {
 
   if (isProcessing) {
     return (
-      <div className="max-w-md w-full space-y-8 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-        <h2 className="mt-6 text-xl font-medium text-gray-900">
+      <div className="max-w-md w-full mx-auto text-center">
+        <Progress value={100} className="w-12 h-12 mx-auto" />
+        <h2 className="mt-6 text-xl font-medium text-slate dark:text-slate-light">
           Verifying your email...
         </h2>
       </div>
@@ -100,23 +102,17 @@ export const VerifyEmailForm = () => {
   }
 
   return (
-    <div className="max-w-md w-full space-y-8">
-      <div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Verify your email
-        </h2>
-        {email && (
-          <p className="mt-2 text-center text-sm text-gray-600">
-            We sent a verification email to{' '}
-            <span className="font-medium text-indigo-600">{email}</span>
-          </p>
-        )}
-      </div>
-
-      <div className="mt-8 space-y-6">
-        <div className="rounded-md bg-yellow-50 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Verify your email</CardTitle>
+        <CardDescription>
+          {email ? `We sent a verification email to ${email}` : 'Please check your email for a verification link.'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-natural-md">
+          <div className="rounded-md bg-yellow-50 p-natural-md">
+            <div className="flex">
               <svg
                 className="h-5 w-5 text-yellow-400"
                 xmlns="http://www.w3.org/2000/svg"
@@ -130,37 +126,39 @@ export const VerifyEmailForm = () => {
                   clipRule="evenodd"
                 />
               </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800">
-                Please verify your email address
-              </h3>
-              <div className="mt-2 text-sm text-yellow-700">
-                <p>
-                  Check your email for a verification link. If you don't see it, check your spam
-                  folder.
-                </p>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">
+                  Please verify your email address
+                </h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p>
+                    Check your email for a verification link. If you don't see it, check your spam
+                    folder.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {email && (
-          <div className="flex items-center justify-center">
-            <button
-              onClick={handleResendVerification}
-              disabled={isResending || countdown > 0}
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {countdown > 0
-                ? `Resend email in ${countdown}s`
-                : isResending
-                ? 'Sending...'
-                : 'Resend verification email'}
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+          {email && (
+            <div className="flex items-center justify-center">
+              <button
+                onClick={handleResendVerification}
+                disabled={isResending || countdown > 0}
+                className="text-sm font-medium text-copper hover:text-copper-light 
+                         dark:text-copper-light dark:hover:text-copper
+                         transition-natural focus-natural disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {countdown > 0
+                  ? `Resend email in ${countdown}s`
+                  : isResending
+                  ? 'Sending...'
+                  : 'Resend verification email'}
+              </button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 } 
