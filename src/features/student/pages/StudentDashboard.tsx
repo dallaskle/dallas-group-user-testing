@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { ProjectsWidget } from '../components/dashboard/ProjectsWidget'
+import { FeaturesWidget } from '../components/dashboard/FeaturesWidget'
+import { ValidationsWidget } from '../components/dashboard/ValidationsWidget'
 import { useProjectsStore } from '../store/projects.store'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
@@ -20,9 +22,10 @@ export const StudentDashboard = () => {
         <p className="text-gray-500">Here's an overview of your projects and recent activity.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <ProjectsWidget />
-        {/* FeaturesWidget and ValidationsWidget will be added here */}
+        <FeaturesWidget />
+        <ValidationsWidget />
       </div>
     </div>
   )

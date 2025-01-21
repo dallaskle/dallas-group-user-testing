@@ -15,13 +15,14 @@ interface ProjectCardProps {
   project: ProjectWithRegistry
   onEdit?: () => void
   onDelete?: () => void
+  onClick?: () => void
 }
 
-export const ProjectCard = ({ project, onEdit, onDelete }: ProjectCardProps) => {
+export const ProjectCard = ({ project, onEdit, onDelete, onClick }: ProjectCardProps) => {
   const validationProgress = project.validation_count / (project.feature_count || 1) * 100
 
   return (
-    <Card className="w-full">
+    <Card className="w-full hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold">{project.name}</CardTitle>
@@ -47,26 +48,34 @@ export const ProjectCard = ({ project, onEdit, onDelete }: ProjectCardProps) => 
         </div>
       </CardContent>
 
-      <CardFooter className="flex justify-end space-x-2">
-        {onEdit && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onEdit}
-          >
-            Edit
-          </Button>
-        )}
-        {onDelete && (
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={onDelete}
-          >
-            Delete
-          </Button>
-        )}
-      </CardFooter>
+      {(onEdit || onDelete) && (
+        <CardFooter className="flex justify-end space-x-2">
+          {onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit()
+              }}
+            >
+              Edit
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
+            >
+              Delete
+            </Button>
+          )}
+        </CardFooter>
+      )}
     </Card>
   )
 } 
