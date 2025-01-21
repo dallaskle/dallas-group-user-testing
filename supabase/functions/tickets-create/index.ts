@@ -64,7 +64,8 @@ serve(async (req) => {
       description: request.description,
       priority: request.priority || 'medium',
       created_by: user.id,
-      status: 'open'
+      status: 'open',
+      assigned_to: request.assignedTo || null
     }
 
     // Start a transaction

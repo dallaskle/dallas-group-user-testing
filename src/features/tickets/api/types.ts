@@ -55,6 +55,7 @@ export interface CreateTicketRequest {
   title: string
   description: string
   priority?: TicketPriority
+  assignedTo?: string | null
   // Testing ticket specific
   featureId?: string
   deadline?: string

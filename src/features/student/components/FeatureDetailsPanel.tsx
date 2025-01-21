@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Database } from '@/shared/types/database.types'
 import { cn } from '@/lib/utils'
 import { AddValidation } from './AddValidation'
+import { AddTesterDialog } from './AddTesterDialog'
 import { validationsApi } from '../api/validations.api'
 
 type Feature = Database['public']['Tables']['features']['Row']
@@ -25,6 +26,7 @@ export const FeatureDetailsPanel = ({
 }: FeatureDetailsPanelProps) => {
   const [validations, setValidations] = useState<Validation[]>([])
   const [isAddValidationOpen, setIsAddValidationOpen] = useState(false)
+  const [isAddTesterOpen, setIsAddTesterOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -50,6 +52,10 @@ export const FeatureDetailsPanel = ({
   const handleValidationAdded = () => {
     setIsAddValidationOpen(false)
     loadValidations()
+  }
+
+  const handleTesterAdded = () => {
+    setIsAddTesterOpen(false)
   }
 
   if (!feature) return null
@@ -150,13 +156,22 @@ export const FeatureDetailsPanel = ({
           </div>
         </div>
 
-        {/* Add Validation Button */}
-        <Button 
-          className="w-full"
-          onClick={() => setIsAddValidationOpen(true)}
-        >
-          Add Validation
-        </Button>
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          <Button 
+            className="w-full"
+            onClick={() => setIsAddValidationOpen(true)}
+          >
+            Add Validation
+          </Button>
+          <Button 
+            className="w-full"
+            variant="outline"
+            onClick={() => setIsAddTesterOpen(true)}
+          >
+            Add Tester
+          </Button>
+        </div>
       </div>
 
       <Dialog open={isAddValidationOpen} onOpenChange={setIsAddValidationOpen}>
@@ -168,6 +183,19 @@ export const FeatureDetailsPanel = ({
             feature={feature}
             onSuccess={handleValidationAdded}
             onCancel={() => setIsAddValidationOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddTesterOpen} onOpenChange={setIsAddTesterOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Tester</DialogTitle>
+          </DialogHeader>
+          <AddTesterDialog
+            feature={feature}
+            onSuccess={handleTesterAdded}
+            onCancel={() => setIsAddTesterOpen(false)}
           />
         </DialogContent>
       </Dialog>
