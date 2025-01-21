@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 
 interface CreateFeatureRegistryParams {
   projectRegistryId: string
@@ -13,10 +14,10 @@ export const createFeatureRegistry = async ({
   description,
   isRequired,
 }: CreateFeatureRegistryParams) => {
-  const { data: sessionData } = await supabase.auth.getSession()
+  const session = useAuthStore.getState().session
   
-  if (!sessionData.session?.access_token) {
-    throw new Error('Unauthorized')
+  if (!session?.access_token) {
+    throw new Error('No active session found. Please log in again.')
   }
 
   const response = await fetch(
@@ -25,7 +26,7 @@ export const createFeatureRegistry = async ({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionData.session.access_token}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         projectRegistryId,
