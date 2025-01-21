@@ -1,94 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CreateFeatureRegistry } from '../components/CreateFeatureRegistry';
-import { Plus } from 'lucide-react';
+import { Plus, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/supabase';
-import { getFeatureRegistries } from '../api/createFeatureRegistry';
+import { useRegistry } from '../components/RegistryProvider';
 
-interface Feature {
-  id: string;
-  name: string;
-  description: string;
-  is_required: boolean;
-  status: 'Not Started' | 'In Progress' | 'Successful Test' | 'Failed Test';
-}
-
-interface ProjectRegistry {
-  id: string;
-  name: string;
-  description: string;
-  status: 'active' | 'draft' | 'archived';
-  features: Feature[];
-}
-
-const ProjectRegistryView: React.FC = () => {
+const ProjectRegistryView = () => {
   const { id } = useParams<{ id: string }>();
-  const [project, setProject] = useState<ProjectRegistry | null>(null);
+  const navigate = useNavigate();
   const [isAddFeatureOpen, setIsAddFeatureOpen] = useState(false);
   const { toast } = useToast();
+  const { 
+    projectRegistries, 
+    featureRegistries, 
+    isLoading,
+    error,
+    createFeatureRegistry 
+  } = useRegistry();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch project details
-        const { data: projectData, error: projectError } = await supabase
-          .from('project_registry')
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (projectError) throw projectError;
-        if (!projectData) throw new Error('Project not found');
-
-        // Fetch features
-        const features = await getFeatureRegistries(id!);
-
-        setProject({
-          ...projectData,
-          features: features || [],
-        });
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to load project details',
-          variant: 'destructive',
-        });
-      }
-    };
-
-    if (id) {
-      fetchData();
-    }
-  }, [id, toast]);
+  // Find the current project
+  const project = projectRegistries.find(p => p.id === id);
+  
+  // Get features for this project
+  const projectFeatures = featureRegistries.filter(f => f.project_registry_id === id);
+  const requiredFeatures = projectFeatures.filter(f => f.is_required);
+  const optionalFeatures = projectFeatures.filter(f => !f.is_required);
 
   const handleFeatureAdded = async () => {
-    try {
-      const features = await getFeatureRegistries(id!);
-      if (project) {
-        setProject({
-          ...project,
-          features: features || [],
-        });
-      }
-      setIsAddFeatureOpen(false);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to refresh features',
-        variant: 'destructive',
-      });
-    }
+    setIsAddFeatureOpen(false);
+    toast({
+      title: 'Success',
+      description: 'Feature added successfully',
+    });
   };
 
-  const requiredFeatures = project?.features.filter(f => f.is_required) || [];
-  const optionalFeatures = project?.features.filter(f => !f.is_required) || [];
-
-  if (!project) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -96,8 +46,37 @@ const ProjectRegistryView: React.FC = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="bg-yellow-50 text-yellow-600 p-4 rounded-lg">
+          Project not found
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8 space-y-6">
+      <Button 
+        variant="ghost" 
+        className="gap-2 mb-4"
+        onClick={() => navigate('/admin')}
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Dashboard
+      </Button>
+
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold">{project.name}</h1>
@@ -133,16 +112,6 @@ const ProjectRegistryView: React.FC = () => {
                     <h3 className="font-medium">{feature.name}</h3>
                     <p className="text-sm text-gray-500">{feature.description}</p>
                   </div>
-                  <Badge
-                    variant={
-                      feature.status === 'Successful Test' ? 'success' :
-                      feature.status === 'Failed Test' ? 'destructive' :
-                      feature.status === 'In Progress' ? 'secondary' :
-                      'outline'
-                    }
-                  >
-                    {feature.status}
-                  </Badge>
                 </div>
               </div>
             ))}
@@ -169,16 +138,6 @@ const ProjectRegistryView: React.FC = () => {
                     <h3 className="font-medium">{feature.name}</h3>
                     <p className="text-sm text-gray-500">{feature.description}</p>
                   </div>
-                  <Badge
-                    variant={
-                      feature.status === 'Successful Test' ? 'success' :
-                      feature.status === 'Failed Test' ? 'destructive' :
-                      feature.status === 'In Progress' ? 'secondary' :
-                      'outline'
-                    }
-                  >
-                    {feature.status}
-                  </Badge>
                 </div>
               </div>
             ))}
