@@ -134,7 +134,7 @@ export const LoginForm = () => {
             >
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2" role="status">
-                  <Progress value={100} size="sm" variant="accent" animated className="w-4 h-4" />
+                  <Progress value={100} size="sm" variant="accent" className="w-4 h-4" />
                   <span>Signing in...</span>
                 </div>
               ) : (
