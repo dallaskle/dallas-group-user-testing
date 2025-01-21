@@ -18,6 +18,8 @@ const StudentDashboard = React.lazy(() => import('./features/student/pages/Stude
 const ProjectDetailsPage = React.lazy(() => import('./features/student/pages/ProjectDetailsPage'))
 const TicketsPage = React.lazy(() => import('./features/tickets/pages/TicketsPage'))
 const TicketDetailsPage = React.lazy(() => import('./features/tickets/pages/TicketDetailsPage'))
+const TesterDashboard = React.lazy(() => import('./features/tester/pages/TesterDashboard'))
+const TestingSession = React.lazy(() => import('./features/tester/pages/TestingSession'))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -101,8 +103,10 @@ function App() {
               {/* Tester routes */}
               <Route path="/testing/*" element={
                 <AuthGuard allowedRoles={['tester']}>
-                  {/* Testing routes will be added here */}
-                  <div>Testing Area</div>
+                  <Routes>
+                    <Route index element={<TesterDashboard />} />
+                    <Route path=":id" element={<TestingSession />} />
+                  </Routes>
                 </AuthGuard>
               } />
 
