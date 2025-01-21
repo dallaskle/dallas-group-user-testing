@@ -9,9 +9,11 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CreateProjectRegistry } from './CreateProjectRegistry'
 import { Plus } from 'lucide-react'
+import { useRegistry } from './RegistryProvider'
 
 export const AdminDashboard = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const { projectRegistries, featureRegistries, isLoading, error } = useRegistry()
 
   return (
     <div className="container mx-auto py-8">
@@ -35,11 +37,11 @@ export const AdminDashboard = () => {
             {/* Summary Cards */}
             <Card className="p-4">
               <h3 className="font-semibold mb-2">Total Projects</h3>
-              <div className="text-2xl font-bold">24</div>
+              <div className="text-2xl font-bold">{projectRegistries.length}</div>
             </Card>
             <Card className="p-4">
-              <h3 className="font-semibold mb-2">Active Testers</h3>
-              <div className="text-2xl font-bold">12</div>
+              <h3 className="font-semibold mb-2">Total Features</h3>
+              <div className="text-2xl font-bold">{featureRegistries.length}</div>
             </Card>
             <Card className="p-4">
               <h3 className="font-semibold mb-2">Pending Validations</h3>
@@ -63,10 +65,32 @@ export const AdminDashboard = () => {
                 Add New Template
               </Button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <ProjectRegistryCard />
-              {/* More registry cards */}
-            </div>
+            
+            {error && (
+              <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-4">
+                {error}
+              </div>
+            )}
+
+            {isLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {projectRegistries.map((registry) => (
+                  <ProjectRegistryCard 
+                    key={registry.id} 
+                    registry={registry}
+                  />
+                ))}
+                {projectRegistries.length === 0 && !isLoading && (
+                  <div className="col-span-full text-center py-8 text-gray-500">
+                    No project registries found. Create one to get started.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </TabsContent>
         

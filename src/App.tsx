@@ -4,6 +4,7 @@ import { AuthProvider } from './features/auth/components/AuthProvider'
 import { AuthGuard } from './features/auth/components/AuthGuard'
 import React, { Suspense } from 'react'
 import { useAuthStore } from './features/auth/store/auth.store'
+import { RegistryProvider } from './features/admin/components/RegistryProvider'
 
 // Lazy load pages
 const Login = React.lazy(() => import('./features/auth/pages/Login'))
@@ -64,10 +65,12 @@ function App() {
               {/* Admin routes */}
               <Route path="/admin/*" element={
                 <AuthGuard allowedRoles={['admin']}>
-                  <Routes>
-                    <Route index element={<AdminPage />} />
-                    <Route path="registry/:id" element={<ProjectRegistryView />} />
-                  </Routes>
+                  <RegistryProvider>
+                    <Routes>
+                      <Route index element={<AdminPage />} />
+                      <Route path="registry/:id" element={<ProjectRegistryView />} />
+                    </Routes>
+                  </RegistryProvider>
                 </AuthGuard>
               } />
 

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const cardVariants = cva(
-  "rounded-lg border transition-natural focus-within:ring-2 focus-within:ring-forest focus-within:ring-opacity-50",
+  "rounded-lg border p-natural-lg transition-natural focus-within:ring-2 focus-within:ring-forest focus-within:ring-opacity-50",
   {
     variants: {
       variant: {
