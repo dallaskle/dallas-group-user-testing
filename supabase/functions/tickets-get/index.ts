@@ -73,7 +73,13 @@ serve(async (req) => {
 
     console.log('Ticket fetched successfully:', ticket.id)
 
-    return new Response(JSON.stringify(ticket as TicketResponse), {
+    // Format response to match frontend's TicketResponse type
+    const response: TicketResponse = {
+      ticket_data: ticket,
+      total_count: 1
+    }
+
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })

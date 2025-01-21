@@ -110,8 +110,13 @@ export const ticketsApi = {
       const error = await response.json()
       throw new Error(error.error || 'Failed to get ticket')
     }
+    
+    const data = await response.json()
+    if (!data.ticket_data) {
+      throw new Error('Invalid ticket data received from server')
+    }
 
-    return await response.json()
+    return data
   },
 
   assign: async (id: string, assignedTo: string | null): Promise<TicketResponse> => {

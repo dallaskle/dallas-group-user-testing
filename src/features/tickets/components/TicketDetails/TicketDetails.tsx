@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useTicketsStore } from '../../store/tickets.store'
-import type { TicketResponse } from '../../api/types'
+import type { TicketResponse, TicketStatus } from '../../api/types'
+import { supabase } from '@/lib/supabase'
 
-const statusColors = {
+const statusColors: Record<TicketStatus, string> = {
   open: 'bg-blue-100 text-blue-800',
   in_progress: 'bg-yellow-100 text-yellow-800',
   resolved: 'bg-green-100 text-green-800',
@@ -18,7 +19,7 @@ const priorityColors = {
   high: 'bg-red-100 text-red-800',
 }
 
-const statusTransitions = {
+const statusTransitions: Record<TicketStatus, TicketStatus[]> = {
   open: ['in_progress'],
   in_progress: ['resolved'],
   resolved: ['closed', 'in_progress'],
@@ -34,6 +35,7 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
   const {
     selectedTicket,
     isLoading,
+    error,
     fetchTicketById,
     transitionTicket,
     assignTicket,
@@ -51,21 +53,31 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
     )
   }
 
-  if (!selectedTicket) {
+  if (error) {
+    return (
+      <div className="text-center text-red-500">
+        Error loading ticket: {error.message}
+      </div>
+    )
+  }
+
+  if (!selectedTicket?.ticket_data) {
     return (
       <div className="text-center text-gray-500">Ticket not found</div>
     )
   }
 
   const { ticket, testingDetails, supportDetails, assignedToUser, createdByUser } =
-    selectedTicket
+    selectedTicket.ticket_data
 
-  const handleStatusTransition = async (newStatus: string) => {
+  const handleStatusTransition = async (newStatus: TicketStatus) => {
     await transitionTicket(ticket.id, newStatus)
   }
 
   const handleAssign = async (userId: string | null) => {
-    await assignTicket(ticket.id, userId)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await assignTicket(ticket.id, user.id)
   }
 
   return (
@@ -164,7 +176,7 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
               {!assignedToUser && (
                 <Button
                   variant="outline"
-                  onClick={() => handleAssign('current-user-id')}
+                  onClick={() => handleAssign(null)}
                 >
                   Assign to me
                 </Button>
