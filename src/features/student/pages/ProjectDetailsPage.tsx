@@ -6,6 +6,10 @@ import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Plus } from 'lucide-react'
+import { CreateFeature } from '../components/CreateFeature'
 
 type Project = Database['public']['Tables']['projects']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
@@ -19,6 +23,7 @@ export const ProjectDetailsPage = () => {
   const { id } = useParams<{ id: string }>()
   const [project, setProject] = useState<ProjectWithFeatures | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAddFeatureOpen, setIsAddFeatureOpen] = useState(false)
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -47,6 +52,31 @@ export const ProjectDetailsPage = () => {
 
     fetchProject()
   }, [id])
+
+  const handleFeatureAdded = () => {
+    setIsAddFeatureOpen(false)
+    // Refresh project data
+    if (id) {
+      setIsLoading(true)
+      supabase
+        .from('projects')
+        .select(`
+          *,
+          registry:project_registry(*),
+          features(*)
+        `)
+        .eq('id', id)
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            toast.error('Failed to refresh project data')
+          } else {
+            setProject(data)
+          }
+          setIsLoading(false)
+        })
+    }
+  }
 
   if (isLoading) {
     return (
@@ -85,9 +115,18 @@ export const ProjectDetailsPage = () => {
             <h1 className="text-4xl font-bold">{project.name}</h1>
             <p className="text-gray-500 mt-2">Based on {project.registry.name}</p>
           </div>
-          <Badge variant="outline" className="text-lg py-1">
-            {project.features.length} Features
-          </Badge>
+          <div className="flex items-center gap-4">
+            <Badge variant="outline" className="text-lg py-1">
+              {project.features.length} Features
+            </Badge>
+            <Button
+              onClick={() => setIsAddFeatureOpen(true)}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add Feature
+            </Button>
+          </div>
         </div>
 
         <Card className="mt-6">
@@ -129,11 +168,26 @@ export const ProjectDetailsPage = () => {
                     </div>
                   </div>
                 ))}
+                {features.length === 0 && (
+                  <p className="text-gray-500 text-center py-4">No features</p>
+                )}
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      <Dialog open={isAddFeatureOpen} onOpenChange={setIsAddFeatureOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Feature</DialogTitle>
+          </DialogHeader>
+          <CreateFeature 
+            projectId={id!} 
+            onSuccess={handleFeatureAdded}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -1,0 +1,1 @@
+create ticket when registry gets new feature after a project is created, they should be able to say if they want to add it to their project or not.
