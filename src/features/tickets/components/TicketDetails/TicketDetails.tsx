@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useTicketsStore } from '../../store/tickets.store'
 import type { TicketResponse, TicketStatus } from '../../api/types'
 import { supabase } from '@/lib/supabase'
-import { TicketAuditLog } from '../TicketAuditLog/TicketAuditLog'
+import { TicketDetailsAuditLog } from './TicketDetailsAuditLog'
 
 const statusColors: Record<TicketStatus, string> = {
   open: 'bg-blue-100 text-blue-800',
@@ -35,7 +35,6 @@ export interface TicketDetailsProps {
 export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [showAuditLog, setShowAuditLog] = useState(false)
   
   const {
     selectedTicket,
@@ -240,7 +239,7 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
           <CardTitle className="text-xl">Audit Log</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <TicketAuditLog ticketId={ticketId} />
+          <TicketDetailsAuditLog ticketId={ticketId} />
         </CardContent>
       </Card>
     </div>
