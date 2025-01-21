@@ -19,6 +19,7 @@ interface TicketsState {
   page: number
   limit: number
   filters: ListTicketsRequest
+  currentAuditLogId?: string // Track current audit log request
 }
 
 interface TicketsActions {
@@ -55,6 +56,7 @@ export const useTicketsStore = create<TicketsState & TicketsActions>()(
       page: 1,
       limit: 10,
       filters: {},
+      currentAuditLogId: undefined,
 
       // Fetch actions
       fetchTickets: async (request) => {
@@ -87,9 +89,16 @@ export const useTicketsStore = create<TicketsState & TicketsActions>()(
       },
 
       // Audit log actions
-      fetchAuditLog: async (ticketId) => {
+      fetchAuditLog: async (ticketId?: string) => {
+        const currentState = get()
+        
+        // Prevent duplicate requests for the same ticket
+        if (currentState.currentAuditLogId === ticketId && currentState.auditLogs.length > 0) {
+          return
+        }
+
         try {
-          set({ isLoading: true, error: null })
+          set({ isLoading: true, error: null, currentAuditLogId: ticketId })
           const response = await ticketsApi.getAuditLog(ticketId)
           set({ auditLogs: response.audit_logs })
         } catch (error) {
@@ -99,7 +108,7 @@ export const useTicketsStore = create<TicketsState & TicketsActions>()(
         }
       },
 
-      clearAuditLog: () => set({ auditLogs: [] }),
+      clearAuditLog: () => set({ auditLogs: [], currentAuditLogId: undefined }),
 
       // Mutation actions
       createTicket: async (request) => {

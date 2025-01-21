@@ -33,9 +33,9 @@ export interface TicketDetailsProps {
 }
 
 export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
-  // Move hooks to the top
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [showAuditLog, setShowAuditLog] = useState(false)
   
   const {
     selectedTicket,
@@ -236,11 +236,17 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
       </Card>
 
       <Card className={className}>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-xl">Audit Log</CardTitle>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowAuditLog(!showAuditLog)}
+          >
+            {showAuditLog ? 'Hide' : 'Show'} Audit Log
+          </Button>
         </CardHeader>
         <CardContent>
-          <TicketAuditLog ticketId={ticketId} />
+          {showAuditLog && <TicketAuditLog ticketId={ticketId} />}
         </CardContent>
       </Card>
     </div>
