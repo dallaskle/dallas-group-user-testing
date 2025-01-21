@@ -102,6 +102,8 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
         throw new Error('No authenticated user found')
       }
       await assignTicket(ticket.id, userId)
+      // Refresh ticket data after assignment
+      await fetchTicketById(ticket.id)
     } catch (error) {
       console.error('Failed to assign ticket:', error)
       // You might want to add toast notification here
