@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useTicketsStore } from '../../store/tickets.store'
 import type { TicketResponse, TicketStatus } from '../../api/types'
 import { supabase } from '@/lib/supabase'
+import { TicketAuditLog } from '../TicketAuditLog/TicketAuditLog'
 
 const statusColors: Record<TicketStatus, string> = {
   open: 'bg-blue-100 text-blue-800',
@@ -113,124 +114,135 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
   const isAssignedToCurrentUser = currentUser && assignedToUser?.id === currentUser.id
 
   return (
-    <Card className={className}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-2xl font-bold">{ticket.title}</CardTitle>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">{ticket.type}</Badge>
-          <Badge className={statusColors[ticket.status]} variant="secondary">
-            {ticket.status}
-          </Badge>
-          <Badge className={priorityColors[ticket.priority]} variant="secondary">
-            {ticket.priority}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">Description</h3>
-            <p className="mt-1 text-sm text-gray-900">{ticket.description}</p>
+    <div className="space-y-6">
+      <Card className={className}>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-2xl font-bold">{ticket.title}</CardTitle>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">{ticket.type}</Badge>
+            <Badge className={statusColors[ticket.status]} variant="secondary">
+              {ticket.status}
+            </Badge>
+            <Badge className={priorityColors[ticket.priority]} variant="secondary">
+              {ticket.priority}
+            </Badge>
           </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Description</h3>
+              <p className="mt-1 text-sm text-gray-900">{ticket.description}</p>
+            </div>
 
-          <div className="flex justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">Created By</h3>
-              <p className="mt-1 text-sm text-gray-900">
-                {createdByUser?.name || 'Unknown'}
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">Assigned To</h3>
-              <p className="mt-1 text-sm text-gray-900">
-                {assignedToUser?.name || 'Unassigned'}
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">Created At</h3>
-              <p className="mt-1 text-sm text-gray-900">
-                {new Date(ticket.created_at).toLocaleString()}
-              </p>
-            </div>
-          </div>
-
-          {/* Type-specific details */}
-          {ticket.type === 'testing' && testingDetails && (
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">
-                Testing Details
-              </h3>
-              <div className="mt-1 space-y-2">
-                <p className="text-sm text-gray-900">
-                  Deadline:{' '}
-                  {new Date(testingDetails.deadline).toLocaleString()}
+            <div className="flex justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Created By</h3>
+                <p className="mt-1 text-sm text-gray-900">
+                  {createdByUser?.name || 'Unknown'}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Assigned To</h3>
+                <p className="mt-1 text-sm text-gray-900">
+                  {assignedToUser?.name || 'Unassigned'}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Created At</h3>
+                <p className="mt-1 text-sm text-gray-900">
+                  {new Date(ticket.created_at).toLocaleString()}
                 </p>
               </div>
             </div>
-          )}
 
-          {ticket.type === 'support' && supportDetails && (
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">
-                Support Details
-              </h3>
-              <div className="mt-1 space-y-2">
-                <p className="text-sm text-gray-900">
-                  Category: {supportDetails.category}
-                </p>
-                {supportDetails.ai_response && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">
-                      AI Response
-                    </h4>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {supportDetails.ai_response}
-                    </p>
-                  </div>
-                )}
+            {/* Type-specific details */}
+            {ticket.type === 'testing' && testingDetails && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  Testing Details
+                </h3>
+                <div className="mt-1 space-y-2">
+                  <p className="text-sm text-gray-900">
+                    Deadline:{' '}
+                    {new Date(testingDetails.deadline).toLocaleString()}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Status transitions */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">Actions</h3>
-            <div className="mt-2 flex gap-2">
-              {statusTransitions[ticket.status]?.map((status) => (
-                <Button
-                  key={status}
-                  variant="outline"
-                  onClick={() => handleStatusTransition(status)}
-                >
-                  Move to {status.replace('_', ' ')}
-                </Button>
-              ))}
-              <div className="flex gap-2">
-                {/* Show unassign button if admin or if assigned to current user */}
-                {(isAdmin || isAssignedToCurrentUser) && assignedToUser && (
+            {ticket.type === 'support' && supportDetails && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  Support Details
+                </h3>
+                <div className="mt-1 space-y-2">
+                  <p className="text-sm text-gray-900">
+                    Category: {supportDetails.category}
+                  </p>
+                  {supportDetails.ai_response && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">
+                        AI Response
+                      </h4>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {supportDetails.ai_response}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Status transitions */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Actions</h3>
+              <div className="mt-2 flex gap-2">
+                {statusTransitions[ticket.status]?.map((status) => (
                   <Button
+                    key={status}
                     variant="outline"
-                    onClick={() => handleAssign(null)}
+                    onClick={() => handleStatusTransition(status)}
                   >
-                    Unassign
+                    Move to {status.replace('_', ' ')}
                   </Button>
-                )}
-                {/* Show assign/reassign button if:
-                    - Ticket is unassigned OR
-                    - Admin and ticket is assigned to someone else */}
-                {(!assignedToUser || (isAdmin && !isAssignedToCurrentUser)) && (
-                  <Button
-                    variant="outline"
-                    onClick={() => handleAssign(currentUser?.id ?? null)}
-                  >
-                    {assignedToUser ? 'Reassign to me' : 'Assign to me'}
-                  </Button>
-                )}
+                ))}
+                <div className="flex gap-2">
+                  {/* Show unassign button if admin or if assigned to current user */}
+                  {(isAdmin || isAssignedToCurrentUser) && assignedToUser && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleAssign(null)}
+                    >
+                      Unassign
+                    </Button>
+                  )}
+                  {/* Show assign/reassign button if:
+                      - Ticket is unassigned OR
+                      - Admin and ticket is assigned to someone else */}
+                  {(!assignedToUser || (isAdmin && !isAssignedToCurrentUser)) && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleAssign(currentUser?.id ?? null)}
+                    >
+                      {assignedToUser ? 'Reassign to me' : 'Assign to me'}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="text-xl">Audit Log</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TicketAuditLog ticketId={ticketId} />
+        </CardContent>
+      </Card>
+    </div>
   )
 } 

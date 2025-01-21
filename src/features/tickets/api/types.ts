@@ -124,4 +124,29 @@ export interface ListTicketsResponse {
   total: number
   page: number
   limit: number
+}
+
+export interface TicketAuditLogEntry {
+  id: string
+  ticket_id: string
+  changed_by: string
+  field_name: string
+  old_value: string | null
+  new_value: string | null
+  created_at: string
+  users: {
+    id: string
+    name: string
+    email: string
+  }
+  tickets?: {
+    title: string
+    type: TicketType
+    status: TicketStatus
+    priority: TicketPriority
+  }
+}
+
+export interface TicketAuditLogResponse {
+  audit_logs: TicketAuditLogEntry[]
 } 

@@ -5,6 +5,7 @@ import {
   ListTicketsRequest,
   TicketResponse,
   ListTicketsResponse,
+  TicketAuditLogResponse,
 } from './types'
 
 const FUNCTION_PREFIX = import.meta.env.VITE_SUPABASE_FUNCTION_PREFIX || ''
@@ -166,6 +167,32 @@ export const ticketsApi = {
     if (!response.ok) {
       const error = await response.json()
       throw new Error(error.error || 'Failed to transition ticket')
+    }
+
+    return await response.json()
+  },
+
+  getAuditLog: async (ticketId?: string): Promise<TicketAuditLogResponse> => {
+    const session = await supabase.auth.getSession()
+    if (!session.data.session?.access_token) {
+      throw new Error('No active session')
+    }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-audit-log`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.data.session.access_token}`,
+        },
+        body: JSON.stringify({ ticketId }),
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to get ticket audit log')
     }
 
     return await response.json()

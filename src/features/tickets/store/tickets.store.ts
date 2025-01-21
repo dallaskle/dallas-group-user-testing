@@ -6,11 +6,13 @@ import type {
   CreateTicketRequest,
   UpdateTicketRequest,
   ListTicketsRequest,
+  TicketAuditLogEntry,
 } from '../api/types'
 
 interface TicketsState {
   tickets: TicketResponse[]
   selectedTicket: TicketResponse | null
+  auditLogs: TicketAuditLogEntry[]
   isLoading: boolean
   error: Error | null
   total: number
@@ -24,6 +26,9 @@ interface TicketsActions {
   fetchTickets: (request?: ListTicketsRequest) => Promise<void>
   fetchTicketById: (id: string) => Promise<void>
   
+  // Audit log actions
+  fetchAuditLog: (ticketId?: string) => Promise<void>
+  
   // Mutation actions
   createTicket: (request: CreateTicketRequest) => Promise<void>
   updateTicket: (request: UpdateTicketRequest) => Promise<void>
@@ -34,6 +39,7 @@ interface TicketsActions {
   setSelectedTicket: (ticket: TicketResponse | null) => void
   setFilters: (filters: Partial<ListTicketsRequest>) => void
   clearError: () => void
+  clearAuditLog: () => void
 }
 
 export const useTicketsStore = create<TicketsState & TicketsActions>()(
@@ -42,6 +48,7 @@ export const useTicketsStore = create<TicketsState & TicketsActions>()(
       // Initial state
       tickets: [],
       selectedTicket: null,
+      auditLogs: [],
       isLoading: false,
       error: null,
       total: 0,
@@ -78,6 +85,21 @@ export const useTicketsStore = create<TicketsState & TicketsActions>()(
           set({ isLoading: false })
         }
       },
+
+      // Audit log actions
+      fetchAuditLog: async (ticketId) => {
+        try {
+          set({ isLoading: true, error: null })
+          const response = await ticketsApi.getAuditLog(ticketId)
+          set({ auditLogs: response.audit_logs })
+        } catch (error) {
+          set({ error: error as Error })
+        } finally {
+          set({ isLoading: false })
+        }
+      },
+
+      clearAuditLog: () => set({ auditLogs: [] }),
 
       // Mutation actions
       createTicket: async (request) => {
