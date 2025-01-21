@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useToast } from '@/components/ui/use-toast'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { createProjectRegistry } from '../api/createProjectRegistry'
 
 const projectRegistrySchema = z.object({
@@ -26,7 +26,11 @@ const projectRegistrySchema = z.object({
 
 type ProjectRegistryForm = z.infer<typeof projectRegistrySchema>
 
-export const CreateProjectRegistry = () => {
+interface CreateProjectRegistryProps {
+  onSuccess?: () => void
+}
+
+export const CreateProjectRegistry = ({ onSuccess }: CreateProjectRegistryProps) => {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
@@ -47,6 +51,7 @@ export const CreateProjectRegistry = () => {
         description: 'Project registry created successfully',
       })
       form.reset()
+      onSuccess?.()
     } catch (error) {
       toast({
         title: 'Error',

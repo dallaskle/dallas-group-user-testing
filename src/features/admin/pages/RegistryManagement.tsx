@@ -23,7 +23,7 @@ export const RegistryManagement = () => {
         </TabsContent>
         
         <TabsContent value="feature">
-          <CreateFeatureRegistry />
+          <CreateFeatureRegistry projectRegistryId={''} />
         </TabsContent>
       </Tabs>
     </div>
