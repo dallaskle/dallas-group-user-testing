@@ -52,7 +52,7 @@ export const useRegistriesStore = create<RegistriesState>()(
       setProjectRegistries: (registries) => set({ projectRegistries: registries }),
       addProjectRegistry: (registry) =>
         set((state) => ({
-          projectRegistries: [...state.projectRegistries, registry],
+          projectRegistries: [registry, ...state.projectRegistries],
         })),
       updateProjectRegistry: (id, updates) =>
         set((state) => ({
