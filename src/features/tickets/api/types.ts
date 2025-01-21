@@ -1,18 +1,53 @@
-import { Database } from '@/shared/types/database.types'
+// Base types
+type Tables = {
+  tickets: {
+    Row: {
+      id: string
+      type: TicketType
+      title: string
+      description: string
+      status: TicketStatus
+      priority: TicketPriority
+      assigned_to: string | null
+      created_by: string
+      created_at: string
+      updated_at: string
+    }
+  }
+  testing_tickets: {
+    Row: {
+      id: string
+      feature_id: string
+      validation_id: string | null
+      deadline: string
+      created_at: string
+      updated_at: string
+    }
+  }
+  support_tickets: {
+    Row: {
+      id: string
+      category: SupportCategory
+      project_id: string | null
+      feature_id: string | null
+      ai_response: string | null
+      resolution_notes: string | null
+      created_at: string
+      updated_at: string
+    }
+  }
+}
 
-type Tables = Database['public']['Tables']
-type Enums = Database['public']['Enums']
+// Enums
+export type TicketType = 'testing' | 'support' | 'question'
+export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
+export type TicketPriority = 'low' | 'medium' | 'high'
+export type SupportCategory = 'project' | 'feature' | 'testing' | 'other'
 
-// Base ticket types from database
+// Base ticket types
 export type Ticket = Tables['tickets']['Row']
 export type TestingTicket = Tables['testing_tickets']['Row']
 export type SupportTicket = Tables['support_tickets']['Row']
-
-// Enums
-export type TicketType = Enums['ticket_type']
-export type TicketStatus = Enums['ticket_status']
-export type TicketPriority = Enums['ticket_priority']
-export type SupportCategory = Enums['support_category']
 
 // Request types
 export interface CreateTicketRequest {
@@ -48,12 +83,40 @@ export interface ListTicketsRequest {
 }
 
 // Response types
-export interface TicketResponse {
-  ticket: Ticket
+export interface TicketData {
+  ticket: {
+    id: string
+    type: TicketType
+    title: string
+    description: string
+    status: TicketStatus
+    priority: TicketPriority
+    assigned_to: string | null
+    created_by: string
+    created_at: string
+    updated_at: string
+  }
   testingDetails?: TestingTicket
   supportDetails?: SupportTicket
-  assignedToUser?: Tables['users']['Row']
-  createdByUser?: Tables['users']['Row']
+  assignedToUser?: {
+    id: string
+    name: string
+    email: string
+    is_student: boolean
+    is_admin: boolean
+  }
+  createdByUser?: {
+    id: string
+    name: string
+    email: string
+    is_student: boolean
+    is_admin: boolean
+  }
+}
+
+export interface TicketResponse {
+  ticket_data: TicketData
+  total_count: number
 }
 
 export interface ListTicketsResponse {

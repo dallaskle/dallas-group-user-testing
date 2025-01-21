@@ -101,10 +101,10 @@ export const useTicketsStore = create<TicketsState & TicketsActions>()(
           const updatedTicket = await ticketsApi.update(request)
           set((state) => ({
             tickets: state.tickets.map((t) =>
-              t.ticket.id === updatedTicket.ticket.id ? updatedTicket : t
+              t.ticket_data.ticket.id === updatedTicket.ticket_data.ticket.id ? updatedTicket : t
             ),
             selectedTicket:
-              state.selectedTicket?.ticket.id === updatedTicket.ticket.id
+              state.selectedTicket?.ticket_data.ticket.id === updatedTicket.ticket_data.ticket.id
                 ? updatedTicket
                 : state.selectedTicket,
           }))
@@ -121,10 +121,10 @@ export const useTicketsStore = create<TicketsState & TicketsActions>()(
           const updatedTicket = await ticketsApi.assign(id, assignedTo)
           set((state) => ({
             tickets: state.tickets.map((t) =>
-              t.ticket.id === updatedTicket.ticket.id ? updatedTicket : t
+              t.ticket_data.ticket.id === updatedTicket.ticket_data.ticket.id ? updatedTicket : t
             ),
             selectedTicket:
-              state.selectedTicket?.ticket.id === updatedTicket.ticket.id
+              state.selectedTicket?.ticket_data.ticket.id === updatedTicket.ticket_data.ticket.id
                 ? updatedTicket
                 : state.selectedTicket,
           }))
@@ -141,10 +141,10 @@ export const useTicketsStore = create<TicketsState & TicketsActions>()(
           const updatedTicket = await ticketsApi.transition(id, status)
           set((state) => ({
             tickets: state.tickets.map((t) =>
-              t.ticket.id === updatedTicket.ticket.id ? updatedTicket : t
+              t.ticket_data.ticket.id === updatedTicket.ticket_data.ticket.id ? updatedTicket : t
             ),
             selectedTicket:
-              state.selectedTicket?.ticket.id === updatedTicket.ticket.id
+              state.selectedTicket?.ticket_data.ticket.id === updatedTicket.ticket_data.ticket.id
                 ? updatedTicket
                 : state.selectedTicket,
           }))

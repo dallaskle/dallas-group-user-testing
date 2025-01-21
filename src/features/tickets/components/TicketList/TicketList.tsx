@@ -10,16 +10,16 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { useTicketsStore } from '../../store/tickets.store'
-import type { TicketResponse } from '../../api/types'
+import type { TicketData, TicketStatus, TicketPriority } from '../../api/types'
 
-const statusColors = {
+const statusColors: Record<TicketStatus, string> = {
   open: 'bg-blue-100 text-blue-800',
   in_progress: 'bg-yellow-100 text-yellow-800',
   resolved: 'bg-green-100 text-green-800',
   closed: 'bg-gray-100 text-gray-800',
 }
 
-const priorityColors = {
+const priorityColors: Record<TicketPriority, string> = {
   low: 'bg-gray-100 text-gray-800',
   medium: 'bg-yellow-100 text-yellow-800',
   high: 'bg-red-100 text-red-800',
@@ -37,8 +37,8 @@ export function TicketList({ className }: TicketListProps) {
     fetchTickets()
   }, [fetchTickets])
 
-  const handleRowClick = (ticket: TicketResponse) => {
-    navigate(`/tickets/${ticket.ticket.id}`)
+  const handleRowClick = (ticketData: TicketData) => {
+    navigate(`/tickets/${ticketData.ticket.id}`)
   }
 
   if (isLoading) {
@@ -63,13 +63,14 @@ export function TicketList({ className }: TicketListProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tickets.map((ticketResponse) => {
-            const { ticket } = ticketResponse
+          {tickets?.map((item) => {
+            const ticketData = item.ticket_data
+            const { ticket, assignedToUser } = ticketData
             return (
               <TableRow
                 key={ticket.id}
                 className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleRowClick(ticketResponse)}
+                onClick={() => handleRowClick(ticketData)}
               >
                 <TableCell className="font-medium">{ticket.title}</TableCell>
                 <TableCell>
@@ -92,7 +93,7 @@ export function TicketList({ className }: TicketListProps) {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {ticketResponse.assignedToUser?.name || 'Unassigned'}
+                  {assignedToUser?.name || 'Unassigned'}
                 </TableCell>
                 <TableCell>
                   {new Date(ticket.created_at).toLocaleDateString()}
@@ -100,7 +101,7 @@ export function TicketList({ className }: TicketListProps) {
               </TableRow>
             )
           })}
-          {tickets.length === 0 && (
+          {(!tickets || tickets.length === 0) && (
             <TableRow>
               <TableCell colSpan={6} className="text-center text-gray-500">
                 No tickets found
