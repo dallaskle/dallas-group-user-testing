@@ -65,24 +65,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Subscribe to auth changes
         const { data: { subscription } } = authService.subscribeToAuthChanges(
           async (event, session) => {
+            console.log('Auth event:', event, 'Session:', session)
+            
             if (!mounted) return
 
             if (event === 'SIGNED_IN' && session) {
-              setSession({
-                access_token: session.access_token,
-                refresh_token: session.refresh_token,
-                expires_at: session.expires_at ?? null
-              })
-
-              // Fetch user data from the database
-              const { data: userData, error: userError } = await authService.getUserData(session.user.id)
-              if (!userError && userData) {
-                setUser({
-                  ...session.user,
-                  ...userData
-                } as User & Tables<'users'>)
-                navigate('/dashboard')
-              }
+              console.log('Auth state changed: SIGNED_IN')
+              // The login method already handles setting the session and user data
+              // Just navigate to dashboard if we're not already there
+              navigate('/dashboard')
             }
 
             if (event === 'SIGNED_OUT') {

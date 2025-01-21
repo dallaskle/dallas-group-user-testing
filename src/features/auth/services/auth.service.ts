@@ -23,19 +23,27 @@ interface RegisterData {
 
 class AuthService {
   async getUserData(userId: string) {
-    return await supabase
+    console.log('🔍 Fetching user data for ID:', userId)
+    const response = await supabase
       .from('users')
       .select('*')
       .eq('id', userId)
       .single()
+    console.log('📦 User data response:', response)
+    return response
   }
 
   private async setUserData(session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']>) {
+    console.log('🔄 Setting user data for session:', session)
     try {
       const { data: userData, error: userError } = await this.getUserData(session.user.id)
+      
+      if (userError) {
+        console.error('❌ Error fetching user data:', userError)
+        throw userError
+      }
 
-      if (userError) throw userError
-
+      console.log('✅ User data fetched successfully:', userData)
       const store = useAuthStore.getState()
       store.setSession({
         access_token: session.access_token,
@@ -50,6 +58,7 @@ class AuthService {
 
       return true
     } catch (error) {
+      console.error('❌ Error in setUserData:', error)
       const store = useAuthStore.getState()
       store.setError(error instanceof Error ? error.message : 'Failed to fetch user data')
       store.logout()
@@ -58,6 +67,7 @@ class AuthService {
   }
 
   async login(data: LoginData): Promise<{ data?: LoginResponse['data'], error?: string, isVerificationError?: boolean }> {
+    console.log('🔑 Login attempt for:', data.email)
     const store = useAuthStore.getState()
     try {
       store.setLoading(true)
@@ -65,14 +75,17 @@ class AuthService {
       const result = await login(data)
 
       if ('error' in result) {
+        console.warn('⚠️ Login error:', result)
         if (result.isVerificationError) {
           return { error: 'Please verify your email first', isVerificationError: true }
         }
         throw new Error(result.error)
       }
 
+      console.log('✅ Login successful:', result.data)
+
       if (!result.data?.session) {
-        throw new Error('Invalid response from server')
+        throw new Error('No session in login response')
       }
 
       // Set the session in Supabase client
@@ -81,8 +94,29 @@ class AuthService {
         refresh_token: result.data.session.refresh_token
       })
 
+      // Fetch and set user data
+      const { data: userData, error: userError } = await this.getUserData(result.data.session.user.id)
+      console.log('📦 User data after login:', { userData, userError })
+
+      if (userError) {
+        throw new Error('Failed to fetch user data')
+      }
+
+      // Set complete user data in store
+      store.setSession({
+        access_token: result.data.session.access_token,
+        refresh_token: result.data.session.refresh_token,
+        expires_at: result.data.session.expires_at ?? null
+      })
+
+      store.setUser({
+        ...result.data.session.user,
+        ...userData
+      } as User & Tables<'users'>)
+
       return { data: result.data }
     } catch (error) {
+      console.error('❌ Login error:', error)
       store.setError(error instanceof Error ? error.message : 'Failed to login')
       return { error: error instanceof Error ? error.message : 'Failed to login' }
     } finally {
@@ -91,6 +125,7 @@ class AuthService {
   }
 
   async register(data: RegisterData): Promise<{ data?: RegisterResponse['data'], error?: string }> {
+    console.log('📝 Registration attempt for:', data.email)
     const store = useAuthStore.getState()
     try {
       store.setLoading(true)
@@ -141,6 +176,7 @@ class AuthService {
   }
 
   async verifyEmail(accessToken: string, refreshToken: string) {
+    console.log('✉️ Verifying email with tokens')
     const store = useAuthStore.getState()
     try {
       store.setLoading(true)
@@ -159,36 +195,14 @@ class AuthService {
       const { data: { session: currentSession } } = await supabase.auth.getSession()
 
       if (!currentSession) {
+        console.error('❌ No session after verification')
         throw new Error('Failed to establish session after verification')
       }
 
-      // Create user record if it doesn't exist
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', currentSession.user.id)
-        .single()
-
-      if (!existingUser) {
-        const { error: createError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: currentSession.user.id,
-              email: currentSession.user.email,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              email_verified: true
-            }
-          ])
-
-        if (createError) {
-          throw new Error('Failed to create user record: ' + createError.message)
-        }
-      }
-
+      console.log('✅ Email verification complete')
       return { data: currentSession }
     } catch (error) {
+      console.error('❌ Email verification error:', error)
       store.setError(error instanceof Error ? error.message : 'Failed to verify email')
       return { error: error instanceof Error ? error.message : 'Failed to verify email' }
     } finally {
@@ -212,15 +226,19 @@ class AuthService {
   }
 
   async initializeAuth() {
+    console.log('🚀 Initializing auth')
     const store = useAuthStore.getState()
     try {
       // Initialize Supabase auth and get session
       await supabase.auth.initialize()
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
+      console.log('📦 Initial session:', session)
+      
       if (sessionError) throw sessionError
 
       if (session) {
+        console.log('✅ Session found, setting user data')
         // Set session in store first
         store.setSession({
           access_token: session.access_token,
@@ -239,12 +257,13 @@ class AuthService {
           } as User & Tables<'users'>)
         }
       } else {
+        console.log('ℹ️ No session found, clearing store')
         // No session, clear store
         store.setSession(null)
         store.setUser(null)
       }
     } catch (error) {
-      console.error('Auth initialization error:', error)
+      console.error('❌ Auth initialization error:', error)
       store.setError(error instanceof Error ? error.message : 'Failed to initialize auth')
       store.setSession(null)
       store.setUser(null)

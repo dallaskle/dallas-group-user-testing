@@ -36,14 +36,18 @@ export const LoginForm = () => {
 
       if (error) {
         toast.error(error)
+        setIsLoading(false)
         return
       }
 
+      setTimeout(() => {
+        setIsLoading(false)
+      }, 5000)
+      
       toast.success('Login successful!')
     } catch (error) {
       console.error('Login error:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to login')
-    } finally {
       setIsLoading(false)
     }
   }
