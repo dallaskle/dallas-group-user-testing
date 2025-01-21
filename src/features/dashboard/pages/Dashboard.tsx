@@ -40,7 +40,7 @@ const Dashboard = () => {
                 <h2 className="text-lg font-medium text-gray-900">Your Role</h2>
                 <p className="mt-1 text-sm text-gray-500">
                   {user?.is_admin && 'Administrator'}
-                {user?.is_student && 'Student'}
+                  {user?.is_student && 'Student'}
                   {user?.is_tester && 'Tester'}
                 </p>
               </div>
@@ -54,28 +54,58 @@ const Dashboard = () => {
             {/* Role-specific content */}
             {user?.is_admin && (
               <div className="bg-blue-50 p-4 rounded-md">
-                <h2 className="text-lg font-medium text-blue-900">Admin Dashboard</h2>
-                <p className="mt-1 text-sm text-blue-700">
-                  You have access to all administrative features.
-                </p>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-medium text-blue-900">Admin Dashboard</h2>
+                    <p className="mt-1 text-sm text-blue-700">
+                      You have access to all administrative features.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => navigate('/admin')}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Go to Admin Panel
+                  </button>
+                </div>
               </div>
             )}
 
             {user?.is_student && (
               <div className="bg-green-50 p-4 rounded-md">
-                <h2 className="text-lg font-medium text-green-900">Student Dashboard</h2>
-                <p className="mt-1 text-sm text-green-700">
-                  You can manage your projects and submit features for testing.
-                </p>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-medium text-green-900">Student Dashboard</h2>
+                    <p className="mt-1 text-sm text-green-700">
+                      You can manage your projects and submit features for testing.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => navigate('/projects')}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  >
+                    View Projects
+                  </button>
+                </div>
               </div>
             )}
 
             {user?.is_tester && (
               <div className="bg-purple-50 p-4 rounded-md">
-                <h2 className="text-lg font-medium text-purple-900">Tester Dashboard</h2>
-                <p className="mt-1 text-sm text-purple-700">
-                  You can view and validate features assigned to you.
-                </p>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-medium text-purple-900">Tester Dashboard</h2>
+                    <p className="mt-1 text-sm text-purple-700">
+                      You can view and validate features assigned to you.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => navigate('/testing')}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                  >
+                    Start Testing
+                  </button>
+                </div>
               </div>
             )}
           </div>

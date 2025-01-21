@@ -11,6 +11,7 @@ const Register = React.lazy(() => import('./features/auth/pages/Register'))
 const VerifyEmail = React.lazy(() => import('./features/auth/pages/VerifyEmail'))
 const Dashboard = React.lazy(() => import('./features/dashboard/pages/Dashboard'))
 const Unauthorized = React.lazy(() => import('./shared/components/Unauthorized'))
+const AdminPage = React.lazy(() => import('./features/admin/pages/AdminPage'))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -62,8 +63,7 @@ function App() {
               {/* Admin routes */}
               <Route path="/admin/*" element={
                 <AuthGuard allowedRoles={['admin']}>
-                  {/* Admin routes will be added here */}
-                  <div>Admin Area</div>
+                  <AdminPage />
                 </AuthGuard>
               } />
 
