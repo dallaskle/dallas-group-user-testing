@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { X } from 'lucide-react'
+import { X, UserCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -9,9 +9,21 @@ import { cn } from '@/lib/utils'
 import { AddValidation } from './AddValidation'
 import { AddTesterDialog } from './AddTesterDialog'
 import { validationsApi } from '../api/validations.api'
+import { supabase } from '@/lib/supabase'
 
 type Feature = Database['public']['Tables']['features']['Row']
 type Validation = Database['public']['Tables']['validations']['Row']
+type TestingTicket = Database['public']['Tables']['testing_tickets']['Row'] & {
+  tickets: {
+    assigned_to: string
+    title: string
+    status: string
+    assigned_to_user: {
+      name: string
+      email: string
+    } | null
+  }
+}
 
 interface FeatureDetailsPanelProps {
   feature: Feature | null
@@ -25,6 +37,7 @@ export const FeatureDetailsPanel = ({
   onClose
 }: FeatureDetailsPanelProps) => {
   const [validations, setValidations] = useState<Validation[]>([])
+  const [testingTickets, setTestingTickets] = useState<TestingTicket[]>([])
   const [isAddValidationOpen, setIsAddValidationOpen] = useState(false)
   const [isAddTesterOpen, setIsAddTesterOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -32,6 +45,7 @@ export const FeatureDetailsPanel = ({
   useEffect(() => {
     if (feature) {
       loadValidations()
+      loadTestingTickets()
     }
   }, [feature])
 
@@ -49,6 +63,34 @@ export const FeatureDetailsPanel = ({
     }
   }
 
+  const loadTestingTickets = async () => {
+    if (!feature) return
+
+    try {
+      const { data, error } = await supabase
+        .from('testing_tickets')
+        .select(`
+          *,
+          tickets (
+            assigned_to,
+            title,
+            status,
+            assigned_to_user:users!tickets_assigned_to_fkey (
+              name,
+              email
+            )
+          )
+        `)
+        .eq('feature_id', feature.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setTestingTickets(data || [])
+    } catch (error) {
+      console.error('Failed to load testing tickets:', error)
+    }
+  }
+
   const handleValidationAdded = () => {
     setIsAddValidationOpen(false)
     loadValidations()
@@ -56,6 +98,7 @@ export const FeatureDetailsPanel = ({
 
   const handleTesterAdded = () => {
     setIsAddTesterOpen(false)
+    loadTestingTickets()
   }
 
   if (!feature) return null
@@ -171,6 +214,45 @@ export const FeatureDetailsPanel = ({
           >
             Add Tester
           </Button>
+        </div>
+
+        {/* Assigned Testers */}
+        <div>
+          <h3 className="text-sm font-medium mb-3">Assigned Testers</h3>
+          <div className="space-y-2">
+            {testingTickets.length > 0 ? (
+              testingTickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  className="flex items-center justify-between p-3 rounded-lg border"
+                >
+                  <div className="flex items-center gap-2">
+                    <UserCircle className="h-5 w-5 text-gray-500" />
+                    <div>
+                      <p className="text-sm font-medium">
+                        {ticket.tickets.assigned_to_user?.name || 'Unknown'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Due: {new Date(ticket.deadline).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={
+                    ticket.tickets.status === 'open' ? 'secondary' :
+                    ticket.tickets.status === 'in_progress' ? 'default' :
+                    ticket.tickets.status === 'resolved' ? 'success' :
+                    'outline'
+                  }>
+                    {ticket.tickets.status.replace('_', ' ')}
+                  </Badge>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No testers assigned yet
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
