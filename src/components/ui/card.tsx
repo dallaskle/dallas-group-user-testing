@@ -1,24 +1,47 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { cva, type VariantProps } from "class-variance-authority";
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'elevated';
-  hover?: boolean;
+const cardVariants = cva(
+  "rounded-lg border transition-natural focus-within:ring-2 focus-within:ring-forest focus-within:ring-opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-pearl dark:bg-charcoal border-clay/20 dark:border-clay/10 shadow-natural",
+        elevated: "bg-pearl dark:bg-charcoal border-clay/20 dark:border-clay/10 shadow-elevated",
+        subtle: "bg-clay/5 dark:bg-clay/10 border-clay/10 dark:border-clay/5",
+        outline: "border-forest dark:border-forest-light bg-transparent",
+        glass: "bg-pearl/80 dark:bg-charcoal/80 backdrop-blur-sm border-clay/10",
+      },
+      hover: {
+        true: "hover-lift",
+        false: "",
+      }
+    },
+    defaultVariants: {
+      variant: "default",
+      hover: true,
+    },
+  }
+);
+
+interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {
+  asChild?: boolean;
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', hover = true, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        "rounded-lg border bg-pearl dark:bg-charcoal text-foreground transition-natural",
-        variant === 'elevated' ? 'shadow-elevated' : 'shadow-natural',
-        hover && 'hover-lift',
-        className
-      )}
-      {...props}
-    />
-  )
+  ({ className, variant, hover, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? React.Fragment : "div";
+    return (
+      <Comp
+        ref={ref}
+        className={cn(cardVariants({ variant, hover }), className)}
+        {...props}
+      />
+    );
+  }
 );
 Card.displayName = "Card";
 
@@ -28,7 +51,10 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-natural-sm p-natural-lg", className)}
+    className={cn(
+      "flex flex-col space-y-natural-sm p-natural-lg border-b border-clay/10 dark:border-clay/5",
+      className
+    )}
     {...props}
   />
 ));
@@ -55,7 +81,10 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-slate dark:text-slate-light", className)}
+    className={cn(
+      "text-sm text-slate dark:text-slate-light",
+      className
+    )}
     {...props}
   />
 ));
@@ -95,4 +124,5 @@ export {
   CardTitle,
   CardDescription,
   CardContent,
+  type CardProps,
 }; 

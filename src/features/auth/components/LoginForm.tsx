@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 
 const loginSchema = z.object({
@@ -49,95 +49,115 @@ export const LoginForm = () => {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Welcome Back</CardTitle>
-        <CardDescription>Sign in to your account to continue</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-natural-lg" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-natural-md">
-            <div>
-              <label 
-                htmlFor="email" 
-                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
-              >
-                Email address
-              </label>
-              <input
-                {...register('email')}
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
-                         bg-pearl dark:bg-charcoal 
-                         text-slate dark:text-slate-light
-                         placeholder:text-stone/50 dark:placeholder:text-stone-light/50
-                         focus-natural"
-                placeholder="Enter your email"
-              />
-              {errors.email && (
-                <p className="mt-2 text-sm text-destructive">{errors.email.message}</p>
-              )}
-            </div>
-            <div>
-              <label 
-                htmlFor="password" 
-                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
-              >
-                Password
-              </label>
-              <input
-                {...register('password')}
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
-                         bg-pearl dark:bg-charcoal 
-                         text-slate dark:text-slate-light
-                         placeholder:text-stone/50 dark:placeholder:text-stone-light/50
-                         focus-natural"
-                placeholder="Enter your password"
-              />
-              {errors.password && (
-                <p className="mt-2 text-sm text-destructive">{errors.password.message}</p>
-              )}
-            </div>
-          </div>
+    <div className="w-full max-w-md mx-auto space-y-6">
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-2 px-natural-md rounded-md 
-                     bg-forest hover:bg-forest-light dark:bg-forest-light dark:hover:bg-forest
-                     text-pearl font-medium
-                     transition-natural focus-natural
-                     disabled:opacity-50 disabled:cursor-not-allowed"
+      <Card className="w-full bg-white dark:bg-charcoal shadow-lg shadow-slate-200/50 dark:shadow-none border-none">
+        <CardContent className="p-8">
+          <form 
+            className="space-y-5" 
+            onSubmit={handleSubmit(onSubmit)}
+            aria-label="Login form"
           >
-            {isLoading ? (
-              <div className="flex items-center justify-center space-x-2">
-                <Progress value={100} className="w-4 h-4" />
-                <span>Signing in...</span>
+            <div className="space-y-4">
+              <div>
+                <label 
+                  htmlFor="email" 
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                >
+                  Email address
+                </label>
+                <input
+                  {...register('email')}
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  aria-invalid={errors.email ? "true" : "false"}
+                  aria-describedby={errors.email ? "email-error" : undefined}
+                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                           bg-pearl dark:bg-charcoal 
+                           text-slate-900 dark:text-slate-100
+                           placeholder:text-stone/50 dark:placeholder:text-stone-light/50
+                           focus-natural transition-natural
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+                  placeholder="Enter your email"
+                  disabled={isLoading}
+                />
+                {errors.email && (
+                  <p id="email-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
-            ) : (
-              'Sign in'
-            )}
-          </button>
 
-          <div className="flex items-center justify-between pt-natural-md">
-            <Link
-              to="/register"
-              className="text-sm font-medium text-copper hover:text-copper-light 
-                       dark:text-copper-light dark:hover:text-copper
-                       transition-natural focus-natural"
+              <div>
+                <label 
+                  htmlFor="password" 
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                >
+                  Password
+                </label>
+                <input
+                  {...register('password')}
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  aria-invalid={errors.password ? "true" : "false"}
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                           bg-pearl dark:bg-charcoal 
+                           text-slate-900 dark:text-slate-100
+                           placeholder:text-stone/50 dark:placeholder:text-stone-light/50
+                           focus-natural transition-natural
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+                  placeholder="Enter your password"
+                  disabled={isLoading}
+                />
+                {errors.password && (
+                  <p id="password-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              aria-label={isLoading ? "Signing in..." : "Sign in"}
+              className="w-full h-12 rounded-md 
+                       bg-forest hover:bg-forest-light dark:bg-forest-light dark:hover:bg-forest
+                       text-pearl font-medium text-base
+                       transition-natural focus-natural
+                       disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Don't have an account? Sign up
-            </Link>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+              {isLoading ? (
+                <div className="flex items-center justify-center space-x-2" role="status">
+                  <Progress value={100} size="sm" variant="accent" animated className="w-4 h-4" />
+                  <span>Signing in...</span>
+                </div>
+              ) : (
+                'Sign in'
+              )}
+            </button>
+
+            <div className="flex items-center justify-center pt-1">
+              <div className="text-sm text-stone dark:text-stone-light">
+                Don't have an account?{' '}
+                <Link
+                  to="/register"
+                  className="font-medium text-copper hover:text-copper-light 
+                           dark:text-copper-light dark:hover:text-copper
+                           transition-natural focus-natural"
+                >
+                  Sign up
+                </Link>
+              </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   )
 } 

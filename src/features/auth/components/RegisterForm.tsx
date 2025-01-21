@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 
 const registerSchema = z.object({
@@ -60,171 +60,204 @@ export const RegisterForm = () => {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Create Account</CardTitle>
-        <CardDescription>Sign up for a new account to get started</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-natural-lg" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-natural-md">
-            <div>
-              <label 
-                htmlFor="name" 
-                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
-              >
-                Full Name
-              </label>
-              <input
-                {...register('name')}
-                id="name"
-                type="text"
-                autoComplete="name"
-                required
-                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
-                         bg-pearl dark:bg-charcoal 
-                         text-slate dark:text-slate-light
-                         placeholder:text-stone/50 dark:placeholder:text-stone-light/50
-                         focus-natural"
-                placeholder="Enter your full name"
-              />
-              {errors.name && (
-                <p className="mt-2 text-sm text-destructive">{errors.name.message}</p>
-              )}
-            </div>
+    <div className="w-full max-w-md mx-auto space-y-6">
 
-            <div>
-              <label 
-                htmlFor="email" 
-                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
-              >
-                Email address
-              </label>
-              <input
-                {...register('email')}
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
-                         bg-pearl dark:bg-charcoal 
-                         text-slate dark:text-slate-light
-                         placeholder:text-stone/50 dark:placeholder:text-stone-light/50
-                         focus-natural"
-                placeholder="Enter your email"
-              />
-              {errors.email && (
-                <p className="mt-2 text-sm text-destructive">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label 
-                htmlFor="password" 
-                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
-              >
-                Password
-              </label>
-              <input
-                {...register('password')}
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
-                         bg-pearl dark:bg-charcoal 
-                         text-slate dark:text-slate-light
-                         placeholder:text-stone/50 dark:placeholder:text-stone-light/50
-                         focus-natural"
-                placeholder="Create a password"
-              />
-              {errors.password && (
-                <p className="mt-2 text-sm text-destructive">{errors.password.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label 
-                htmlFor="confirmPassword" 
-                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
-              >
-                Confirm Password
-              </label>
-              <input
-                {...register('confirmPassword')}
-                id="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
-                         bg-pearl dark:bg-charcoal 
-                         text-slate dark:text-slate-light
-                         placeholder:text-stone/50 dark:placeholder:text-stone-light/50
-                         focus-natural"
-                placeholder="Confirm your password"
-              />
-              {errors.confirmPassword && (
-                <p className="mt-2 text-sm text-destructive">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label 
-                htmlFor="role" 
-                className="block text-sm font-medium text-slate dark:text-slate-light mb-2"
-              >
-                Role
-              </label>
-              <select
-                {...register('role')}
-                id="role"
-                required
-                className="w-full px-natural-md py-2 rounded-md border border-clay/20 
-                         bg-pearl dark:bg-charcoal 
-                         text-slate dark:text-slate-light
-                         focus-natural"
-              >
-                <option value="">Select a role</option>
-                <option value="student">Student</option>
-                <option value="tester">Tester</option>
-              </select>
-              {errors.role && (
-                <p className="mt-2 text-sm text-destructive">{errors.role.message}</p>
-              )}
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-2 px-natural-md rounded-md 
-                     bg-forest hover:bg-forest-light dark:bg-forest-light dark:hover:bg-forest
-                     text-pearl font-medium
-                     transition-natural focus-natural
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center space-x-2">
-                <Progress value={100} className="w-4 h-4" />
-                <span>Creating account...</span>
+      <Card className="w-full bg-white dark:bg-charcoal shadow-lg shadow-slate-200/50 dark:shadow-none border-none">
+        <CardContent className="p-8">
+          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            <div className="space-y-4">
+              <div>
+                <label 
+                  htmlFor="name" 
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                >
+                  Full Name
+                </label>
+                <input
+                  {...register('name')}
+                  id="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  aria-invalid={errors.name ? "true" : "false"}
+                  aria-describedby={errors.name ? "name-error" : undefined}
+                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                           bg-pearl dark:bg-charcoal 
+                           text-slate-900 dark:text-slate-100
+                           placeholder:text-stone/50 dark:placeholder:text-stone-light/50
+                           focus-natural transition-natural
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+                  placeholder="Enter your full name"
+                  disabled={isLoading}
+                />
+                {errors.name && (
+                  <p id="name-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
-            ) : (
-              'Create account'
-            )}
-          </button>
 
-          <div className="flex items-center justify-between pt-natural-md">
-            <Link
-              to="/login"
-              className="text-sm font-medium text-copper hover:text-copper-light 
-                       dark:text-copper-light dark:hover:text-copper
-                       transition-natural focus-natural"
+              <div>
+                <label 
+                  htmlFor="email" 
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                >
+                  Email address
+                </label>
+                <input
+                  {...register('email')}
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  aria-invalid={errors.email ? "true" : "false"}
+                  aria-describedby={errors.email ? "email-error" : undefined}
+                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                           bg-pearl dark:bg-charcoal 
+                           text-slate-900 dark:text-slate-100
+                           placeholder:text-stone/50 dark:placeholder:text-stone-light/50
+                           focus-natural transition-natural
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+                  placeholder="Enter your email"
+                  disabled={isLoading}
+                />
+                {errors.email && (
+                  <p id="email-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label 
+                  htmlFor="password" 
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                >
+                  Password
+                </label>
+                <input
+                  {...register('password')}
+                  id="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  aria-invalid={errors.password ? "true" : "false"}
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                           bg-pearl dark:bg-charcoal 
+                           text-slate-900 dark:text-slate-100
+                           placeholder:text-stone/50 dark:placeholder:text-stone-light/50
+                           focus-natural transition-natural
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+                  placeholder="Create a password"
+                  disabled={isLoading}
+                />
+                {errors.password && (
+                  <p id="password-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label 
+                  htmlFor="confirmPassword" 
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                >
+                  Confirm Password
+                </label>
+                <input
+                  {...register('confirmPassword')}
+                  id="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  aria-invalid={errors.confirmPassword ? "true" : "false"}
+                  aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
+                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                           bg-pearl dark:bg-charcoal 
+                           text-slate-900 dark:text-slate-100
+                           placeholder:text-stone/50 dark:placeholder:text-stone-light/50
+                           focus-natural transition-natural
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+                  placeholder="Confirm your password"
+                  disabled={isLoading}
+                />
+                {errors.confirmPassword && (
+                  <p id="confirm-password-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label 
+                  htmlFor="role" 
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                >
+                  Role
+                </label>
+                <select
+                  {...register('role')}
+                  id="role"
+                  required
+                  aria-invalid={errors.role ? "true" : "false"}
+                  aria-describedby={errors.role ? "role-error" : undefined}
+                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                           bg-pearl dark:bg-charcoal 
+                           text-slate-900 dark:text-slate-100
+                           focus-natural transition-natural
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading}
+                >
+                  <option value="">Select a role</option>
+                  <option value="student">Student</option>
+                  <option value="tester">Tester</option>
+                </select>
+                {errors.role && (
+                  <p id="role-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                    {errors.role.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              aria-label={isLoading ? "Creating account..." : "Create account"}
+              className="w-full h-12 rounded-md 
+                       bg-forest hover:bg-forest-light dark:bg-forest-light dark:hover:bg-forest
+                       text-pearl font-medium text-base
+                       transition-natural focus-natural
+                       disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Already have an account? Sign in
-            </Link>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+              {isLoading ? (
+                <div className="flex items-center justify-center space-x-2" role="status">
+                  <Progress value={100} size="sm" variant="accent" animated className="w-4 h-4" />
+                  <span>Creating account...</span>
+                </div>
+              ) : (
+                'Create account'
+              )}
+            </button>
+
+            <div className="flex items-center justify-center pt-1">
+              <div className="text-sm text-stone dark:text-stone-light">
+                Already have an account?{' '}
+                <Link
+                  to="/login"
+                  className="font-medium text-copper hover:text-copper-light 
+                           dark:text-copper-light dark:hover:text-copper
+                           transition-natural focus-natural"
+                >
+                  Sign in
+                </Link>
+              </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   )
 } 

@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-natural focus-natural",
+  "inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-natural focus-natural",
   {
     variants: {
       variant: {
@@ -21,27 +21,50 @@ const badgeVariants = cva(
           "border-forest text-forest hover:bg-forest/10 dark:border-forest-light dark:text-forest-light dark:hover:bg-forest-light/10",
         subtle:
           "bg-clay/20 text-stone hover:bg-clay/30 dark:bg-clay/10 dark:text-stone-light dark:hover:bg-clay/20",
+        glass:
+          "bg-pearl/80 backdrop-blur-sm text-forest border-clay/10 hover:bg-pearl/90 dark:bg-charcoal/80 dark:text-forest-light dark:hover:bg-charcoal/90",
       },
       size: {
         default: "px-2.5 py-0.5 text-xs",
         sm: "px-2 py-0.5 text-[10px]",
         lg: "px-3 py-1 text-sm",
+        xl: "px-4 py-1.5 text-base",
+      },
+      interactive: {
+        true: "cursor-pointer focus:outline-none focus:ring-2 focus:ring-forest focus:ring-opacity-50",
+        false: "",
       }
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      interactive: false,
     },
   }
 );
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
+    VariantProps<typeof badgeVariants> {
+  asChild?: boolean;
+}
 
-function Badge({ className, variant, size, ...props }: BadgeProps) {
+function Badge({ 
+  className, 
+  variant, 
+  size, 
+  interactive,
+  asChild = false,
+  ...props 
+}: BadgeProps) {
+  const Comp = asChild ? React.Fragment : "div";
   return (
-    <div className={cn(badgeVariants({ variant, size }), className)} {...props} />
+    <Comp
+      role={interactive ? "button" : "status"}
+      tabIndex={interactive ? 0 : undefined}
+      className={cn(badgeVariants({ variant, size, interactive }), className)}
+      {...props}
+    />
   );
 }
 
