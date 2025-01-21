@@ -1,4 +1,4 @@
-import { VerifyEmailForm } from '../../components/auth/VerifyEmailForm'
+import { VerifyEmailForm } from '../components/VerifyEmailForm'
 
 const VerifyEmail = () => {
   return (

@@ -1,5 +1,5 @@
-import { useAuthStore } from '../stores/auth.store'
-import { supabase } from '../lib/supabase'
+import { useAuthStore } from '../../auth/store/auth.store'
+import { supabase } from '../../../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 

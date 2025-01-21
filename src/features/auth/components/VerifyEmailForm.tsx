@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
-import { authService } from '../../services/auth.service'
+import { authService } from '../services/auth.service'
 
 export const VerifyEmailForm = () => {
   const location = useLocation()

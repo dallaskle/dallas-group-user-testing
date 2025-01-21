@@ -1,14 +1,18 @@
-interface RegisterRequest {
+export interface RegisterRequest {
   email: string
   password: string
   name: string
   role: 'student' | 'tester'
 }
 
-interface RegisterResponse {
+export interface RegisterResponse {
   data?: {
+    session: {
+      access_token: string
+      refresh_token: string
+      expires_at: number
+    }
     user: any
-    session: null
   }
   error?: string
 }

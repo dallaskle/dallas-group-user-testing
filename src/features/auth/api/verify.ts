@@ -1,8 +1,8 @@
-interface ResendVerificationRequest {
+export interface ResendVerificationRequest {
   email: string
 }
 
-interface ResendVerificationResponse {
+export interface ResendVerificationResponse {
   data?: {
     message: string
   }
@@ -32,14 +32,19 @@ export const resendVerification = async (data: ResendVerificationRequest): Promi
   }
 }
 
-interface VerifyEmailRequest {
+export interface VerifyEmailRequest {
   accessToken: string
   refreshToken: string
 }
 
-interface VerifyEmailResponse {
+export interface VerifyEmailResponse {
   data?: {
-    session: any
+    session: {
+      access_token: string
+      refresh_token: string
+      expires_at: number
+    }
+    user: any
   }
   error?: string
 }

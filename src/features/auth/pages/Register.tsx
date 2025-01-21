@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../components/auth/AuthProvider'
-import { LoginForm } from '../../components/auth/LoginForm'
+import { useAuth } from '../components/AuthProvider'
+import { RegisterForm } from '../components/RegisterForm'
 
-const Login = () => {
+const Register = () => {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
 
@@ -19,13 +19,13 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Create your account
           </h2>
         </div>
-        <LoginForm />
+        <RegisterForm />
       </div>
     </div>
   )
 }
 
-export default Login 
+export default Register 

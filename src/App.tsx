@@ -1,16 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
-import { AuthProvider } from './components/auth/AuthProvider'
-import { AuthGuard } from './components/auth/AuthGuard'
+import { AuthProvider } from './features/auth/components/AuthProvider'
+import { AuthGuard } from './features/auth/components/AuthGuard'
 import React, { Suspense } from 'react'
-import { useAuthStore } from './stores/auth.store'
+import { useAuthStore } from './features/auth/store/auth.store'
 
 // Lazy load pages
-const Login = React.lazy(() => import('./pages/auth/Login'))
-const Register = React.lazy(() => import('./pages/auth/Register'))
-const VerifyEmail = React.lazy(() => import('./pages/auth/VerifyEmail'))
-const Dashboard = React.lazy(() => import('./pages/Dashboard'))
-const Unauthorized = React.lazy(() => import('./pages/Unauthorized'))
+const Login = React.lazy(() => import('./features/auth/pages/Login'))
+const Register = React.lazy(() => import('./features/auth/pages/Register'))
+const VerifyEmail = React.lazy(() => import('./features/auth/pages/VerifyEmail'))
+const Dashboard = React.lazy(() => import('./features/dashboard/pages/Dashboard'))
+const Unauthorized = React.lazy(() => import('./shared/components/Unauthorized'))
 
 // Loading fallback component
 const LoadingFallback = () => (

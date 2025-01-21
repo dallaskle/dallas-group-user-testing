@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { authService } from '../../services/auth.service'
-import { useAuthStore } from '../../stores/auth.store'
+import { authService } from '../services/auth.service'
+import { useAuthStore } from '../store/auth.store'
 
 interface AuthProviderProps {
   children: React.ReactNode

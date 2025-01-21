@@ -1,7 +1,13 @@
-import { supabase } from '../lib/supabase'
-import { useAuthStore } from '../stores/auth.store'
+import { supabase } from '../../../lib/supabase'
+import { useAuthStore } from '../store/auth.store'
 import type { User } from '@supabase/supabase-js'
-import type { Tables } from '../lib/supabase'
+import type { Tables } from '../../../lib/supabase'
+import { login } from '../api/login'
+import type { LoginResponse } from '../api/login'
+import { register } from '../api/register'
+import type { RegisterResponse } from '../api/register'
+import { resendVerification, verifyEmail } from '../api/verify'
+import type { ResendVerificationResponse, VerifyEmailResponse } from '../api/verify'
 
 interface LoginData {
   email: string
@@ -47,27 +53,22 @@ class AuthService {
     }
   }
 
-  async login(data: LoginData) {
+  async login(data: LoginData): Promise<{ data?: LoginResponse['data'], error?: string, isVerificationError?: boolean }> {
     const store = useAuthStore.getState()
     try {
       store.setLoading(true)
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auth-login`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify(data)
-      })
+      const result = await login(data)
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        if (response.status === 403 && result.isVerificationError) {
+      if ('error' in result) {
+        if (result.isVerificationError) {
           return { error: 'Please verify your email first', isVerificationError: true }
         }
-        throw new Error(result.error || 'Failed to login')
+        throw new Error(result.error)
+      }
+
+      if (!result.data?.session) {
+        throw new Error('Invalid response from server')
       }
 
       // Set the session in Supabase client
@@ -85,24 +86,19 @@ class AuthService {
     }
   }
 
-  async register(data: RegisterData) {
+  async register(data: RegisterData): Promise<{ data?: RegisterResponse['data'], error?: string }> {
     const store = useAuthStore.getState()
     try {
       store.setLoading(true)
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auth-register`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify(data)
-      })
+      const result = await register(data)
 
-      const result = await response.json()
+      if ('error' in result) {
+        throw new Error(result.error)
+      }
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to register')
+      if (!result.data?.session) {
+        throw new Error('Invalid response from server')
       }
 
       // Set the session in Supabase client
@@ -120,24 +116,15 @@ class AuthService {
     }
   }
 
-  async resendVerification(email: string) {
+  async resendVerification(email: string): Promise<{ data?: ResendVerificationResponse['data'], error?: string }> {
     const store = useAuthStore.getState()
     try {
       store.setLoading(true)
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auth-resend-verification`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({ email })
-      })
+      const result = await resendVerification({ email })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to resend verification email')
+      if ('error' in result) {
+        throw new Error(result.error)
       }
 
       return { data: result.data }

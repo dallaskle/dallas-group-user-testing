@@ -1,9 +1,9 @@
-interface LoginRequest {
+export interface LoginRequest {
   email: string
   password: string
 }
 
-interface LoginResponse {
+export interface LoginResponse {
   data?: {
     session: {
       access_token: string
