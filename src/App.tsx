@@ -14,6 +14,7 @@ const Dashboard = React.lazy(() => import('./features/dashboard/pages/Dashboard'
 const Unauthorized = React.lazy(() => import('./shared/components/Unauthorized'))
 const AdminPage = React.lazy(() => import('./features/admin/pages/AdminPage'))
 const ProjectRegistryView = React.lazy(() => import('./features/admin/pages/ProjectRegistryView'))
+const StudentDashboard = React.lazy(() => import('./features/student/pages/StudentDashboard'))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -75,10 +76,11 @@ function App() {
               } />
 
               {/* Student routes */}
-              <Route path="/projects/*" element={
+              <Route path="/student/*" element={
                 <AuthGuard allowedRoles={['student']}>
-                  {/* Project routes will be added here */}
-                  <div>Projects Area</div>
+                  <Routes>
+                    <Route index element={<StudentDashboard />} />
+                  </Routes>
                 </AuthGuard>
               } />
 
