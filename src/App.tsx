@@ -33,17 +33,31 @@ const LoadingFallback = () => (
 const RootRedirect = () => {
   const { user, isInitialized, isLoading } = useAuthStore()
   
-  // Debug log
-  console.log('RootRedirect State:', { user, isInitialized, isLoading })
-  
   // Show loading while auth is not initialized
   if (!isInitialized || isLoading) {
     return <LoadingFallback />
   }
+
+  // If not logged in, go to register
+  if (!user) {
+    return <Navigate to="/register" replace />
+  }
+
+  // Redirect based on role priority: Admin > Student > Tester
+  if (user.is_admin) {
+    return <Navigate to="/admin" replace />
+  }
   
-  // Debug log
-  console.log('RootRedirect: Navigating to', user ? "/dashboard" : "/register")
-  return <Navigate to={user ? "/dashboard" : "/register"} replace />
+  if (user.is_student) {
+    return <Navigate to="/student" replace />
+  }
+  
+  if (user.is_tester) {
+    return <Navigate to="/testing" replace />
+  }
+
+  // Fallback to unauthorized if somehow no role
+  return <Navigate to="/unauthorized" replace />
 }
 
 function App() {

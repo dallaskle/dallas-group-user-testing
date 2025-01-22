@@ -3,8 +3,10 @@ import { AdminDashboard } from '../components/AdminDashboard';
 
 const AdminPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <AdminDashboard />
+    <div className="min-h-screen bg-background p-8">
+      <div className="container mx-auto">
+        <AdminDashboard />
+      </div>
     </div>
   );
 };
