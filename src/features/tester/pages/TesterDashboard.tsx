@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useToast } from '@/components/ui/use-toast'
 import { useTesterStore } from '../store/tester.store'
 import { TesterMetrics } from '@/features/admin/components/TesterMetrics'
 import { QAScorecard } from '@/features/admin/components/QAScorecard'
 
 const TesterDashboard = () => {
   const navigate = useNavigate()
+  const { toast } = useToast()
   const { queue, currentTest, fetchQueue, isLoading } = useTesterStore()
 
   useEffect(() => {
@@ -51,7 +53,10 @@ const TesterDashboard = () => {
                         <p className="text-gray-700 mt-4">{ticket.description}</p>
                       </div>
                       <Button
-                        onClick={() => navigate(`/testing/${ticket.id}`)}
+                        onClick={() => {
+                          useTesterStore.getState().setCurrentTestById(ticket.id)
+                          navigate(`/testing/${ticket.id}`)
+                        }}
                         variant="secondary"
                         className="shrink-0"
                       >

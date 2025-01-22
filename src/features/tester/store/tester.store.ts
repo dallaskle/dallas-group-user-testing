@@ -7,9 +7,15 @@ type Ticket = Database['public']['Tables']['tickets']['Row']
 type TestingTicket = Database['public']['Tables']['testing_tickets']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
 
+type EnhancedTicket = Ticket & {
+  testing_ticket: TestingTicket & {
+    feature: Feature
+  }
+}
+
 interface TesterState {
-  queue: (Ticket & { testing_ticket: TestingTicket; feature: Feature })[]
-  currentTest: (Ticket & { testing_ticket: TestingTicket; feature: Feature }) | null
+  queue: EnhancedTicket[]
+  currentTest: EnhancedTicket | null
   isLoading: boolean
   error: Error | null
   metrics: {
@@ -23,7 +29,6 @@ interface TesterState {
 interface TesterActions {
   // Queue management
   fetchQueue: () => Promise<void>
-  claimTest: (ticketId: string) => Promise<void>
   submitValidation: (validation: {
     ticketId: string
     featureId: string
@@ -34,12 +39,13 @@ interface TesterActions {
   
   // Local state management
   setCurrentTest: (test: TesterState['currentTest']) => void
+  setCurrentTestById: (id: string) => void
   clearError: () => void
 }
 
 export const useTesterStore = create<TesterState & TesterActions>()(
   devtools(
-    (set) => ({
+    (set, get) => ({
       // Initial state
       queue: [],
       currentTest: null,
@@ -63,32 +69,28 @@ export const useTesterStore = create<TesterState & TesterActions>()(
         }
       },
 
-      claimTest: async (ticketId: string) => {
-        try {
-          set({ isLoading: true, error: null })
-          // TODO: Implement API call to claim test
-          console.log('Claiming test:', ticketId)
-          // This will be implemented when we create the edge function
-          set({ isLoading: false })
-        } catch (error) {
-          set({ error: error as Error, isLoading: false })
-        }
-      },
-
       submitValidation: async (validation) => {
         try {
           set({ isLoading: true, error: null })
-          // TODO: Implement API call to submit validation
-          console.log('Submitting validation:', validation)
-          // This will be implemented when we create the edge function
-          set({ isLoading: false })
+          await testerApi.submitValidation(validation)
+          set({ 
+            currentTest: null,
+            isLoading: false 
+          })
         } catch (error) {
           set({ error: error as Error, isLoading: false })
+          throw error
         }
       },
 
       // Local state management
       setCurrentTest: (test) => set({ currentTest: test }),
+      setCurrentTestById: (id) => {
+        const test = get().queue.find(t => t.id === id)
+        if (test) {
+          set({ currentTest: test })
+        }
+      },
       clearError: () => set({ error: null })
     }),
     { name: 'tester-store' }

@@ -13,31 +13,29 @@ const TestingSession = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { currentTest, claimTest, submitValidation, isLoading } = useTesterStore()
+  const { currentTest, isLoading, submitValidation, setCurrentTestById } = useTesterStore()
   const [notes, setNotes] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const [isUploading, setIsUploading] = useState(false)
 
+  // Set current test if not set
   useEffect(() => {
-    const initializeTest = async () => {
-      if (!id) return
-      try {
-        await claimTest(id)
-      } catch (error) {
-        console.error('Failed to claim test:', error)
-        toast({
-          title: 'Error',
-          description: 'Failed to claim test. Please try again.',
-          variant: 'destructive',
-        })
-        navigate('/testing')
-      }
+    if (!currentTest && id && !isLoading) {
+      setCurrentTestById(id)
     }
+  }, [currentTest, id, isLoading, setCurrentTestById])
 
-    if (!currentTest && id) {
-      initializeTest()
+  // Redirect if the current test doesn't match the URL id after attempting to set it
+  useEffect(() => {
+    if (!isLoading && (!currentTest || currentTest.id !== id)) {
+      toast({
+        title: 'Error',
+        description: 'Test not found or not assigned to you.',
+        variant: 'destructive',
+      })
+      navigate('/testing')
     }
-  }, [id, currentTest, claimTest, toast, navigate])
+  }, [currentTest, id, isLoading, navigate, toast])
 
   const handleRecordingComplete = async (videoBlob: Blob) => {
     try {
@@ -88,7 +86,7 @@ const TestingSession = () => {
     try {
       await submitValidation({
         ticketId: currentTest.id,
-        featureId: currentTest.feature.id,
+        featureId: currentTest.testing_ticket.feature.id,
         status,
         videoUrl,
         notes,
@@ -125,7 +123,7 @@ const TestingSession = () => {
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">{currentTest.title}</h1>
-          <p className="text-gray-500 mt-2">Testing {currentTest.feature.name}</p>
+          <p className="text-gray-500 mt-2">Testing {currentTest.testing_ticket.feature.name}</p>
         </div>
         <Button variant="outline" onClick={() => navigate('/testing')}>
           Back to Dashboard
@@ -140,7 +138,7 @@ const TestingSession = () => {
             <div className="space-y-4">
               <div>
                 <h3 className="font-medium text-gray-700">Description</h3>
-                <p className="mt-1 text-gray-600">{currentTest.feature.description}</p>
+                <p className="mt-1 text-gray-600">{currentTest.description}</p>
               </div>
               <div>
                 <h3 className="font-medium text-gray-700">Test Instructions</h3>

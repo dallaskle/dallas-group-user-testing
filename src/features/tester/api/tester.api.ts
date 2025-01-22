@@ -11,6 +11,9 @@ export const testerApi = {
    */
   getQueue: async () => {
     console.log('Fetching queue...')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('No user logged in')
+
     const { data: tickets, error } = await supabase
       .from('tickets')
       .select(`
@@ -21,6 +24,7 @@ export const testerApi = {
         )
       `)
       .eq('type', 'testing')
+      .eq('assigned_to', user.id)
       .in('status', ['open', 'in_progress'])
       .order('created_at', { ascending: false })
 
