@@ -6,7 +6,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useTicketsStore } from '../../store/tickets.store'
-import type { TicketType, TicketStatus, TicketPriority } from '../../api/types'
 
 export interface TicketFiltersProps {
   className?: string

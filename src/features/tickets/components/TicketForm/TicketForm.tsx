@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useTicketsStore } from '../../store/tickets.store'
-import type { CreateTicketRequest, TicketType, TicketPriority, SupportCategory } from '../../api/types'
+import type { CreateTicketRequest } from '../../api/types'
 
 const ticketSchema = z.object({
   type: z.enum(['testing', 'support', 'question'] as const),

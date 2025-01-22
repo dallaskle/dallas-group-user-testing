@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,6 @@ const ProjectRegistryView = () => {
     featureRegistries, 
     isLoading,
     error,
-    createFeatureRegistry 
   } = useRegistry();
 
   // Find the current project
@@ -120,14 +119,10 @@ const ProjectRegistryView = () => {
           <p className="text-gray-500 mt-2">{project.description}</p>
         </div>
         <Badge
-          variant={
-            project.status === 'active' ? 'default' :
-            project.status === 'draft' ? 'secondary' :
-            'outline'
-          }
+          variant="default"
           className="text-base"
         >
-          {project.status}
+          Active
         </Badge>
       </div>
 

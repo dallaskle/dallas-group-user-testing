@@ -38,7 +38,7 @@ interface TesterActions {
 
 export const useTesterStore = create<TesterState & TesterActions>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       // Initial state
       queue: [],
       currentTest: null,
@@ -67,6 +67,7 @@ export const useTesterStore = create<TesterState & TesterActions>()(
         try {
           set({ isLoading: true, error: null })
           // TODO: Implement API call to claim test
+          console.log('Claiming test:', ticketId)
           // This will be implemented when we create the edge function
           set({ isLoading: false })
         } catch (error) {
@@ -78,6 +79,7 @@ export const useTesterStore = create<TesterState & TesterActions>()(
         try {
           set({ isLoading: true, error: null })
           // TODO: Implement API call to submit validation
+          console.log('Submitting validation:', validation)
           // This will be implemented when we create the edge function
           set({ isLoading: false })
         } catch (error) {

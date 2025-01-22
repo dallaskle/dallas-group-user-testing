@@ -13,7 +13,7 @@ const TestingSession = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { currentTest, setCurrentTest, claimTest, submitValidation, isLoading } = useTesterStore()
+  const { currentTest, claimTest, submitValidation, isLoading } = useTesterStore()
   const [notes, setNotes] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const [isUploading, setIsUploading] = useState(false)
@@ -47,7 +47,7 @@ const TestingSession = () => {
       const filename = `${currentTest?.id}-${Date.now()}.webm`
       
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('test-recordings')
         .upload(filename, videoBlob)
 

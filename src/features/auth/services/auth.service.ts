@@ -1,6 +1,6 @@
 import { supabase } from '../../../lib/supabase'
 import { useAuthStore } from '../store/auth.store'
-import type { User } from '@supabase/supabase-js'
+import type { User, Session } from '@supabase/supabase-js'
 import type { Tables } from '../../../lib/supabase'
 import { login } from '../api/login'
 import type { LoginResponse } from '../api/login'
@@ -33,6 +33,7 @@ class AuthService {
     return response
   }
 
+  // @ts-expect-error Method is used internally
   private async setUserData(session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']>) {
     console.log('🔄 Setting user data for session:', session)
     try {
@@ -88,14 +89,16 @@ class AuthService {
         throw new Error('No session in login response')
       }
 
+      const session = result.data.session as Session
+
       // Set the session in Supabase client
       await supabase.auth.setSession({
-        access_token: result.data.session.access_token,
-        refresh_token: result.data.session.refresh_token
+        access_token: session.access_token,
+        refresh_token: session.refresh_token
       })
 
       // Fetch and set user data
-      const { data: userData, error: userError } = await this.getUserData(result.data.session.user.id)
+      const { data: userData, error: userError } = await this.getUserData(session.user.id)
       console.log('📦 User data after login:', { userData, userError })
 
       if (userError) {
@@ -104,13 +107,13 @@ class AuthService {
 
       // Set complete user data in store
       store.setSession({
-        access_token: result.data.session.access_token,
-        refresh_token: result.data.session.refresh_token,
-        expires_at: result.data.session.expires_at ?? null
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        expires_at: session.expires_at ?? null
       })
 
       store.setUser({
-        ...result.data.session.user,
+        ...session.user,
         ...userData
       } as User & Tables<'users'>)
 
@@ -182,7 +185,7 @@ class AuthService {
       store.setLoading(true)
 
       // Set the session in Supabase
-      const { data, error } = await supabase.auth.setSession({
+      const { error } = await supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken
       })
@@ -248,7 +251,10 @@ class AuthService {
 
         // Then fetch and set user data
         const { data: userData, error: userError } = await this.getUserData(session.user.id)
-        if (userError) throw userError
+        
+        if (userError) {
+          throw userError
+        }
 
         if (userData) {
           store.setUser({
@@ -256,20 +262,11 @@ class AuthService {
             ...userData
           } as User & Tables<'users'>)
         }
-      } else {
-        console.log('ℹ️ No session found, clearing store')
-        // No session, clear store
-        store.setSession(null)
-        store.setUser(null)
       }
     } catch (error) {
       console.error('❌ Auth initialization error:', error)
       store.setError(error instanceof Error ? error.message : 'Failed to initialize auth')
-      store.setSession(null)
-      store.setUser(null)
-    } finally {
-      store.setLoading(false)
-      store.setInitialized(true)
+      store.logout()
     }
   }
 
@@ -278,11 +275,12 @@ class AuthService {
   }
 
   async getSession() {
-    return supabase.auth.getSession()
+    return await supabase.auth.getSession()
   }
 
   async getUser() {
-    return supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
+    return user
   }
 }
 

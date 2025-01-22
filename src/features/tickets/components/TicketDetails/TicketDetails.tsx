@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useTicketsStore } from '../../store/tickets.store'
-import type { TicketResponse, TicketStatus } from '../../api/types'
+import type { TicketStatus } from '../../api/types'
 import { supabase } from '@/lib/supabase'
 import { TicketDetailsAuditLog } from './TicketDetailsAuditLog'
 

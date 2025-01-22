@@ -2,8 +2,6 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../services/auth.service'
 import { useAuthStore } from '../store/auth.store'
-import type { User } from '@supabase/supabase-js'
-import type { Tables } from '@/lib/supabase'
 
 interface AuthProviderProps {
   children: React.ReactNode
@@ -11,7 +9,7 @@ interface AuthProviderProps {
 
 export const useAuth = () => {
   const navigate = useNavigate()
-  const { user, setSession } = useAuthStore()
+  const { user } = useAuthStore()
 
   const isAuthenticated = !!user
 

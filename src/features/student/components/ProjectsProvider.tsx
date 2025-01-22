@@ -25,7 +25,6 @@ const isFeature = (record: unknown): record is Feature => {
 export const ProjectsProvider = ({ children }: ProjectsProviderProps) => {
   const { user } = useAuthStore()
   const {
-    projects,
     setProjects,
     addProject,
     updateProject,
@@ -64,7 +63,7 @@ export const ProjectsProvider = ({ children }: ProjectsProviderProps) => {
               table: 'projects',
               filter: `student_id=eq.${user.id}`,
             },
-            (payload: ProjectPayload) => {
+            async (payload: ProjectPayload) => {
               if (!mounted) return
 
               const { eventType, new: newRecord, old: oldRecord } = payload
@@ -72,7 +71,16 @@ export const ProjectsProvider = ({ children }: ProjectsProviderProps) => {
               switch (eventType) {
                 case 'INSERT':
                   if (newRecord) {
-                    addProject(newRecord)
+                    // Fetch the registry data for the new project
+                    const { data: registry, error } = await supabase
+                      .from('project_registry')
+                      .select('*')
+                      .eq('id', newRecord.project_registry_id)
+                      .single()
+
+                    if (!error && registry) {
+                      addProject({ ...newRecord, registry })
+                    }
                   }
                   break
                 case 'UPDATE':

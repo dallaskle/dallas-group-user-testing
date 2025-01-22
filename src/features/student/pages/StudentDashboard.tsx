@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { ProjectsWidget } from '../components/dashboard/ProjectsWidget'
 import { FeaturesWidget } from '../components/dashboard/FeaturesWidget'
 import { ValidationsWidget } from '../components/dashboard/ValidationsWidget'

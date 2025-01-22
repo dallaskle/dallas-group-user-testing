@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Video, StopCircle, Upload } from 'lucide-react'
+import { Video, StopCircle } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
 interface ScreenRecorderProps {
