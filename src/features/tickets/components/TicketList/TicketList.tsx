@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { useTicketsStore } from '../../store/tickets.store'
-import type { TicketData, TicketStatus, TicketPriority } from '../../api/types'
+import type { TicketStatus, TicketPriority, TicketResponse } from '../../api/types'
 
 const statusColors: Record<TicketStatus, string> = {
   open: 'bg-blue-100 text-blue-800',
@@ -37,8 +37,8 @@ export function TicketList({ className }: TicketListProps) {
     fetchTickets()
   }, [fetchTickets])
 
-  const handleRowClick = (ticketData: TicketData) => {
-    navigate(`/tickets/${ticketData.ticket.id}`)
+  const handleRowClick = (ticketId: string) => {
+    navigate(`/tickets/${ticketId}`)
   }
 
   if (isLoading) {
@@ -63,14 +63,13 @@ export function TicketList({ className }: TicketListProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tickets?.map((item) => {
-            const ticketData = item.ticket_data
-            const { ticket, assignedToUser } = ticketData
+          {tickets?.map((ticketResponse: TicketResponse) => {
+            const ticket = ticketResponse.ticket_data.ticket
             return (
               <TableRow
                 key={ticket.id}
                 className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleRowClick(ticketData)}
+                onClick={() => handleRowClick(ticket.id)}
               >
                 <TableCell className="font-medium">{ticket.title}</TableCell>
                 <TableCell>
@@ -78,7 +77,7 @@ export function TicketList({ className }: TicketListProps) {
                 </TableCell>
                 <TableCell>
                   <Badge
-                    className={statusColors[ticket.status]}
+                    className={statusColors[ticket.status as TicketStatus]}
                     variant="secondary"
                   >
                     {ticket.status}
@@ -86,14 +85,14 @@ export function TicketList({ className }: TicketListProps) {
                 </TableCell>
                 <TableCell>
                   <Badge
-                    className={priorityColors[ticket.priority]}
+                    className={priorityColors[ticket.priority as TicketPriority]}
                     variant="secondary"
                   >
                     {ticket.priority}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {assignedToUser?.name || 'Unassigned'}
+                  {ticketResponse.ticket_data.assignedToUser?.name || 'Unassigned'}
                 </TableCell>
                 <TableCell>
                   {new Date(ticket.created_at).toLocaleDateString()}

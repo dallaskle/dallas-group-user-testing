@@ -206,28 +206,30 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
                     Move to {status.replace('_', ' ')}
                   </Button>
                 ))}
-                <div className="flex gap-2">
-                  {/* Show unassign button if admin or if assigned to current user */}
-                  {(isAdmin || isAssignedToCurrentUser) && assignedToUser && (
-                    <Button
-                      variant="outline"
-                      onClick={() => handleAssign(null)}
-                    >
-                      Unassign
-                    </Button>
-                  )}
-                  {/* Show assign/reassign button if:
-                      - Ticket is unassigned OR
-                      - Admin and ticket is assigned to someone else */}
-                  {(!assignedToUser || (isAdmin && !isAssignedToCurrentUser)) && (
-                    <Button
-                      variant="outline"
-                      onClick={() => handleAssign(currentUser?.id ?? null)}
-                    >
-                      {assignedToUser ? 'Reassign to me' : 'Assign to me'}
-                    </Button>
-                  )}
-                </div>
+                {ticket.status !== 'closed' && (
+                  <div className="flex gap-2">
+                    {/* Show unassign button if admin or if assigned to current user */}
+                    {(isAdmin || isAssignedToCurrentUser) && assignedToUser && (
+                      <Button
+                        variant="outline"
+                        onClick={() => handleAssign(null)}
+                      >
+                        Unassign
+                      </Button>
+                    )}
+                    {/* Show assign/reassign button if:
+                        - Ticket is unassigned OR
+                        - Admin and ticket is assigned to someone else */}
+                    {(!assignedToUser || (isAdmin && !isAssignedToCurrentUser)) && (
+                      <Button
+                        variant="outline"
+                        onClick={() => handleAssign(currentUser?.id ?? null)}
+                      >
+                        {assignedToUser ? 'Reassign to me' : 'Assign to me'}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

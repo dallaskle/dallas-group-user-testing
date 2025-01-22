@@ -112,7 +112,7 @@ serve(async (req) => {
 
     console.log('Ticket transitioned successfully:', ticket.id)
 
-    return new Response(JSON.stringify(ticket as TicketResponse), {
+    return new Response(JSON.stringify({ ticket_data: ticket } as TicketResponse), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })

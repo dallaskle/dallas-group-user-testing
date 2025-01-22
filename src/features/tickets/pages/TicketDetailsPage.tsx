@@ -13,13 +13,6 @@ export default function TicketDetailsPage() {
   return (
     <div className="container mx-auto py-8 max-w-[1400px]">
       <div className="mb-8">
-        <Button
-          variant="outline"
-          onClick={() => navigate('/tickets')}
-          className="mb-4"
-        >
-          ← Back to Tickets
-        </Button>
         <h1 className="text-3xl font-bold">Ticket Details</h1>
       </div>
 
