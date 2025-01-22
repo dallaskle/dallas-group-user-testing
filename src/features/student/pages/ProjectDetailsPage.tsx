@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Database } from '@/shared/types/database.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -11,20 +11,81 @@ import { CreateFeature } from '../components/CreateFeature'
 import { FeatureDetailsPanel } from '../components/FeatureDetailsPanel'
 import { useProjects } from '../components/ProjectsProvider'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { supabase } from '@/lib/supabase'
 
 type Feature = Database['public']['Tables']['features']['Row']
+type ProjectRegistry = {
+  name: string
+}
+
+type ProjectBase = Database['public']['Tables']['projects']['Row'] & {
+  features: Feature[]
+}
+
+type ProjectWithRegistry = ProjectBase & {
+  registry: ProjectRegistry
+}
+
+type ProjectWithProjectRegistry = ProjectBase & {
+  project_registry: ProjectRegistry
+}
+
+type Project = ProjectWithRegistry | ProjectWithProjectRegistry
+
 type ViewType = 'grid' | 'single' | 'highlight'
 
 export const ProjectDetailsPage = () => {
+  const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const { projects, isLoading } = useProjects()
+  const { projects, isLoading: isProjectsLoading } = useProjects()
   const [isAddFeatureOpen, setIsAddFeatureOpen] = useState(false)
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null)
   const [viewType, setViewType] = useState<ViewType>('grid')
   const [activeStatus, setActiveStatus] = useState<string>('Not Started')
   const [highlightedStatus, setHighlightedStatus] = useState<string>('Not Started')
+  const [project, setProject] = useState<Project | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const project = projects.find(p => p.id === id)
+  useEffect(() => {
+    const loadProject = async () => {
+      // First try to find the project in the projects state
+      const foundProject = projects.find(p => p.id === id)
+      if (foundProject) {
+        setProject(foundProject)
+        setIsLoading(false)
+        return
+      }
+
+      // If not found in state, try to fetch from database
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select(`
+            *,
+            features (
+              *
+            ),
+            project_registry (
+              name
+            )
+          `)
+          .eq('id', id)
+          .single()
+
+        if (error) throw error
+        setProject(data)
+      } catch (error) {
+        console.error('Failed to load project:', error)
+        navigate('/student')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (id) {
+      loadProject()
+    }
+  }, [id, projects, navigate])
 
   const handleFeatureClick = (feature: Feature) => {
     setSelectedFeature(feature)
@@ -34,7 +95,7 @@ export const ProjectDetailsPage = () => {
     setIsAddFeatureOpen(false)
   }
 
-  if (isLoading) {
+  if (isLoading || isProjectsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
@@ -47,20 +108,27 @@ export const ProjectDetailsPage = () => {
       <div className="container mx-auto py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900">Project not found</h1>
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/student')}
+            className="mt-4"
+          >
+            Back to Dashboard
+          </Button>
         </div>
       </div>
     )
   }
 
   const featuresByStatus = {
-    'Not Started': project.features.filter(f => f.status === 'Not Started'),
-    'In Progress': project.features.filter(f => f.status === 'In Progress'),
-    'Successful Test': project.features.filter(f => f.status === 'Successful Test'),
-    'Failed Test': project.features.filter(f => f.status === 'Failed Test')
+    'Not Started': project.features.filter((f: Feature) => f.status === 'Not Started'),
+    'In Progress': project.features.filter((f: Feature) => f.status === 'In Progress'),
+    'Successful Test': project.features.filter((f: Feature) => f.status === 'Successful Test'),
+    'Failed Test': project.features.filter((f: Feature) => f.status === 'Failed Test')
   }
 
-  const totalValidations = project.features.reduce((sum, feature) => sum + feature.current_validations, 0)
-  const requiredValidations = project.features.reduce((sum, feature) => sum + feature.required_validations, 0)
+  const totalValidations = project.features.reduce((sum: number, feature: Feature) => sum + feature.current_validations, 0)
+  const requiredValidations = project.features.reduce((sum: number, feature: Feature) => sum + feature.required_validations, 0)
   const validationProgress = (totalValidations / requiredValidations) * 100
 
   const renderFeatureList = (features: Feature[], className?: string) => (
@@ -241,7 +309,9 @@ export const ProjectDetailsPage = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold">{project.name}</h1>
-            <p className="text-gray-500 mt-2">Based on {project.registry.name}</p>
+            <p className="text-gray-500 mt-2">
+              Based on {('project_registry' in project) ? project.project_registry.name : project.registry.name}
+            </p>
           </div>
           <div className="flex items-center gap-4">
             <Badge variant="outline" className="text-lg py-1">

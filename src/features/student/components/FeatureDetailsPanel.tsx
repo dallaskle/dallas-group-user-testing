@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { X, UserCircle, ChevronDown, Maximize2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -52,6 +53,7 @@ export const FeatureDetailsPanel = ({
   const [isLoading, setIsLoading] = useState(false)
   const [isValidationsOpen, setIsValidationsOpen] = useState(true)
   const [isTestersOpen, setIsTestersOpen] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (feature) {
@@ -152,9 +154,12 @@ export const FeatureDetailsPanel = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => window.open(`/student/features/${feature.id}`, '_blank')}
+            onClick={() => {
+              navigate(`/student/features/${feature.id}`)
+              onClose()
+            }}
             className="h-8 w-8"
-            aria-label="Open in new tab"
+            aria-label="Open feature details"
           >
             <Maximize2 className="h-4 w-4" />
           </Button>
