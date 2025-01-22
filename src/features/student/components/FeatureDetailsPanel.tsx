@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react'
-import { X, UserCircle } from 'lucide-react'
+import { X, UserCircle, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import { Database } from '@/shared/types/database.types'
 import { cn } from '@/lib/utils'
 import { AddValidation } from './AddValidation'
@@ -12,7 +17,11 @@ import { validationsApi } from '../api/validations.api'
 import { supabase } from '@/lib/supabase'
 
 type Feature = Database['public']['Tables']['features']['Row']
-type Validation = Database['public']['Tables']['validations']['Row']
+type Validation = Database['public']['Tables']['validations']['Row'] & {
+  validator: {
+    name: string
+  } | null
+}
 type TestingTicket = Database['public']['Tables']['testing_tickets']['Row'] & {
   tickets: {
     assigned_to: string
@@ -41,6 +50,7 @@ export const FeatureDetailsPanel = ({
   const [isAddValidationOpen, setIsAddValidationOpen] = useState(false)
   const [isAddTesterOpen, setIsAddTesterOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isValidationsOpen, setIsValidationsOpen] = useState(true)
 
   useEffect(() => {
     if (feature) {
@@ -54,7 +64,18 @@ export const FeatureDetailsPanel = ({
     
     try {
       setIsLoading(true)
-      const data = await validationsApi.getFeatureValidations(feature.id)
+      const { data, error } = await supabase
+        .from('validations')
+        .select(`
+          *,
+          validator:users!validations_validated_by_fkey (
+            name
+          )
+        `)
+        .eq('feature_id', feature.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
       console.log('Loaded validations:', data)
       setValidations(data)
     } catch (error) {
@@ -157,9 +178,28 @@ export const FeatureDetailsPanel = ({
         </div>
 
         {/* Validations List */}
-        <div>
-          <h3 className="text-sm font-medium mb-3">Validations</h3>
-          <div className="space-y-3">
+        <Collapsible
+          open={isValidationsOpen}
+          onOpenChange={setIsValidationsOpen}
+          className="space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">
+              Validations ({validations.length})
+            </h3>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="p-0 h-auto">
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                    isValidationsOpen ? "rotate-180" : ""
+                  )}
+                />
+                <span className="sr-only">Toggle validations</span>
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent className="space-y-3">
             {isLoading ? (
               <div className="flex items-center justify-center py-4">
                 <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-gray-900"></div>
@@ -177,6 +217,10 @@ export const FeatureDetailsPanel = ({
                     <span className="text-xs text-muted-foreground">
                       {new Date(validation.created_at).toLocaleDateString()}
                     </span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <UserCircle className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{validation.validator?.name || 'Unknown User'}</span>
                   </div>
                   {validation.notes && (
                     <p className="text-sm text-muted-foreground">{validation.notes}</p>
@@ -200,8 +244,8 @@ export const FeatureDetailsPanel = ({
                 No validations yet
               </p>
             )}
-          </div>
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* Action Buttons */}
         <div className="space-y-3">

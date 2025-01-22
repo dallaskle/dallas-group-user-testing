@@ -3,6 +3,7 @@
 ## Testing Ticket
 A testing ticket is a ticket that is created when a user wants to test a feature. 
 Tester can claim or be assigned the ticket and start testing.
+- Need a dispute option on a testing ticket that asks tests to look again and then escalates to admin? 
 
 ## Support Ticket
 A support ticket is a ticket that is created when a user submits a natural language query to the chatbot.
