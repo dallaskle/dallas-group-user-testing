@@ -56,12 +56,17 @@ serve(async (req) => {
     console.log('User authenticated successfully:', { userId: user?.id })
 
     // Get the request body
+    console.log('Parsing request body')
     const { ticketId, featureId, status, videoUrl, notes } = await req.json()
+    console.log('Request body parsed:', { ticketId, featureId, status, videoUrl, notes })
+
     if (!ticketId || !featureId || !status || !videoUrl) {
+      console.log('Request rejected: Missing required fields')
       throw new Error('Missing required fields')
     }
 
     // Start a transaction
+    console.log('Starting transaction with Supabase RPC')
     const { data, error } = await supabaseClient.rpc('submit_validation', {
       p_ticket_id: ticketId,
       p_feature_id: featureId,
@@ -71,7 +76,12 @@ serve(async (req) => {
       p_notes: notes || null
     })
 
-    if (error) throw error
+    if (error) {
+      console.log('Transaction failed:', error)
+      throw error
+    }
+
+    console.log('Transaction successful:', data)
 
     // Return the result
     return new Response(
@@ -83,6 +93,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    console.log('Error occurred:', error.message)
     return new Response(
       JSON.stringify({ error: error.message }),
       {

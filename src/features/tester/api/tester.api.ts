@@ -37,8 +37,14 @@ export const testerApi = {
    * Claim a test ticket
    */
   claimTest: async (ticketId: string) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('No active session')
+
     const { data, error } = await supabase.functions.invoke('tester-claim', {
-      body: { ticketId }
+      body: { ticketId },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
     })
 
     if (error) throw error
@@ -55,8 +61,14 @@ export const testerApi = {
     videoUrl: string
     notes?: string
   }) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('No active session')
+
     const { data, error } = await supabase.functions.invoke('tester-submit', {
-      body: validation
+      body: validation,
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
     })
 
     if (error) throw error
@@ -67,8 +79,14 @@ export const testerApi = {
    * Get tester metrics
    */
   getMetrics: async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('No active session')
+
     const { data, error } = await supabase.functions.invoke('tester-metrics', {
-      body: {}
+      body: {},
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
     })
 
     if (error) throw error

@@ -28,35 +28,75 @@ const TestingSession = () => {
   // Redirect if the current test doesn't match the URL id after attempting to set it
   useEffect(() => {
     if (!isLoading && (!currentTest || currentTest.id !== id)) {
-      toast({
-        title: 'Error',
-        description: 'Test not found or not assigned to you.',
-        variant: 'destructive',
-      })
-      navigate('/testing')
+      // Only redirect if we're not in the middle of uploading
+      if (!isUploading) {
+        toast({
+          title: 'Error',
+          description: 'Test not found or not assigned to you.',
+          variant: 'destructive',
+        })
+        navigate('/testing')
+      }
     }
-  }, [currentTest, id, isLoading, navigate, toast])
+  }, [currentTest, id, isLoading, navigate, toast, isUploading])
 
   const handleRecordingComplete = async (videoBlob: Blob) => {
     try {
       setIsUploading(true)
       
-      // Create a unique filename
-      const filename = `${currentTest?.id}-${Date.now()}.webm`
-      
-      // Upload to Supabase Storage
-      const { error } = await supabase.storage
-        .from('test-recordings')
-        .upload(filename, videoBlob)
+      // Get current session to ensure we're authenticated
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('Current session:', {
+        isAuthenticated: !!session,
+        userId: session?.user?.id,
+        role: session?.user?.role
+      })
 
-      if (error) throw error
+      if (!session) {
+        throw new Error('No active session')
+      }
+      
+      console.log('Recording blob:', {
+        size: videoBlob.size,
+        type: videoBlob.type,
+        lastModified: new Date().toISOString()
+      })
+      
+      // Create a unique filename using UUID v4
+      const filename = `${currentTest?.id}-${Date.now()}.webm`
+      console.log('Uploading with filename:', filename)
+      
+      // Upload to Supabase Storage with explicit content type
+      const { error: storageError, data } = await supabase.storage
+        .from('test-recordings')
+        .upload(filename, videoBlob, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: 'video/webm'
+        })
+
+      if (storageError) {
+        console.error('Storage error details:', {
+          message: storageError.message,
+          name: storageError.name,
+          error: storageError
+        })
+        throw new Error(storageError.message || 'Failed to upload recording. Please try again.')
+      }
+
+      console.log('Upload successful:', data)
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('test-recordings')
         .getPublicUrl(filename)
 
+      console.log('Generated public URL:', publicUrl)
       setVideoUrl(publicUrl)
+
+      // Log the state after setting
+      console.log('Video URL state set to:', publicUrl)
+      
       toast({
         title: 'Success',
         description: 'Recording uploaded successfully',
@@ -65,7 +105,7 @@ const TestingSession = () => {
       console.error('Failed to upload recording:', error)
       toast({
         title: 'Error',
-        description: 'Failed to upload recording. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to upload recording. Please try again.',
         variant: 'destructive',
       })
     } finally {
@@ -74,7 +114,16 @@ const TestingSession = () => {
   }
 
   const handleSubmit = async (status: 'Working' | 'Needs Fixing') => {
-    if (!currentTest || !videoUrl) {
+    if (!currentTest) {
+      toast({
+        title: 'Error',
+        description: 'No test selected.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (!videoUrl) {
       toast({
         title: 'Error',
         description: 'Please record and upload a video before submitting.',
@@ -83,14 +132,24 @@ const TestingSession = () => {
       return
     }
 
+    console.log('Submitting validation with:', {
+      ticketId: currentTest.id,
+      featureId: currentTest.testing_ticket.feature.id,
+      status,
+      videoUrl,
+      notes,
+    })
+
     try {
-      await submitValidation({
+      const result = await submitValidation({
         ticketId: currentTest.id,
         featureId: currentTest.testing_ticket.feature.id,
         status,
         videoUrl,
         notes,
       })
+
+      console.log('Validation submission result:', result)
 
       toast({
         title: 'Success',
@@ -100,9 +159,20 @@ const TestingSession = () => {
       navigate('/testing')
     } catch (error) {
       console.error('Failed to submit validation:', error)
+      
+      let errorMessage = 'Failed to submit validation. Please try again.'
+      if (error instanceof Error) {
+        // Check for specific error types
+        if (error.message.includes('401')) {
+          errorMessage = 'Your session has expired. Please log in again.'
+        } else if (error.message.includes('403')) {
+          errorMessage = 'You do not have permission to submit this validation.'
+        }
+      }
+      
       toast({
         title: 'Error',
-        description: 'Failed to submit validation. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       })
     }

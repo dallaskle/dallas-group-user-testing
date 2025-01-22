@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Video, StopCircle } from 'lucide-react'
+import { Video, StopCircle, RefreshCcw } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
 interface ScreenRecorderProps {
@@ -12,12 +12,19 @@ interface ScreenRecorderProps {
 export const ScreenRecorder = ({ onRecordingComplete, maxDuration = 120 }: ScreenRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<NodeJS.Timeout>()
   const { toast } = useToast()
 
   const startRecording = useCallback(async () => {
+    // Clear previous preview
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+      setPreviewUrl(null)
+    }
+
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
@@ -54,6 +61,11 @@ export const ScreenRecorder = ({ onRecordingComplete, maxDuration = 120 }: Scree
         const blob = new Blob(chunksRef.current, {
           type: 'video/webm'
         })
+        
+        // Create preview URL
+        const url = URL.createObjectURL(blob)
+        setPreviewUrl(url)
+        
         onRecordingComplete(blob)
         stream.getTracks().forEach(track => track.stop())
         setIsRecording(false)
@@ -98,7 +110,7 @@ export const ScreenRecorder = ({ onRecordingComplete, maxDuration = 120 }: Scree
       }
       console.error('Failed to start recording:', error)
     }
-  }, [maxDuration, onRecordingComplete, toast])
+  }, [maxDuration, onRecordingComplete, toast, previewUrl])
 
   const stopRecording = () => {
     if (mediaRecorderRef.current?.state === 'recording') {
@@ -128,14 +140,34 @@ export const ScreenRecorder = ({ onRecordingComplete, maxDuration = 120 }: Scree
           )}
         </div>
 
+        {previewUrl && (
+          <div className="relative aspect-video w-full bg-black rounded-lg overflow-hidden">
+            <video 
+              src={previewUrl} 
+              controls 
+              className="w-full h-full"
+              preload="metadata"
+            />
+          </div>
+        )}
+
         <div className="flex justify-center gap-4">
           {!isRecording ? (
             <Button
               onClick={startRecording}
               className="gap-2"
             >
-              <Video className="h-4 w-4" />
-              Start Recording
+              {previewUrl ? (
+                <>
+                  <RefreshCcw className="h-4 w-4" />
+                  Record Again
+                </>
+              ) : (
+                <>
+                  <Video className="h-4 w-4" />
+                  Start Recording
+                </>
+              )}
             </Button>
           ) : (
             <Button

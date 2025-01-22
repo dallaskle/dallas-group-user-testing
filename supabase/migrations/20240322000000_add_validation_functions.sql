@@ -1,4 +1,3 @@
--- Create the submit_validation function
 create or replace function submit_validation(
   p_ticket_id uuid,
   p_feature_id uuid,
@@ -17,6 +16,9 @@ declare
   v_current_validations int;
   v_ticket_record record;
 begin
+  -- Set the session user for audit logging
+  PERFORM set_config('app.current_user_id', p_tester_id::text, true);
+
   -- Start transaction
   begin
     -- Insert validation
@@ -37,7 +39,7 @@ begin
     -- Update testing ticket with validation reference
     update testing_tickets
     set validation_id = v_validation_id
-    where ticket_id = p_ticket_id;
+    where id = p_ticket_id;
 
     -- Update ticket status to resolved
     update tickets
@@ -94,4 +96,4 @@ begin
       raise exception 'Failed to submit validation: %', sqlerrm;
   end;
 end;
-$$; 
+$$;

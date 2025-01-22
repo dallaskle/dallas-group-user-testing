@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { authService } from '../services/auth.service'
 import { useAuthStore } from '../store/auth.store'
 
@@ -47,10 +47,12 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { setSession, setUser, setLoading, setInitialized } = useAuthStore()
 
   useEffect(() => {
     let mounted = true
+    let initialSessionChecked = false
 
     const init = async () => {
       try {
@@ -69,9 +71,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
             if (event === 'SIGNED_IN' && session) {
               console.log('Auth state changed: SIGNED_IN')
-              // The login method already handles setting the session and user data
-              // Just navigate to dashboard if we're not already there
-              navigate('/dashboard')
+              // Only navigate to dashboard on fresh sign-ins, not session refreshes
+              if (!initialSessionChecked) {
+                initialSessionChecked = true
+                // On initial load, don't redirect
+              } else {
+                // Only redirect on actual new sign-ins
+                if (['/login', '/register', '/'].includes(location.pathname)) {
+                  navigate('/dashboard')
+                }
+              }
             }
 
             if (event === 'SIGNED_OUT') {
@@ -110,7 +119,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return () => {
       mounted = false
     }
-  }, [navigate, setSession, setUser, setLoading, setInitialized])
+  }, [navigate, location.pathname, setSession, setUser, setLoading, setInitialized])
 
   return <>{children}</>
 } 
