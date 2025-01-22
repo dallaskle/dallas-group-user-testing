@@ -348,7 +348,7 @@ export const FeatureDetailsPanel = ({
         <Collapsible defaultOpen={false} className="group">
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium group-data-[state=open]:hidden">Comments ({commentCount})</h3>
+              <h3 className="text-sm font-medium group-data-[state=open]:hidden">Comments {commentCount ? `(${commentCount})` : ''}</h3>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="p-0 h-auto ml-auto">
                   <ChevronDown
