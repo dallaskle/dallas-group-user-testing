@@ -283,11 +283,6 @@ const FeatureDetailsPage = () => {
               </CollapsibleContent>
             </Collapsible>
           </div>
-
-          {/* Comments Section */}
-          <div className="bg-card rounded-lg border p-6">
-            <Comments featureId={feature.id} />
-          </div>
         </div>
 
         {/* Sidebar */}
@@ -350,6 +345,11 @@ const FeatureDetailsPage = () => {
                 )}
               </CollapsibleContent>
             </Collapsible>
+          </div>
+
+          {/* Comments Section */}
+          <div className="bg-card rounded-lg border p-6">
+            <Comments featureId={feature.id} />
           </div>
         </div>
       </div>
