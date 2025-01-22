@@ -80,6 +80,42 @@ export const validationsApi = {
       throw new Error(updateError.message)
     }
 
+    // Create a testing ticket for self-testing
+    const { data: testingTicket, error: testingError } = await supabase
+      .from('tickets')
+      .insert([
+        {
+          type: 'testing',
+          title: `Validate feature: ${featureId}`,
+          description: 'Self-assigned testing ticket for feature validation',
+          priority: 'medium',
+          status: 'open',
+          created_by: userId,
+          assigned_to: userId
+        }
+      ])
+      .select()
+      .single()
+
+    if (testingError) {
+      throw new Error(testingError.message)
+    }
+
+    // Create testing ticket details
+    const { error: testingDetailsError } = await supabase
+      .from('testing_tickets')
+      .insert([
+        {
+          id: testingTicket.id,
+          feature_id: featureId,
+          deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 1 week deadline
+        }
+      ])
+
+    if (testingDetailsError) {
+      throw new Error(testingDetailsError.message)
+    }
+
     return validation
   },
 
