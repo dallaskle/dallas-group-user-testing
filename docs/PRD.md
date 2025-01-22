@@ -41,7 +41,7 @@ The Group User Testing App aims to address these issues by creating a shared env
 
 ### Peer Validation
 
-- Testers can test a given feature and upload their screen-share.
+- Testers can be added as testers and be assigned a given feature and upload their screen-share.
 - An embedded browser within the testing page allows users to interact directly with the feature while recording their screen, without needing to leave the app. This includes access to project context such as feature requirements and previous validation notes, enabling more efficient and comprehensive testing.
 - Each feature can require multiple validations (e.g., 3–5 testers must confirm it before it is considered completed).
 - Peers can mark a feature as "Working" or "Needs Fixing."
