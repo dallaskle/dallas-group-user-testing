@@ -42,23 +42,22 @@ const TesterDashboard = () => {
                 {queue.map((ticket) => (
                   <Card key={ticket.id} className="p-6">
                     <div className="flex justify-between items-start">
-                      <div>
+                      <div className="space-y-2">
                         <h3 className="font-semibold text-lg">{ticket.title}</h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Feature: {ticket.feature.name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Deadline: {new Date(ticket.testing_ticket.deadline).toLocaleDateString()}
-                        </p>
+                        <div className="text-sm text-gray-600">
+                          <p>Feature: {ticket.testing_ticket.feature.name}</p>
+                          <p>Deadline: {new Date(ticket.testing_ticket.deadline).toLocaleDateString()}</p>
+                        </div>
+                        <p className="text-gray-700 mt-4">{ticket.description}</p>
                       </div>
                       <Button
                         onClick={() => navigate(`/testing/${ticket.id}`)}
                         variant="secondary"
+                        className="shrink-0"
                       >
                         Start Testing
                       </Button>
                     </div>
-                    <p className="mt-4 text-gray-700">{ticket.description}</p>
                   </Card>
                 ))}
               </div>
@@ -79,7 +78,7 @@ const TesterDashboard = () => {
                   <div>
                     <h3 className="font-semibold text-lg">{currentTest.title}</h3>
                     <p className="text-sm text-gray-500 mt-1">
-                      Feature: {currentTest.feature.name}
+                      Feature: {currentTest.testing_ticket.feature.name}
                     </p>
                     <p className="text-sm text-gray-500">
                       Deadline: {new Date(currentTest.testing_ticket.deadline).toLocaleDateString()}

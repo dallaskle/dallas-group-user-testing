@@ -10,19 +10,23 @@ export const testerApi = {
    * Fetch the test queue for the current tester
    */
   getQueue: async () => {
+    console.log('Fetching queue...')
     const { data: tickets, error } = await supabase
       .from('tickets')
       .select(`
         *,
-        testing_ticket:testing_tickets(*),
-        feature:features(*)
+        testing_ticket:testing_tickets!inner(
+          *,
+          feature:features(*)
+        )
       `)
       .eq('type', 'testing')
       .in('status', ['open', 'in_progress'])
       .order('created_at', { ascending: false })
 
+    console.log('Queue response:', { tickets, error })
     if (error) throw error
-    return tickets as (Ticket & { testing_ticket: TestingTicket; feature: Feature })[]
+    return tickets as (Ticket & { testing_ticket: TestingTicket & { feature: Feature } })[]
   },
 
   /**

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { Database } from '@/shared/types/database.types'
+import { testerApi } from '../api/tester.api'
 
 type Ticket = Database['public']['Tables']['tickets']['Row']
 type TestingTicket = Database['public']['Tables']['testing_tickets']['Row']
@@ -55,9 +56,8 @@ export const useTesterStore = create<TesterState & TesterActions>()(
       fetchQueue: async () => {
         try {
           set({ isLoading: true, error: null })
-          // TODO: Implement API call to fetch queue
-          // This will be implemented when we create the edge function
-          set({ isLoading: false })
+          const tickets = await testerApi.getQueue()
+          set({ queue: tickets, isLoading: false })
         } catch (error) {
           set({ error: error as Error, isLoading: false })
         }
