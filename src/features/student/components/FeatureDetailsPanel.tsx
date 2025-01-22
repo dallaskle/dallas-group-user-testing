@@ -55,6 +55,7 @@ export const FeatureDetailsPanel = ({
     try {
       setIsLoading(true)
       const data = await validationsApi.getFeatureValidations(feature.id)
+      console.log('Loaded validations:', data)
       setValidations(data)
     } catch (error) {
       console.error('Failed to load validations:', error)
@@ -183,9 +184,12 @@ export const FeatureDetailsPanel = ({
                   {validation.video_url && (
                     <div className="mt-2">
                       <video
+                        key={validation.id}
                         src={validation.video_url}
                         controls
                         className="w-full rounded-md"
+                        preload="metadata"
+                        playsInline
                       />
                     </div>
                   )}
