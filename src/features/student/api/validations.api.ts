@@ -72,8 +72,7 @@ export const validationsApi = {
     const { error: updateError } = await supabase
       .from('features')
       .update({
-        current_validations: (feature?.current_validations || 0) + 1,
-        status: status === 'Working' ? 'Successful Test' : 'Failed Test'
+        current_validations: (feature?.current_validations || 0) + 1
       })
       .eq('id', featureId)
 

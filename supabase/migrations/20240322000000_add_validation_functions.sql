@@ -11,8 +11,6 @@ security definer
 as $$
 declare
   v_validation_id uuid;
-  v_feature_status text;
-  v_required_validations int;
   v_current_validations int;
   v_ticket_record record;
 begin
@@ -47,42 +45,13 @@ begin
     where id = p_ticket_id
     returning * into v_ticket_record;
 
-    -- Get validation counts
-    select 
-      required_validations,
-      current_validations + 1
-    into
-      v_required_validations,
-      v_current_validations
-    from features
+    -- Increment validation count
+    update features
+    set current_validations = current_validations + 1
     where id = p_feature_id;
 
-    -- Update feature status based on validation count
-    if v_current_validations >= v_required_validations then
-      -- Check if all validations are successful
-      if not exists (
-        select 1
-        from validations
-        where feature_id = p_feature_id
-        and status = 'Needs Fixing'
-      ) then
-        v_feature_status := 'Successful Test';
-      else
-        v_feature_status := 'Failed Test';
-      end if;
-
-      -- Update feature status and validation count
-      update features
-      set 
-        status = v_feature_status,
-        current_validations = v_current_validations
-      where id = p_feature_id;
-    else
-      -- Just update the validation count
-      update features
-      set current_validations = v_current_validations
-      where id = p_feature_id;
-    end if;
+    -- Update feature status using the dedicated function
+    PERFORM update_feature_status(p_feature_id);
 
     -- Return success response
     return json_build_object(

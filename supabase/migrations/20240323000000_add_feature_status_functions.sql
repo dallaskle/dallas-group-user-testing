@@ -1,3 +1,10 @@
+-- Drop existing triggers and functions
+DROP TRIGGER IF EXISTS update_feature_status_testing_ticket ON testing_tickets;
+DROP TRIGGER IF EXISTS update_feature_status_validation ON validations;
+DROP FUNCTION IF EXISTS trigger_feature_status_on_testing_ticket();
+DROP FUNCTION IF EXISTS trigger_feature_status_on_validation();
+DROP FUNCTION IF EXISTS update_feature_status(UUID);
+
 -- Function to update feature status
 CREATE OR REPLACE FUNCTION update_feature_status(p_feature_id UUID)
 RETURNS void
@@ -8,18 +15,27 @@ DECLARE
   v_has_testers BOOLEAN;
   v_required_validations INTEGER;
   v_current_validations INTEGER;
-  v_has_failed_tests BOOLEAN;
+  v_successful_recent_validations INTEGER;
   v_new_status TEXT;
+  v_old_status TEXT;
 BEGIN
+  -- Log function call
+  RAISE NOTICE 'update_feature_status called for feature_id: %', p_feature_id;
+
   -- Get feature validation requirements
   SELECT 
     required_validations,
-    current_validations
+    current_validations,
+    status
   INTO
     v_required_validations,
-    v_current_validations
+    v_current_validations,
+    v_old_status
   FROM features
   WHERE id = p_feature_id;
+
+  RAISE NOTICE 'Current state: required=%, current=%, old_status=%', 
+    v_required_validations, v_current_validations, v_old_status;
 
   -- Check if feature has any assigned testers
   SELECT EXISTS (
@@ -30,31 +46,33 @@ BEGIN
     AND t.status NOT IN ('resolved', 'closed')
   ) INTO v_has_testers;
 
-  -- Check if feature has any failed tests in the last {required_validations} tests
-  SELECT EXISTS (
-    SELECT 1
-    FROM (
-      SELECT status
-      FROM validations
-      WHERE feature_id = p_feature_id
-      ORDER BY created_at DESC
-      LIMIT v_required_validations
-    ) recent_validations
-    WHERE status = 'Needs Fixing'
-  ) INTO v_has_failed_tests;
+  -- Count successful validations in the most recent {required_validations} tests
+  SELECT COUNT(*)
+  INTO v_successful_recent_validations
+  FROM (
+    SELECT status
+    FROM validations
+    WHERE feature_id = p_feature_id
+    ORDER BY created_at DESC
+    LIMIT v_required_validations
+  ) recent_validations
+  WHERE status = 'Working';
+
+  RAISE NOTICE 'Validation check: successful_recent=%, has_testers=%',
+    v_successful_recent_validations, v_has_testers;
 
   -- Determine new status
   IF v_current_validations = 0 AND NOT v_has_testers THEN
     v_new_status := 'Not Started';
+  ELSIF v_current_validations >= v_required_validations AND v_successful_recent_validations = v_required_validations THEN
+    v_new_status := 'Successful Test';
   ELSIF v_current_validations >= v_required_validations THEN
-    IF v_has_failed_tests THEN
-      v_new_status := 'Failed Test';
-    ELSE
-      v_new_status := 'Successful Test';
-    END IF;
+    v_new_status := 'Failed Test';
   ELSE
     v_new_status := 'In Progress';
   END IF;
+
+  RAISE NOTICE 'Status change: % -> %', v_old_status, v_new_status;
 
   -- Update feature status
   UPDATE features
@@ -78,11 +96,6 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER update_feature_status_testing_ticket
-  AFTER INSERT OR UPDATE OR DELETE ON testing_tickets
-  FOR EACH ROW
-  EXECUTE FUNCTION trigger_feature_status_on_testing_ticket();
-
 -- Trigger for validation changes
 CREATE OR REPLACE FUNCTION trigger_feature_status_on_validation()
 RETURNS TRIGGER
@@ -97,6 +110,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+-- Create triggers
+CREATE TRIGGER update_feature_status_testing_ticket
+  AFTER INSERT OR UPDATE OR DELETE ON testing_tickets
+  FOR EACH ROW
+  EXECUTE FUNCTION trigger_feature_status_on_testing_ticket();
 
 CREATE TRIGGER update_feature_status_validation
   AFTER INSERT OR UPDATE OR DELETE ON validations
