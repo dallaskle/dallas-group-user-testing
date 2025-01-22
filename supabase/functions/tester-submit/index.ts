@@ -1,40 +1,64 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve, createClient } from '../_shared/deps.ts'
 import { corsHeaders } from '../_shared/cors.ts'
 
 console.log('Hello from tester-submit!')
 
 serve(async (req) => {
-  // Handle CORS
+  console.log('Request received:', {
+    method: req.method,
+    url: req.url,
+    headers: Object.fromEntries(req.headers.entries())
+  })
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    console.log('Handling CORS preflight request')
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    })
   }
 
   try {
+    // Get the auth header
+    const authHeader = req.headers.get('Authorization')?.split('Bearer ')[1]
+    console.log('Auth header present:', !!authHeader)
+    if (!authHeader) {
+      console.log('Request rejected: Missing authorization header')
+      return new Response(
+        JSON.stringify({ error: 'No authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Create Supabase client
+    console.log('Initializing Supabase client')
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: authHeader },
+        },
+      }
     )
 
-    // Get the JWT from the request
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      throw new Error('No authorization header')
+    // Get user from auth header
+    console.log('Attempting to get user from auth token')
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authHeader)
+    if (userError || !user) {
+      console.log('User authentication failed:', userError)
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
+    
+    console.log('User authenticated successfully:', { userId: user?.id })
 
     // Get the request body
     const { ticketId, featureId, status, videoUrl, notes } = await req.json()
     if (!ticketId || !featureId || !status || !videoUrl) {
       throw new Error('Missing required fields')
-    }
-
-    // Get the user from the JWT
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
-    if (userError || !user) {
-      throw userError || new Error('User not found')
     }
 
     // Start a transaction
