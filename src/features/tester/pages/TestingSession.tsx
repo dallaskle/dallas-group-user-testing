@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { useTesterStore } from '../store/tester.store'
 import { EmbeddedBrowser } from '../components/EmbeddedBrowser/EmbeddedBrowser'
 import { ScreenRecorder } from '../components/ScreenRecorder/ScreenRecorder'
+import { FileUploader } from '../components/FileUploader/FileUploader'
 import { supabase } from '@/lib/supabase'
 
 const TestingSession = () => {
@@ -16,6 +17,7 @@ const TestingSession = () => {
   const { currentTest, isLoading, submitValidation, setCurrentTestById } = useTesterStore()
   const [notes, setNotes] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
+  const [fileUrl, setFileUrl] = useState('')
   const [isUploading, setIsUploading] = useState(false)
 
   // Set current test if not set
@@ -113,6 +115,10 @@ const TestingSession = () => {
     }
   }
 
+  const handleFileComplete = (url: string) => {
+    setFileUrl(url)
+  }
+
   const handleSubmit = async (status: 'Working' | 'Needs Fixing') => {
     if (!currentTest) {
       toast({
@@ -123,10 +129,10 @@ const TestingSession = () => {
       return
     }
 
-    if (!videoUrl) {
+    if (!videoUrl && !fileUrl) {
       toast({
         title: 'Error',
-        description: 'Please record and upload a video before submitting.',
+        description: 'Please record a video or upload a file before submitting.',
         variant: 'destructive',
       })
       return
@@ -145,7 +151,7 @@ const TestingSession = () => {
         ticketId: currentTest.id,
         featureId: currentTest.testing_ticket.feature.id,
         status,
-        videoUrl,
+        videoUrl: videoUrl || fileUrl, // Use whichever URL is available
         notes,
       })
 
@@ -242,17 +248,22 @@ const TestingSession = () => {
             onRecordingComplete={handleRecordingComplete}
             maxDuration={120} // 2 minutes max
           />
+          
+          <FileUploader
+            onFileComplete={handleFileComplete}
+            maxSize={10} // 10MB max
+          />
 
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Submit Validation</h2>
             <div className="space-y-4">
-              {videoUrl ? (
+              {(videoUrl || fileUrl) ? (
                 <div className="bg-green-50 text-green-700 p-4 rounded-lg">
-                  Recording uploaded successfully
+                  {videoUrl ? 'Recording' : 'File'} uploaded successfully
                 </div>
               ) : (
                 <div className="bg-yellow-50 text-yellow-700 p-4 rounded-lg">
-                  Please record and upload a video before submitting
+                  Please record a video or upload a file before submitting
                 </div>
               )}
 
@@ -260,7 +271,7 @@ const TestingSession = () => {
                 <Button
                   onClick={() => handleSubmit('Working')}
                   className="flex-1"
-                  disabled={isLoading || isUploading || !videoUrl}
+                  disabled={isLoading || isUploading || (!videoUrl && !fileUrl)}
                 >
                   Mark as Working
                 </Button>
@@ -268,7 +279,7 @@ const TestingSession = () => {
                   onClick={() => handleSubmit('Needs Fixing')}
                   variant="destructive"
                   className="flex-1"
-                  disabled={isLoading || isUploading || !videoUrl}
+                  disabled={isLoading || isUploading || (!videoUrl && !fileUrl)}
                 >
                   Mark as Needs Fixing
                 </Button>

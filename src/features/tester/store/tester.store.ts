@@ -75,7 +75,7 @@ export const useTesterStore = create<TesterState & TesterActions>()(
           await testerApi.submitValidation(validation)
           set({ 
             currentTest: null,
-            isLoading: false 
+            isLoading: false
           })
         } catch (error) {
           set({ error: error as Error, isLoading: false })
