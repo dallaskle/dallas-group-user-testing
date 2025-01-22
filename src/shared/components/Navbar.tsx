@@ -68,9 +68,14 @@ export const Navbar = () => {
           </div>
           
           <div className="flex items-center">
-            <span className="text-sm text-gray-500 mr-4">
-              {user.email}
-            </span>
+            <div className="flex flex-col items-end mr-4">
+              <span className="text-sm font-medium text-gray-900">
+                {user.name}
+              </span>
+              <span className="text-sm text-gray-500">
+                {user.email}
+              </span>
+            </div>
             <button
               onClick={handleLogout}
               className="px-4 py-2 text-sm text-red-600 hover:text-red-800 transition-colors"
