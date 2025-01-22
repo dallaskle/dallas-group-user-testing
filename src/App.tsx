@@ -21,6 +21,7 @@ const TicketsPage = React.lazy(() => import('./features/tickets/pages/TicketsPag
 const TicketDetailsPage = React.lazy(() => import('./features/tickets/pages/TicketDetailsPage'))
 const TesterDashboard = React.lazy(() => import('./features/tester/pages/TesterDashboard'))
 const TestingSession = React.lazy(() => import('./features/tester/pages/TestingSession'))
+const FeatureDetailsPage = React.lazy(() => import('./features/student/pages/FeatureDetailsPage'))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -104,6 +105,7 @@ function App() {
                   <Routes>
                     <Route index element={<StudentDashboard />} />
                     <Route path="projects/:id" element={<ProjectDetailsPage />} />
+                    <Route path="features/:featureId" element={<FeatureDetailsPage />} />
                   </Routes>
                 </AuthGuard>
               } />

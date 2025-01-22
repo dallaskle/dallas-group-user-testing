@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { X, UserCircle, ChevronDown } from 'lucide-react'
+import { X, UserCircle, ChevronDown, Maximize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -148,15 +148,26 @@ export const FeatureDetailsPanel = ({
             {feature.status}
           </Badge>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="h-8 w-8"
-          aria-label="Close panel"
-        >
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => window.open(`/student/features/${feature.id}`, '_blank')}
+            className="h-8 w-8"
+            aria-label="Open in new tab"
+          >
+            <Maximize2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8"
+            aria-label="Close panel"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Content */}
