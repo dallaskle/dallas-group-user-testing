@@ -14,7 +14,6 @@ import { Database } from '@/shared/types/database.types'
 import { cn } from '@/lib/utils'
 import { AddValidation } from './AddValidation'
 import { AddTesterDialog } from './AddTesterDialog'
-import { validationsApi } from '../api/validations.api'
 import { supabase } from '@/lib/supabase'
 import { Comments } from './Comments'
 
@@ -54,6 +53,7 @@ export const FeatureDetailsPanel = ({
   const [isLoading, setIsLoading] = useState(false)
   const [isValidationsOpen, setIsValidationsOpen] = useState(true)
   const [isTestersOpen, setIsTestersOpen] = useState(true)
+  const [commentCount, setCommentCount] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -134,58 +134,60 @@ export const FeatureDetailsPanel = ({
   return (
     <div
       className={cn(
-        'fixed inset-y-0 right-0 w-[400px] bg-background border-l transform transition-transform duration-200 ease-in-out z-50 overflow-y-auto',
+        'fixed inset-y-0 right-0 w-[400px] bg-background border-l transform transition-transform duration-200 ease-in-out z-50 flex flex-col h-screen',
         isOpen ? 'translate-x-0' : 'translate-x-full'
       )}
     >
-      {/* Header */}
-      <div className="sticky top-0 bg-background border-b p-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">{feature.name}</h2>
-          <Badge variant={
-            feature.status === 'Not Started' ? 'secondary' :
-            feature.status === 'In Progress' ? 'default' :
-            feature.status === 'Successful Test' ? 'success' :
-            'destructive'
-          }>
-            {feature.status}
-          </Badge>
+      {/* Fixed Header */}
+      <div className="flex-none bg-background border-b p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">{feature.name}</h2>
+            <Badge variant={
+              feature.status === 'Not Started' ? 'secondary' :
+              feature.status === 'In Progress' ? 'default' :
+              feature.status === 'Successful Test' ? 'success' :
+              'destructive'
+            }>
+              {feature.status}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                navigate(`/student/features/${feature.id}`)
+                onClose()
+              }}
+              className="h-8 w-8"
+              aria-label="Open feature details"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-8 w-8"
+              aria-label="Close panel"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              navigate(`/student/features/${feature.id}`)
-              onClose()
-            }}
-            className="h-8 w-8"
-            aria-label="Open feature details"
-          >
-            <Maximize2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8"
-            aria-label="Close panel"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="p-4 space-y-6">
         {/* Description */}
         <div>
           <h3 className="text-sm font-medium mb-2">Description</h3>
           <p className="text-sm text-muted-foreground">{feature.description}</p>
         </div>
+      </div>
 
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Validation Progress */}
-        <div>
+        <div className="bg-background p-4 rounded-lg border">
           <div className="flex justify-between text-sm mb-2">
             <h3 className="font-medium">Validation Progress</h3>
             <span className="text-muted-foreground">
@@ -227,7 +229,7 @@ export const FeatureDetailsPanel = ({
                 <ChevronDown
                   className={cn(
                     "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                    isTestersOpen ? "rotate-180" : ""
+                    "group-data-[state=closed]:rotate-180"
                   )}
                 />
                 <span className="sr-only">Toggle testers</span>
@@ -285,7 +287,7 @@ export const FeatureDetailsPanel = ({
                 <ChevronDown
                   className={cn(
                     "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                    isValidationsOpen ? "rotate-180" : ""
+                    "group-data-[state=closed]:rotate-180"
                   )}
                 />
                 <span className="sr-only">Toggle validations</span>
@@ -339,9 +341,33 @@ export const FeatureDetailsPanel = ({
             )}
           </CollapsibleContent>
         </Collapsible>
+      </div>
 
-        {/* Comments Section */}
-        <Comments featureId={feature.id} className="mt-6" />
+      {/* Fixed Comments Section */}
+      <div className="flex-none border-t bg-background">
+        <Collapsible defaultOpen={false} className="group">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium group-data-[state=open]:hidden">Comments ({commentCount})</h3>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="p-0 h-auto ml-auto">
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                      "group-data-[state=closed]:rotate-180"
+                    )}
+                  />
+                  <span className="sr-only">Toggle comments</span>
+                </Button>
+              </CollapsibleTrigger>
+            </div>
+            <CollapsibleContent>
+              <div className="h-[600px]">
+                <Comments featureId={feature.id} setCommentCount={setCommentCount} />
+              </div>
+            </CollapsibleContent>
+          </div>
+        </Collapsible>
       </div>
 
       <Dialog open={isAddValidationOpen} onOpenChange={setIsAddValidationOpen}>

@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { commentsApi } from '../api/comments.api'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { Database } from '@/shared/types/database.types'
+import { cn } from '@/lib/utils'
 
 type Comment = Database['public']['Tables']['comments']['Row'] & {
   author: {
@@ -16,9 +17,10 @@ type Comment = Database['public']['Tables']['comments']['Row'] & {
 interface CommentsProps {
   featureId: string
   className?: string
+  setCommentCount?: (count: number) => void
 }
 
-export const Comments = ({ featureId, className }: CommentsProps) => {
+export const Comments = ({ featureId, className, setCommentCount }: CommentsProps) => {
   const { user } = useAuthStore()
   const { toast } = useToast()
   const [comments, setComments] = useState<Comment[]>([])
@@ -35,6 +37,7 @@ export const Comments = ({ featureId, className }: CommentsProps) => {
       setIsLoading(true)
       const data = await commentsApi.getFeatureComments(featureId)
       setComments(data)
+      setCommentCount?.(data.length)
     } catch (error) {
       console.error('Failed to load comments:', error)
       toast({
@@ -57,6 +60,7 @@ export const Comments = ({ featureId, className }: CommentsProps) => {
         content: newComment.trim(),
         author_id: user.id,
       })
+      setCommentCount?.(comments.length + 1)
       setComments([...comments, comment])
       setNewComment('')
       toast({
@@ -126,95 +130,106 @@ export const Comments = ({ featureId, className }: CommentsProps) => {
   }
 
   return (
-    <div className={className}>
-      <h3 className="text-lg font-medium mb-4">Comments</h3>
+    <div className={cn("flex flex-col h-full", className)}>
+        <h3 className="text-lg font-medium mb-4">Comments</h3>
       
-      <div className="space-y-4">
-        {/* Comments List */}
-        {comments.map(comment => (
-          <div key={comment.id} className="p-4 rounded-lg border">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <UserCircle className="h-5 w-5 text-gray-500" />
-                <span className="font-medium">{comment.author?.name || 'Unknown'}</span>
-                <span className="text-sm text-muted-foreground">
-                  {new Date(comment.created_at).toLocaleDateString()}
-                </span>
-              </div>
-              {user?.id === comment.author_id && (
+      <div className="space-y-4"></div>
+      {/* Scrollable Comments List */}
+      <div className="flex-1 overflow-y-auto space-y-4 mb-4 min-h-0">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-gray-900"></div>
+          </div>
+        ) : comments.length > 0 ? (
+          comments.map(comment => (
+            <div key={comment.id} className="p-4 rounded-lg border">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setEditingComment({
-                      id: comment.id,
-                      content: comment.content
-                    })}
-                    className="h-8 w-8"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteComment(comment.id)}
-                    className="h-8 w-8 text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <UserCircle className="h-5 w-5 text-gray-500" />
+                  <span className="font-medium">{comment.author?.name || 'Unknown'}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {new Date(comment.created_at).toLocaleDateString()}
+                  </span>
                 </div>
+                {user?.id === comment.author_id && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingComment({
+                        id: comment.id,
+                        content: comment.content
+                      })}
+                      className="h-8 w-8"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteComment(comment.id)}
+                      className="h-8 w-8 text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              {editingComment?.id === comment.id ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={editingComment.content}
+                    onChange={(e) => setEditingComment({
+                      ...editingComment,
+                      content: e.target.value
+                    })}
+                    className="min-h-[100px]"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setEditingComment(null)}
+                      disabled={isLoading}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleUpdateComment}
+                      disabled={isLoading}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
               )}
             </div>
-            
-            {editingComment?.id === comment.id ? (
-              <div className="space-y-2">
-                <Textarea
-                  value={editingComment.content}
-                  onChange={(e) => setEditingComment({
-                    ...editingComment,
-                    content: e.target.value
-                  })}
-                  className="min-h-[100px]"
-                />
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setEditingComment(null)}
-                    disabled={isLoading}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleUpdateComment}
-                    disabled={isLoading}
-                  >
-                    Save
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-            )}
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            No comments yet
+          </p>
+        )}
+      </div>
 
-        {/* New Comment Input */}
-        <div className="space-y-2">
+      {/* Fixed New Comment Input */}
+      <div className="flex-none">
+        <div className="flex gap-2">
           <Textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Add a comment..."
-            className="min-h-[100px]"
+            className="min-h-[40px] max-h-[40px] resize-none py-2"
           />
-          <div className="flex justify-end">
-            <Button
-              onClick={handleSubmitComment}
-              disabled={isLoading || !newComment.trim()}
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Send
-            </Button>
-          </div>
+          <Button
+            onClick={handleSubmitComment}
+            disabled={isLoading || !newComment.trim()}
+            className="flex-none"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
