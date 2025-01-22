@@ -6,9 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Plus, Layout, LayoutDashboard, LayoutPanelLeft } from 'lucide-react'
+import { Plus, Layout, LayoutDashboard, LayoutPanelLeft, Settings } from 'lucide-react'
 import { CreateFeature } from '../components/CreateFeature'
 import { FeatureDetailsPanel } from '../components/FeatureDetailsPanel'
+import { ProjectSettingsDialog } from '../components/ProjectSettingsDialog'
 import { useProjects } from '../components/ProjectsProvider'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { supabase } from '@/lib/supabase'
@@ -39,6 +40,7 @@ export const ProjectDetailsPage = () => {
   const { id } = useParams<{ id: string }>()
   const { projects, isLoading: isProjectsLoading } = useProjects()
   const [isAddFeatureOpen, setIsAddFeatureOpen] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null)
   const [viewType, setViewType] = useState<ViewType>('grid')
   const [activeStatus, setActiveStatus] = useState<string>('Not Started')
@@ -308,14 +310,25 @@ export const ProjectDetailsPage = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold">{project.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-4xl font-bold">{project?.name}</h1>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSettingsOpen(true)}
+                className="h-8 w-8"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="sr-only">Project Settings</span>
+              </Button>
+            </div>
             <p className="text-gray-500 mt-2">
-              Based on {('project_registry' in project) ? project.project_registry.name : project.registry.name}
+              Based on {('project_registry' in project!) ? project.project_registry.name : project.registry.name}
             </p>
           </div>
           <div className="flex items-center gap-4">
             <Badge variant="outline" className="text-lg py-1">
-              {project.features.length} Features
+              {project?.features.length} Features
             </Badge>
             <Button
               onClick={() => setIsAddFeatureOpen(true)}
@@ -356,6 +369,15 @@ export const ProjectDetailsPage = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {project && (
+        <ProjectSettingsDialog
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          projectId={project.id}
+          projectName={project.name}
+        />
+      )}
 
       <FeatureDetailsPanel
         feature={selectedFeature}
