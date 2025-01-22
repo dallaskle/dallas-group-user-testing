@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -16,10 +16,7 @@ const registerSchema = z.object({
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
-  confirmPassword: z.string(),
-  role: z.enum(['student', 'tester'], {
-    required_error: 'Please select a role'
-  })
+  confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"]
@@ -30,6 +27,7 @@ type RegisterFormData = z.infer<typeof registerSchema>
 export const RegisterForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { register: registerUser } = useAuth()
+  const navigate = useNavigate()
 
   const {
     register,
@@ -52,6 +50,7 @@ export const RegisterForm = () => {
       }
 
       toast.success('Registration successful!')
+      navigate('/dashboard', { replace: true })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to register')
     } finally {
@@ -186,37 +185,6 @@ export const RegisterForm = () => {
                 {errors.confirmPassword && (
                   <p id="confirm-password-error" className="mt-1.5 text-sm text-destructive" role="alert">
                     {errors.confirmPassword.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label 
-                  htmlFor="role" 
-                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
-                >
-                  Role
-                </label>
-                <select
-                  {...register('role')}
-                  id="role"
-                  required
-                  aria-invalid={errors.role ? "true" : "false"}
-                  aria-describedby={errors.role ? "role-error" : undefined}
-                  className="w-full h-12 px-4 rounded-md border border-clay/20 
-                           bg-pearl dark:bg-charcoal 
-                           text-slate-900 dark:text-slate-100
-                           focus-natural transition-natural
-                           disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isLoading}
-                >
-                  <option value="">Select a role</option>
-                  <option value="student">Student</option>
-                  <option value="tester">Tester</option>
-                </select>
-                {errors.role && (
-                  <p id="role-error" className="mt-1.5 text-sm text-destructive" role="alert">
-                    {errors.role.message}
                   </p>
                 )}
               </div>

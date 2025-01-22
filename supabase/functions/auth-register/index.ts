@@ -18,9 +18,9 @@ serve(async (req) => {
       email, 
       password, 
       name, 
-      is_student = false,
-      is_admin = false,
-      is_tester = false
+      is_student = true,
+      is_admin = true,
+      is_tester = true
     } = await req.json()
 
     console.log(`📧 Processing registration for email: ${email}, name: ${name}`)
