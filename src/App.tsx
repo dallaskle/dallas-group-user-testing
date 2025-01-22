@@ -5,6 +5,7 @@ import { AuthGuard } from './features/auth/components/AuthGuard'
 import React, { Suspense } from 'react'
 import { useAuthStore } from './features/auth/store/auth.store'
 import { RegistryProvider } from './features/admin/components/RegistryProvider'
+import { Navbar } from './shared/components/Navbar'
 
 // Lazy load pages
 const Login = React.lazy(() => import('./features/auth/pages/Login'))
@@ -46,10 +47,13 @@ const RootRedirect = () => {
 }
 
 function App() {
+  const { user } = useAuthStore()
+  
   return (
     <Router>
       <AuthProvider>
         <main className="min-h-screen bg-gray-50">
+          {user && <Navbar />}
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Root route with smart redirect */}
