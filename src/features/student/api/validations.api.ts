@@ -31,6 +31,25 @@ export const validationsApi = {
     notes,
     videoUrl,
   }: CreateValidationParams): Promise<Validation> {
+    const user = await supabase.auth.getUser()
+    const userId = user.data.user?.id
+
+    if (!userId) {
+      throw new Error('User not authenticated')
+    }
+
+    // First get current validation count
+    const { data: feature, error: featureError } = await supabase
+      .from('features')
+      .select('current_validations')
+      .eq('id', featureId)
+      .single()
+
+    if (featureError) {
+      throw new Error(featureError.message)
+    }
+
+    // Start a transaction
     const { data: validation, error: validationError } = await supabase
       .from('validations')
       .insert([
@@ -39,7 +58,7 @@ export const validationsApi = {
           status,
           notes,
           video_url: videoUrl,
-          validated_by: (await supabase.auth.getUser()).data.user?.id,
+          validated_by: userId,
         },
       ])
       .select()
@@ -49,10 +68,14 @@ export const validationsApi = {
       throw new Error(validationError.message)
     }
 
-    // Update the feature's validation count
-    const { error: updateError } = await supabase.rpc('increment_feature_validations', {
-      p_feature_id: featureId,
-    })
+    // Update feature validation count and status
+    const { error: updateError } = await supabase
+      .from('features')
+      .update({
+        current_validations: (feature?.current_validations || 0) + 1,
+        status: status === 'Working' ? 'Successful Test' : 'Failed Test'
+      })
+      .eq('id', featureId)
 
     if (updateError) {
       throw new Error(updateError.message)
