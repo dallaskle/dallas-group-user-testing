@@ -51,6 +51,7 @@ export const FeatureDetailsPanel = ({
   const [isAddTesterOpen, setIsAddTesterOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isValidationsOpen, setIsValidationsOpen] = useState(true)
+  const [isTestersOpen, setIsTestersOpen] = useState(true)
 
   useEffect(() => {
     if (feature) {
@@ -177,6 +178,81 @@ export const FeatureDetailsPanel = ({
           <Progress value={validationProgress} className="h-2" />
         </div>
 
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          <Button 
+            className="w-full"
+            variant="outline"
+            onClick={() => setIsAddTesterOpen(true)}
+          >
+            Add Tester
+          </Button>
+          <Button 
+            className="w-full"
+            onClick={() => setIsAddValidationOpen(true)}
+          >
+            Add Validation
+          </Button>
+        </div>
+
+        {/* Assigned Testers */}
+        <Collapsible
+          open={isTestersOpen}
+          onOpenChange={setIsTestersOpen}
+          className="space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">
+              Assigned Testers ({testingTickets.length})
+            </h3>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="p-0 h-auto">
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                    isTestersOpen ? "rotate-180" : ""
+                  )}
+                />
+                <span className="sr-only">Toggle testers</span>
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent className="space-y-2">
+            {testingTickets.length > 0 ? (
+              testingTickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  className="flex items-center justify-between p-3 rounded-lg border"
+                >
+                  <div className="flex items-center gap-2">
+                    <UserCircle className="h-5 w-5 text-gray-500" />
+                    <div>
+                      <p className="text-sm font-medium">
+                        {ticket.tickets.assigned_to_user?.name || 'Unknown'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Due: {new Date(ticket.deadline).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={
+                    ticket.tickets.status === 'open' ? 'secondary' :
+                    ticket.tickets.status === 'in_progress' ? 'default' :
+                    ticket.tickets.status === 'resolved' ? 'success' :
+                    'outline'
+                  }>
+                    {ticket.tickets.status.replace('_', ' ')}
+                  </Badge>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No testers assigned yet
+              </p>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+
         {/* Validations List */}
         <Collapsible
           open={isValidationsOpen}
@@ -246,62 +322,6 @@ export const FeatureDetailsPanel = ({
             )}
           </CollapsibleContent>
         </Collapsible>
-
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button 
-            className="w-full"
-            onClick={() => setIsAddValidationOpen(true)}
-          >
-            Add Validation
-          </Button>
-          <Button 
-            className="w-full"
-            variant="outline"
-            onClick={() => setIsAddTesterOpen(true)}
-          >
-            Add Tester
-          </Button>
-        </div>
-
-        {/* Assigned Testers */}
-        <div>
-          <h3 className="text-sm font-medium mb-3">Assigned Testers</h3>
-          <div className="space-y-2">
-            {testingTickets.length > 0 ? (
-              testingTickets.map((ticket) => (
-                <div
-                  key={ticket.id}
-                  className="flex items-center justify-between p-3 rounded-lg border"
-                >
-                  <div className="flex items-center gap-2">
-                    <UserCircle className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <p className="text-sm font-medium">
-                        {ticket.tickets.assigned_to_user?.name || 'Unknown'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Due: {new Date(ticket.deadline).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant={
-                    ticket.tickets.status === 'open' ? 'secondary' :
-                    ticket.tickets.status === 'in_progress' ? 'default' :
-                    ticket.tickets.status === 'resolved' ? 'success' :
-                    'outline'
-                  }>
-                    {ticket.tickets.status.replace('_', ' ')}
-                  </Badge>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No testers assigned yet
-              </p>
-            )}
-          </div>
-        </div>
       </div>
 
       <Dialog open={isAddValidationOpen} onOpenChange={setIsAddValidationOpen}>
