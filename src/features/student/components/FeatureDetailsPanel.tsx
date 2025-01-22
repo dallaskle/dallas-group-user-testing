@@ -53,7 +53,7 @@ export const FeatureDetailsPanel = ({
   const [isLoading, setIsLoading] = useState(false)
   const [isValidationsOpen, setIsValidationsOpen] = useState(true)
   const [isTestersOpen, setIsTestersOpen] = useState(true)
-  const [commentCount, setCommentCount] = useState(null)
+  const [commentCount, setCommentCount] = useState<number | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
