@@ -24,6 +24,13 @@ export const ScreenRecorder = ({ onRecordingComplete, maxDuration = 120 }: Scree
         audio: false
       })
 
+      // Handle user cancelling screen share
+      stream.getVideoTracks()[0].onended = () => {
+        if (mediaRecorderRef.current?.state === 'recording') {
+          stopRecording()
+        }
+      }
+
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
       chunksRef.current = []
@@ -35,6 +42,15 @@ export const ScreenRecorder = ({ onRecordingComplete, maxDuration = 120 }: Scree
       }
 
       mediaRecorder.onstop = () => {
+        if (chunksRef.current.length === 0) {
+          toast({
+            title: 'Recording cancelled',
+            description: 'No video data was recorded.',
+            variant: 'default',
+          })
+          return
+        }
+
         const blob = new Blob(chunksRef.current, {
           type: 'video/webm'
         })
@@ -69,18 +85,27 @@ export const ScreenRecorder = ({ onRecordingComplete, maxDuration = 120 }: Scree
       }, maxDuration * 1000)
 
     } catch (error) {
+      if (error instanceof Error) {
+        const message = error.name === 'NotAllowedError' 
+          ? 'Permission to record screen was denied.'
+          : 'Failed to start screen recording. Please try again.'
+        
+        toast({
+          title: 'Error',
+          description: message,
+          variant: 'destructive',
+        })
+      }
       console.error('Failed to start recording:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to start screen recording. Please try again.',
-        variant: 'destructive',
-      })
     }
   }, [maxDuration, onRecordingComplete, toast])
 
   const stopRecording = () => {
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop()
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
     }
   }
 
