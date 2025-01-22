@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { AddValidation } from '../components/AddValidation'
 import { AddTesterDialog } from '../components/AddTesterDialog'
 import { supabase } from '@/lib/supabase'
+import { Comments } from '../components/Comments'
 
 type Feature = Database['public']['Tables']['features']['Row'] & {
   project: {
@@ -281,6 +282,11 @@ const FeatureDetailsPage = () => {
                 )}
               </CollapsibleContent>
             </Collapsible>
+          </div>
+
+          {/* Comments Section */}
+          <div className="bg-card rounded-lg border p-6">
+            <Comments featureId={feature.id} />
           </div>
         </div>
 

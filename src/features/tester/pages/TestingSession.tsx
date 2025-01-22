@@ -9,6 +9,7 @@ import { EmbeddedBrowser } from '../components/EmbeddedBrowser/EmbeddedBrowser'
 import { ScreenRecorder } from '../components/ScreenRecorder/ScreenRecorder'
 import { FileUploader } from '../components/FileUploader/FileUploader'
 import { supabase } from '@/lib/supabase'
+import { Comments } from '@/features/student/components/Comments'
 
 const TestingSession = () => {
   const { id } = useParams<{ id: string }>()
@@ -237,6 +238,11 @@ const TestingSession = () => {
               placeholder="Enter your test notes here..."
               className="min-h-[200px]"
             />
+          </Card>
+
+          {/* Comments Section */}
+          <Card className="p-6">
+            <Comments featureId={currentTest.testing_ticket.feature.id} />
           </Card>
         </div>
 

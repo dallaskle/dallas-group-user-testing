@@ -16,6 +16,7 @@ import { AddValidation } from './AddValidation'
 import { AddTesterDialog } from './AddTesterDialog'
 import { validationsApi } from '../api/validations.api'
 import { supabase } from '@/lib/supabase'
+import { Comments } from './Comments'
 
 type Feature = Database['public']['Tables']['features']['Row']
 type Validation = Database['public']['Tables']['validations']['Row'] & {
@@ -338,6 +339,9 @@ export const FeatureDetailsPanel = ({
             )}
           </CollapsibleContent>
         </Collapsible>
+
+        {/* Comments Section */}
+        <Comments featureId={feature.id} className="mt-6" />
       </div>
 
       <Dialog open={isAddValidationOpen} onOpenChange={setIsAddValidationOpen}>
