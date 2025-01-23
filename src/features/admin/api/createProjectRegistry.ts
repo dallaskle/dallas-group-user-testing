@@ -1,61 +1,143 @@
 import { supabase } from '@/lib/supabase'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import type { Database } from '@/shared/types/database.types'
 
-interface CreateProjectRegistryParams {
-  name: string
-  description: string
+type ProjectRegistry = Database['public']['Tables']['project_registry']['Row']
+type Feature = Database['public']['Tables']['feature_registry']['Row']
+
+export interface ProjectRegistryWithFeatures extends ProjectRegistry {
+  features: Feature[]
+  projectCount: number
 }
 
-export const createProjectRegistry = async ({
-  name,
-  description,
-}: CreateProjectRegistryParams) => {
-  const session = useAuthStore.getState().session
-  
-  if (!session?.access_token) {
-    throw new Error('No active session found. Please log in again.')
-  }
+export const projectRegistryApi = {
+  async getProjectRegistries(): Promise<ProjectRegistryWithFeatures[]> {
+    const { data: registries, error } = await supabase
+      .from('project_registry')
+      .select(`
+        *,
+        features:feature_registry(*),
+        projects:projects(count)
+      `)
+      .order('created_at', { ascending: false })
 
-  console.log('session', session)
-
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-create-project-registry`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({
-        name,
-        description,
-      }),
+    if (error) {
+      console.error('Error fetching project registries:', error)
+      throw error
     }
-  )
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to create project registry')
+    return registries.map(registry => ({
+      ...registry,
+      features: registry.features || [],
+      projectCount: (registry.projects as any)?.count || 0
+    }))
+  },
+
+  async createProjectRegistry(data: {
+    name: string
+    description: string
+  }): Promise<ProjectRegistry> {
+    const { data: registry, error } = await supabase
+      .from('project_registry')
+      .insert({
+        name: data.name,
+        description: data.description,
+        created_by: (await supabase.auth.getUser()).data.user?.id
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error creating project registry:', error)
+      throw error
+    }
+
+    return registry
+  },
+
+  async updateProjectRegistry(id: string, data: {
+    name?: string
+    description?: string
+  }): Promise<ProjectRegistry> {
+    const { data: registry, error } = await supabase
+      .from('project_registry')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating project registry:', error)
+      throw error
+    }
+
+    return registry
+  },
+
+  async deleteProjectRegistry(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('project_registry')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error deleting project registry:', error)
+      throw error
+    }
+  },
+
+  async addFeatureToRegistry(registryId: string, data: {
+    name: string
+    description: string
+    is_required: boolean
+  }): Promise<Feature> {
+    const { data: feature, error } = await supabase
+      .from('feature_registry')
+      .insert({
+        project_registry_id: registryId,
+        name: data.name,
+        description: data.description,
+        is_required: data.is_required
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error adding feature to registry:', error)
+      throw error
+    }
+
+    return feature
+  },
+
+  async updateFeature(id: string, data: {
+    name?: string
+    description?: string
+    is_required?: boolean
+  }): Promise<Feature> {
+    const { data: feature, error } = await supabase
+      .from('feature_registry')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating feature:', error)
+      throw error
+    }
+
+    return feature
+  },
+
+  async deleteFeature(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('feature_registry')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error deleting feature:', error)
+      throw error
+    }
   }
-
-  return response.json()
-}
-
-export const getProjectRegistries = async () => {
-  const { data: sessionData } = await supabase.auth.getSession()
-  
-  if (!sessionData.session?.access_token) {
-    throw new Error('Unauthorized')
-  }
-
-  const { data, error } = await supabase
-    .from('project_registry')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
 } 

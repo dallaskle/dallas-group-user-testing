@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/form'
 import { useToast } from '@/components/ui/use-toast'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { createProjectRegistry } from '../api/createProjectRegistry'
+import { projectRegistryApi } from '../api/createProjectRegistry'
 
 const projectRegistrySchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -45,7 +45,7 @@ export const CreateProjectRegistry = ({ onSuccess }: CreateProjectRegistryProps)
   const handleSubmit = async (data: ProjectRegistryForm) => {
     try {
       setIsLoading(true)
-      await createProjectRegistry(data)
+      await projectRegistryApi.createProjectRegistry(data)
       toast({
         title: 'Success',
         description: 'Project registry created successfully',
@@ -110,14 +110,11 @@ export const CreateProjectRegistry = ({ onSuccess }: CreateProjectRegistryProps)
               )}
             />
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full"
-              aria-label="Create project registry"
-            >
-              {isLoading ? 'Creating...' : 'Create Project Registry'}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Creating...' : 'Create Project Registry'}
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>

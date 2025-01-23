@@ -32,19 +32,23 @@ interface ProgressProps
 
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
-  ProgressProps
->(({ className, value, variant, size, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
+>(({ className, value, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
-    className={cn(progressVariants({ variant, size }), className)}
+    className={cn(
+      "relative h-2 w-full overflow-hidden rounded-full bg-muted",
+      className
+    )}
     {...props}
   >
     <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 transition-transform duration-300 ease-in-out"
+      className="h-full w-full flex-1 transition-all"
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
   </ProgressPrimitive.Root>
 ));
+
 Progress.displayName = ProgressPrimitive.Root.displayName;
 
 export { Progress }; 
