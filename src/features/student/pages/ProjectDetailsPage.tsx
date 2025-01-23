@@ -12,7 +12,7 @@ import { FeatureDetailsPanel } from '../components/FeatureDetailsPanel'
 import { ProjectSettingsDialog } from '../components/ProjectSettingsDialog'
 import { ValidationHistoryPanel } from '../components/ValidationHistoryPanel'
 import { useProjects } from '../components/ProjectsProvider'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { BinderTabs, BinderTabsList, BinderTabsTrigger, BinderTabsContent } from '@/components/ui/binder-tabs'
 import { supabase } from '@/lib/supabase'
 
 type Feature = Database['public']['Tables']['features']['Row']
@@ -48,6 +48,7 @@ export const ProjectDetailsPage = () => {
   const [highlightedStatus, setHighlightedStatus] = useState<string>('Not Started')
   const [project, setProject] = useState<Project | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'features' | 'history'>('features')
 
   useEffect(() => {
     const loadProject = async () => {
@@ -179,16 +180,16 @@ export const ProjectDetailsPage = () => {
 
   const renderSingleView = () => (
     <div className="space-y-6">
-      <Tabs value={activeStatus} onValueChange={setActiveStatus} className="w-full">
-        <TabsList className="inline-flex">
+      <BinderTabs value={activeStatus} onValueChange={setActiveStatus} className="w-full">
+        <BinderTabsList className="inline-flex">
           {Object.keys(featuresByStatus).map(status => (
-            <TabsTrigger key={status} value={status} className="flex items-center gap-2">
+            <BinderTabsTrigger key={status} value={status} className="flex items-center gap-2">
               {status}
               <Badge variant="secondary">{featuresByStatus[status as keyof typeof featuresByStatus].length}</Badge>
-            </TabsTrigger>
+            </BinderTabsTrigger>
           ))}
-        </TabsList>
-      </Tabs>
+        </BinderTabsList>
+      </BinderTabs>
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -230,16 +231,16 @@ export const ProjectDetailsPage = () => {
     
     return (
       <div className="space-y-6">
-        <Tabs value={highlightedStatus} onValueChange={setHighlightedStatus} className="w-full">
-          <TabsList className="inline-flex">
+        <BinderTabs value={highlightedStatus} onValueChange={setHighlightedStatus} className="w-full">
+          <BinderTabsList className="inline-flex">
             {Object.keys(featuresByStatus).map(status => (
-              <TabsTrigger key={status} value={status} className="flex items-center gap-2">
+              <BinderTabsTrigger key={status} value={status} className="flex items-center gap-2">
                 <span>{status}</span>
                 <Badge variant="secondary">{featuresByStatus[status as keyof typeof featuresByStatus].length}</Badge>
-              </TabsTrigger>
+              </BinderTabsTrigger>
             ))}
-          </TabsList>
-        </Tabs>
+          </BinderTabsList>
+        </BinderTabs>
         <div className="grid grid-cols-4 gap-6">
           <Card className="col-span-3">
             <CardHeader>
@@ -357,11 +358,18 @@ export const ProjectDetailsPage = () => {
         </Card>
       </div>
 
-      {viewContent}
-
-      <div className="mt-8">
-        <ValidationHistoryPanel projectId={id!} />
-      </div>
+      <BinderTabs defaultValue="features" className="w-full" onValueChange={(value) => setActiveTab(value as 'features' | 'history')}>
+        <BinderTabsList>
+          <BinderTabsTrigger value="features">Features</BinderTabsTrigger>
+          <BinderTabsTrigger value="history">Validation History</BinderTabsTrigger>
+        </BinderTabsList>
+        <BinderTabsContent value="features">
+          {viewContent}
+        </BinderTabsContent>
+        <BinderTabsContent value="history">
+          <ValidationHistoryPanel projectId={id!} />
+        </BinderTabsContent>
+      </BinderTabs>
 
       <Dialog open={isAddFeatureOpen} onOpenChange={setIsAddFeatureOpen}>
         <DialogContent>
