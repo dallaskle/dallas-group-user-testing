@@ -13,6 +13,9 @@ import { ProjectSettingsDialog } from '../components/ProjectSettingsDialog'
 import { ValidationHistoryPanel } from '../components/ValidationHistoryPanel'
 import { useProjects } from '../components/ProjectsProvider'
 import { BinderTabs, BinderTabsList, BinderTabsTrigger, BinderTabsContent } from '@/components/ui/binder-tabs'
+import { ProjectTicketList } from '@/features/tickets/components/TicketList/ProjectTicketList'
+import { TicketFilters } from '@/features/tickets/components/TicketFilters/TicketFilters'
+import { useTicketsStore } from '@/features/tickets/store/tickets.store'
 import { supabase } from '@/lib/supabase'
 
 type Feature = Database['public']['Tables']['features']['Row']
@@ -48,7 +51,8 @@ export const ProjectDetailsPage = () => {
   const [highlightedStatus, setHighlightedStatus] = useState<string>('Not Started')
   const [project, setProject] = useState<Project | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'features' | 'history'>('features')
+  const [activeTab, setActiveTab] = useState<'features' | 'history' | 'tickets'>('features')
+  const { clearAuditLog } = useTicketsStore()
 
   useEffect(() => {
     const loadProject = async () => {
@@ -90,6 +94,12 @@ export const ProjectDetailsPage = () => {
       loadProject()
     }
   }, [id, projects, navigate])
+
+  useEffect(() => {
+    if (activeTab === 'features') {
+      clearAuditLog()
+    }
+  }, [activeTab, clearAuditLog])
 
   const handleFeatureClick = (feature: Feature) => {
     setSelectedFeature(feature)
@@ -358,16 +368,26 @@ export const ProjectDetailsPage = () => {
         </Card>
       </div>
 
-      <BinderTabs defaultValue="features" className="w-full" onValueChange={(value) => setActiveTab(value as 'features' | 'history')}>
+      <BinderTabs defaultValue="features" className="w-full" onValueChange={(value) => setActiveTab(value as 'features' | 'history' | 'tickets')}>
         <BinderTabsList>
           <BinderTabsTrigger value="features">Features</BinderTabsTrigger>
           <BinderTabsTrigger value="history">Validation History</BinderTabsTrigger>
+          <BinderTabsTrigger value="tickets">Tickets</BinderTabsTrigger>
         </BinderTabsList>
         <BinderTabsContent value="features">
           {viewContent}
         </BinderTabsContent>
         <BinderTabsContent value="history">
           <ValidationHistoryPanel projectId={id!} />
+        </BinderTabsContent>
+        <BinderTabsContent value="tickets">
+          <div className="space-y-6">
+            <TicketFilters />
+            <ProjectTicketList 
+              className="rounded-md border" 
+              projectId={id!}
+            />
+          </div>
         </BinderTabsContent>
       </BinderTabs>
 

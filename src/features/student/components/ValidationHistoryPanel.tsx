@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -39,6 +38,10 @@ export const ValidationHistoryPanel = ({ projectId }: ValidationHistoryPanelProp
   const [filter, setFilter] = useState<'all' | 'Working' | 'Needs Fixing'>('all')
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
+  const [selectedTester, setSelectedTester] = useState<string>('all')
+
+  // Get unique testers from validations
+  const testers = [...new Set(validations.map(v => v.validator.name))].sort()
 
   const loadValidations = async () => {
     try {
@@ -78,7 +81,8 @@ export const ValidationHistoryPanel = ({ projectId }: ValidationHistoryPanelProp
   }, [sortBy, projectId])
 
   const filteredValidations = validations.filter(validation => 
-    filter === 'all' || validation.status === filter
+    (filter === 'all' || validation.status === filter) &&
+    (selectedTester === 'all' || validation.validator.name === selectedTester)
   )
 
   return (
@@ -93,6 +97,20 @@ export const ValidationHistoryPanel = ({ projectId }: ValidationHistoryPanelProp
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="Working">Working</SelectItem>
               <SelectItem value="Needs Fixing">Needs Fixing</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedTester} onValueChange={setSelectedTester}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by tester" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Testers</SelectItem>
+              {testers.map(tester => (
+                <SelectItem key={tester} value={tester}>
+                  {tester}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 

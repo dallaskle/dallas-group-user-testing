@@ -79,6 +79,7 @@ export interface ListTicketsRequest {
   priority?: TicketPriority
   assignedTo?: string
   createdBy?: string
+  projectId?: string
   page?: number
   limit?: number
 }
