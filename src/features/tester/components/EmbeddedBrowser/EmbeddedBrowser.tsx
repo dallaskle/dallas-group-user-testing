@@ -194,9 +194,16 @@ export const EmbeddedBrowser = ({
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           displaySurface: 'browser',
+          width: { ideal: iframe.clientWidth },
+          height: { ideal: iframe.clientHeight },
+          frameRate: { ideal: 30 },
+          cursor: 'always'
         },
-        audio: false
-      })
+        audio: false,
+        systemAudio: 'exclude',
+        surfaceSwitching: 'include',
+        selfBrowserSurface: 'include'
+      } as DisplayMediaStreamOptions)
 
       // Handle user cancelling screen share
       stream.getVideoTracks()[0].onended = () => {
