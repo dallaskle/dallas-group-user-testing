@@ -5,11 +5,25 @@ type Ticket = Database['public']['Tables']['tickets']['Row']
 type TestingTicket = Database['public']['Tables']['testing_tickets']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
 type Validation = Database['public']['Tables']['validations']['Row']
+type User = Database['public']['Tables']['users']['Row']
+type Project = Database['public']['Tables']['projects']['Row']
+
+type EnhancedValidation = Validation & {
+  validated_by: User
+}
+
+type EnhancedFeature = Feature & {
+  project: Project & {
+    student: User
+  }
+  validations: EnhancedValidation[]
+}
 
 type EnhancedTicket = Ticket & {
+  created_by_user: User
   testing_ticket: TestingTicket & {
-    feature: Feature
-    validation: Validation | null
+    feature: EnhancedFeature
+    validation: EnhancedValidation | null
   }
 }
 
@@ -26,10 +40,24 @@ export const testerApi = {
       .from('tickets')
       .select(`
         *,
+        created_by_user:users!tickets_created_by_fkey(*),
         testing_ticket:testing_tickets!inner(
           *,
-          feature:features(*),
-          validation:validations(*)
+          feature:features(
+            *,
+            project:projects(
+              *,
+              student:users(*)
+            ),
+            validations(
+              *,
+              validated_by:users(*)
+            )
+          ),
+          validation:validations(
+            *,
+            validated_by:users(*)
+          )
         )
       `)
       .eq('type', 'testing')

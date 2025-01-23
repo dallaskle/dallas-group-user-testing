@@ -3,15 +3,29 @@ import { devtools } from 'zustand/middleware'
 import { Database } from '@/shared/types/database.types'
 import { testerApi } from '../api/tester.api'
 
-type Ticket = Database['public']['Tables']['tickets']['Row']
-type TestingTicket = Database['public']['Tables']['testing_tickets']['Row']
+type User = Database['public']['Tables']['users']['Row']
+type Project = Database['public']['Tables']['projects']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
 type Validation = Database['public']['Tables']['validations']['Row']
+type TestingTicket = Database['public']['Tables']['testing_tickets']['Row']
+type Ticket = Database['public']['Tables']['tickets']['Row']
+
+type EnhancedValidation = Validation & {
+  validated_by: User
+}
+
+type EnhancedFeature = Feature & {
+  project: Project & {
+    student: User
+  }
+  validations: EnhancedValidation[]
+}
 
 type EnhancedTicket = Ticket & {
+  created_by_user: User
   testing_ticket: TestingTicket & {
-    feature: Feature
-    validation: Validation | null
+    feature: EnhancedFeature
+    validation: EnhancedValidation | null
   }
 }
 

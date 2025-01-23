@@ -7,7 +7,6 @@ import { useToast } from '@/components/ui/use-toast'
 import { useTesterStore } from '../store/tester.store'
 import { TesterMetrics } from '@/features/admin/components/TesterMetrics'
 import { QAScorecard } from '@/features/admin/components/QAScorecard'
-import { Database } from '@/shared/types/database.types'
 import { Play } from 'lucide-react'
 import {
   Dialog,
@@ -15,15 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-
-type Validation = Database['public']['Tables']['validations']['Row']
-type TestingTicket = Database['public']['Tables']['testing_tickets']['Row'] & {
-  feature: Database['public']['Tables']['features']['Row']
-  validation: Validation | null
-}
-type Ticket = Database['public']['Tables']['tickets']['Row'] & {
-  testing_ticket: TestingTicket
-}
 
 const TesterDashboard = () => {
   const navigate = useNavigate()
@@ -65,9 +55,45 @@ const TesterDashboard = () => {
                     <div className="flex justify-between items-start">
                       <div className="space-y-2">
                         <h3 className="font-semibold text-lg">{ticket.title}</h3>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-gray-600 space-y-1">
                           <p>Feature: {ticket.testing_ticket.feature.name}</p>
+                          <p>Project: {ticket.testing_ticket.feature.project.name}</p>
+                          <p>Student: {ticket.testing_ticket.feature.project.student.name}</p>
+                          <p>Assigned by: {ticket.created_by_user.name}</p>
                           <p>Deadline: {new Date(ticket.testing_ticket.deadline).toLocaleDateString()}</p>
+                          
+                          <div className="mt-2">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">
+                                {ticket.testing_ticket.feature.validations.length > 0 
+                                  ? "Previous Validations"
+                                  : "No Previous Validations"
+                                }
+                              </p>
+                              <span className="text-sm text-gray-500">
+                                ({ticket.testing_ticket.feature.current_validations} of {ticket.testing_ticket.feature.required_validations} required)
+                              </span>
+                            </div>
+                            {ticket.testing_ticket.feature.validations.length > 0 && (
+                              <div className="ml-2 mt-1 space-y-2">
+                                {ticket.testing_ticket.feature.validations.map((validation) => (
+                                  <div key={validation.id} className="flex items-center space-x-2">
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                      validation.status === 'Working' 
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'
+                                    }`}>
+                                      {validation.status}
+                                    </span>
+                                    <span className="text-gray-500">by {validation.validated_by.name}</span>
+                                    {validation.notes && (
+                                      <span className="text-gray-500">- {validation.notes}</span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <p className="text-gray-700 mt-4">{ticket.description}</p>
                       </div>
@@ -79,6 +105,7 @@ const TesterDashboard = () => {
                         variant="secondary"
                         className="shrink-0"
                       >
+                        <Play className="h-4 w-4 mr-2" />
                         Start Testing
                       </Button>
                     </div>
