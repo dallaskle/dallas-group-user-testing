@@ -116,58 +116,50 @@ export function OutstandingTestingTickets() {
                   onClick={() => handleTicketClick(ticket.id)}
                   className="flex items-start gap-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
                 >
-                  <div className="mt-1">
+                  <div className="mt-1 flex-shrink-0">
                     {ticket.ticket.priority === 'high' ? (
                       <AlertTriangle className="h-4 w-4 text-red-500" />
                     ) : (
                       <Clock className="h-4 w-4 text-blue-500" />
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            <span className="font-medium">{ticket.feature.name}</span>
-                            <span className="text-muted-foreground"> in </span>
-                            <span className="font-medium">{ticket.feature.project.name}</span>
-                          </p>
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center justify-between text-xs text-muted-foreground my-2">
-                              <span>Validations: {ticket.feature.current_validations}/{ticket.feature.required_validations}</span>
-                              <span>{formatDeadline(ticket.deadline)}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-xs">
-                              <div className="text-muted-foreground">
-                                {ticket.ticket.assignedTo ? (
-                                  <>Assigned to <span className="font-medium">{ticket.ticket.assignedTo.name}</span></>
-                                ) : (
-                                  'Unassigned'
-                                )}
-                              </div>
-                              <Badge
-                                className={priorityColors[ticket.ticket.priority]}
-                                variant="secondary"
-                              >
-                                {ticket.ticket.priority}
-                              </Badge>
-                            </div>
-                            {ticket.validation && (
-                              <div className="flex items-center gap-1 text-xs">
-                                {ticket.validation.status === 'Working' ? (
-                                  <CheckCircle2 className={`h-3 w-3 ${validationStatusColors[ticket.validation.status]}`} />
-                                ) : (
-                                  <XCircle className={`h-3 w-3 ${validationStatusColors[ticket.validation.status]}`} />
-                                )}
-                                <span className={validationStatusColors[ticket.validation.status]}>
-                                  {ticket.validation.status}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                  <div className="flex-1 flex flex-col gap-2">
+                    <div className="text-sm">
+                      <span className="font-medium">{ticket.feature.name}</span>
+                      <span className="text-muted-foreground"> in </span>
+                      <span className="font-medium">{ticket.feature.project.name}</span>
                     </div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Validations: {ticket.feature.current_validations}/{ticket.feature.required_validations}</span>
+                      <span className="mr-2">{formatDeadline(ticket.deadline)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        {ticket.ticket.assignedTo ? (
+                          <>Assigned to <span className="font-medium">{ticket.ticket.assignedTo.name}</span></>
+                        ) : (
+                          'Unassigned'
+                        )}
+                      </span>
+                      <Badge
+                        className={`${priorityColors[ticket.ticket.priority]}`}
+                        variant="secondary"
+                      >
+                        {ticket.ticket.priority}
+                      </Badge>
+                    </div>
+                    {ticket.validation && (
+                      <div className="flex items-center gap-1 text-xs mt-1">
+                        {ticket.validation.status === 'Working' ? (
+                          <CheckCircle2 className={`h-3 w-3 ${validationStatusColors[ticket.validation.status]}`} />
+                        ) : (
+                          <XCircle className={`h-3 w-3 ${validationStatusColors[ticket.validation.status]}`} />
+                        )}
+                        <span className={validationStatusColors[ticket.validation.status]}>
+                          {ticket.validation.status}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
