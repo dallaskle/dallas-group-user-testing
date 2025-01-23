@@ -11,6 +11,7 @@ import { OutstandingTestingTickets } from '../components/dashboard/OutstandingTe
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
+import { CreateProjectModal } from '../components/projects/CreateProjectModal'
 
 interface DashboardData {
   projects: Array<{
@@ -60,6 +61,7 @@ export const StudentDashboard = () => {
   const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -112,13 +114,18 @@ export const StudentDashboard = () => {
           <p className="text-gray-500 mt-2">Here's an overview of your projects and recent activity.</p>
         </div>
         <Button 
-          onClick={() => navigate('/student/projects/new')} 
-          className="gap-2 bg-green-700 hover:bg-green-800"
+          onClick={() => setIsCreateModalOpen(true)} 
+          className="gap-2"
         >
           <Plus className="h-4 w-4" />
           Create Project
         </Button>
       </div>
+
+      <CreateProjectModal 
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
 
       <DashboardStats stats={dashboardData.stats} />
 
