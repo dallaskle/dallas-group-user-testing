@@ -56,38 +56,59 @@ export const RecentActivity = ({ activities }: RecentActivityProps) => {
     switch (activity.type) {
       case 'validation':
         return (
-          <div className="flex items-center gap-2">
-            <Badge variant={activity.details.status === 'Working' ? 'success' : 'destructive'}>
-              {activity.details.status}
-            </Badge>
-            <span>validation on</span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Badge variant={activity.details.status === 'Working' ? 'success' : 'destructive'}>
+                {activity.details.status}
+              </Badge>
+              <span>validation on</span>
+            </div>
+            <p className="text-sm">
+              <span className="font-medium">{activity.feature_name}</span>
+              <span className="text-muted-foreground"> in </span>
+              <span className="font-medium">{activity.project_name}</span>
+            </p>
           </div>
         )
       case 'comment':
         return (
-          <div className="flex items-center gap-2">
-            <span>commented:</span>
-            <span className="text-muted-foreground line-clamp-1">
-              {activity.details.content}
-            </span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span>commented:</span>
+              <span className="text-muted-foreground line-clamp-1">
+                {activity.details.content}
+              </span>
+            </div>
+            <p className="text-sm">
+              <span className="font-medium">{activity.feature_name}</span>
+              <span className="text-muted-foreground"> in </span>
+              <span className="font-medium">{activity.project_name}</span>
+            </p>
           </div>
         )
       case 'ticket':
         return (
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">{activity.details.status}</Badge>
-            <span className="text-muted-foreground line-clamp-1">
-              {activity.details.title}
-            </span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">{activity.details.status}</Badge>
+              <span className="text-muted-foreground line-clamp-1">
+                {activity.details.title}
+              </span>
+            </div>
+            <p className="text-sm">
+              <span className="font-medium">{activity.feature_name}</span>
+              <span className="text-muted-foreground"> in </span>
+              <span className="font-medium">{activity.project_name}</span>
+            </p>
           </div>
         )
     }
   }
 
   return (
-    <Card className="col-span-1">
+    <Card className="bg-muted/50">
       <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
+        <CardTitle className="text-lg">Recent Activity</CardTitle>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px] pr-4">
@@ -121,11 +142,6 @@ export const RecentActivity = ({ activities }: RecentActivityProps) => {
                     <time className="text-xs text-muted-foreground whitespace-nowrap">
                       {formatDate(activity.created_at)}
                     </time>
-                  </div>
-                  <div className="mt-1 text-sm">
-                    <span className="font-medium">{activity.feature_name}</span>
-                    <span className="text-muted-foreground"> in </span>
-                    <span className="font-medium">{activity.project_name}</span>
                   </div>
                 </div>
               </div>

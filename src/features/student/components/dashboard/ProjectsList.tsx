@@ -31,7 +31,7 @@ export const ProjectsList = ({ projects }: ProjectsListProps) => {
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">My Projects</h2>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         {projects.map((project) => {
           const validationProgress = project.required_validation_count > 0
             ? (project.validation_count / project.required_validation_count) * 100
@@ -51,7 +51,11 @@ export const ProjectsList = ({ projects }: ProjectsListProps) => {
           )
 
           return (
-            <Card key={project.id} className="hover:border-primary/50 transition-colors">
+            <Card 
+              key={project.id} 
+              className="bg-muted/50 hover:border-primary/50 transition-colors group cursor-pointer"
+              onClick={() => navigate(`/student/projects/${project.id}`)}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
@@ -63,7 +67,7 @@ export const ProjectsList = ({ projects }: ProjectsListProps) => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => navigate(`/student/projects/${project.id}`)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -76,7 +80,7 @@ export const ProjectsList = ({ projects }: ProjectsListProps) => {
                       <span className="text-muted-foreground">Validation Progress</span>
                       <span className="font-medium">{Math.round(validationProgress)}%</span>
                     </div>
-                    <Progress value={validationProgress} className="h-2" />
+                    <Progress value={validationProgress} className="h-2 bg-secondary" />
                     <p className="text-xs text-muted-foreground mt-2">
                       {project.validation_count} of {project.required_validation_count} validations
                     </p>
