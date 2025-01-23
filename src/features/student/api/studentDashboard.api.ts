@@ -168,6 +168,8 @@ interface OutstandingTestingTicket {
     project: {
       name: string
     }
+    current_validations: number
+    required_validations: number
   }
   ticket: {
     title: string
@@ -176,6 +178,10 @@ interface OutstandingTestingTicket {
     assignedTo?: {
       name: string
     }
+  }
+  validation?: {
+    status: string
+    notes?: string
   }
 }
 
@@ -187,6 +193,8 @@ export const studentDashboardApi = {
       .select(`
         id,
         name,
+        current_validations,
+        required_validations,
         project:projects!inner(
           name,
           student_id
@@ -208,6 +216,11 @@ export const studentDashboardApi = {
         id,
         deadline,
         feature_id,
+        validation_id,
+        validation:validations(
+          status,
+          notes
+        ),
         ticket:tickets!inner(
           title,
           status,
@@ -238,14 +251,17 @@ export const studentDashboardApi = {
           name: feature.name,
           project: {
             name: feature.project.name
-          }
+          },
+          current_validations: feature.current_validations,
+          required_validations: feature.required_validations
         },
         ticket: {
           title: testingTicket.ticket.title,
           status: testingTicket.ticket.status,
           priority: testingTicket.ticket.priority,
           assignedTo: testingTicket.ticket.assignedToUser
-        }
+        },
+        validation: testingTicket.validation?.[0]
       }
     })
   },

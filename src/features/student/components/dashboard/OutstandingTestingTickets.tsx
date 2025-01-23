@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Clock, AlertTriangle } from 'lucide-react'
+import { Clock, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { studentDashboardApi } from '../../api/studentDashboard.api'
 
@@ -15,6 +15,8 @@ interface OutstandingTestingTicket {
     project: {
       name: string
     }
+    current_validations: number
+    required_validations: number
   }
   ticket: {
     title: string
@@ -24,12 +26,21 @@ interface OutstandingTestingTicket {
       name: string
     }
   }
+  validation?: {
+    status: string
+    notes?: string
+  }
 }
 
 const priorityColors: Record<string, string> = {
   low: 'bg-gray-100 text-gray-800',
   medium: 'bg-yellow-100 text-yellow-800',
   high: 'bg-red-100 text-red-800',
+}
+
+const validationStatusColors: Record<string, string> = {
+  'Working': 'text-green-500',
+  'Needs Fixing': 'text-red-500',
 }
 
 export function OutstandingTestingTickets() {
@@ -116,31 +127,45 @@ export function OutstandingTestingTickets() {
                     <div className="flex flex-col gap-2">
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
-                          
                           <p className="text-sm">
                             <span className="font-medium">{ticket.feature.name}</span>
                             <span className="text-muted-foreground"> in </span>
                             <span className="font-medium">{ticket.feature.project.name}</span>
                           </p>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground my-2">
+                              <span>Validations: {ticket.feature.current_validations}/{ticket.feature.required_validations}</span>
+                              <span>{formatDeadline(ticket.deadline)}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="text-muted-foreground">
+                                {ticket.ticket.assignedTo ? (
+                                  <>Assigned to <span className="font-medium">{ticket.ticket.assignedTo.name}</span></>
+                                ) : (
+                                  'Unassigned'
+                                )}
+                              </div>
+                              <Badge
+                                className={priorityColors[ticket.ticket.priority]}
+                                variant="secondary"
+                              >
+                                {ticket.ticket.priority}
+                              </Badge>
+                            </div>
+                            {ticket.validation && (
+                              <div className="flex items-center gap-1 text-xs">
+                                {ticket.validation.status === 'Working' ? (
+                                  <CheckCircle2 className={`h-3 w-3 ${validationStatusColors[ticket.validation.status]}`} />
+                                ) : (
+                                  <XCircle className={`h-3 w-3 ${validationStatusColors[ticket.validation.status]}`} />
+                                )}
+                                <span className={validationStatusColors[ticket.validation.status]}>
+                                  {ticket.validation.status}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <time className="text-xs text-muted-foreground whitespace-nowrap">
-                          {formatDeadline(ticket.deadline)}
-                        </time>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-muted-foreground">
-                          {ticket.ticket.assignedTo ? (
-                            <>Assigned to <span className="font-medium">{ticket.ticket.assignedTo.name}</span></>
-                          ) : (
-                            'Unassigned'
-                          )}
-                        </div>
-                        <Badge
-                          className={priorityColors[ticket.ticket.priority]}
-                          variant="secondary"
-                        >
-                          {ticket.ticket.priority}
-                        </Badge>
                       </div>
                     </div>
                   </div>
