@@ -1,3 +1,5 @@
+<--Implemented-->
+
 ## Step-by-Step Plan for a Student Dashboard
 
 Below is a structured plan (in pseudocode) describing how to enhance the Student Dashboard so that it provides the best high-level view of each student’s projects, features, validations, and tickets.
