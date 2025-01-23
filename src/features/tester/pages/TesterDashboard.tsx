@@ -7,6 +7,16 @@ import { useToast } from '@/components/ui/use-toast'
 import { useTesterStore } from '../store/tester.store'
 import { TesterMetrics } from '@/features/admin/components/TesterMetrics'
 import { QAScorecard } from '@/features/admin/components/QAScorecard'
+import { Database } from '@/shared/types/database.types'
+
+type Validation = Database['public']['Tables']['validations']['Row']
+type TestingTicket = Database['public']['Tables']['testing_tickets']['Row'] & {
+  feature: Database['public']['Tables']['features']['Row']
+  validation: Validation | null
+}
+type Ticket = Database['public']['Tables']['tickets']['Row'] & {
+  testing_ticket: TestingTicket
+}
 
 const TesterDashboard = () => {
   const navigate = useNavigate()
@@ -95,6 +105,31 @@ const TesterDashboard = () => {
                       <div className="text-sm text-gray-600">
                         <p>Feature: {ticket.testing_ticket.feature.name}</p>
                         <p>Completed: {new Date(ticket.updated_at).toLocaleDateString()}</p>
+                        {ticket.testing_ticket.validation && (
+                          <>
+                            <p className="mt-2 font-medium">Validation Details:</p>
+                            <div className="ml-2">
+                              <p>Status: <span className={
+                                ticket.testing_ticket.validation.status === 'Working' 
+                                  ? 'text-green-600 font-medium'
+                                  : 'text-red-600 font-medium'
+                              }>
+                                {ticket.testing_ticket.validation.status}
+                              </span></p>
+                              {ticket.testing_ticket.validation.notes && (
+                                <p>Notes: {ticket.testing_ticket.validation.notes}</p>
+                              )}
+                              <a 
+                                href={ticket.testing_ticket.validation.video_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                View Test Video
+                              </a>
+                            </div>
+                          </>
+                        )}
                       </div>
                       <p className="text-gray-700 mt-4">{ticket.description}</p>
                     </div>

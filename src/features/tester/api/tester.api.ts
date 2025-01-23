@@ -4,6 +4,14 @@ import { Database } from '@/shared/types/database.types'
 type Ticket = Database['public']['Tables']['tickets']['Row']
 type TestingTicket = Database['public']['Tables']['testing_tickets']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
+type Validation = Database['public']['Tables']['validations']['Row']
+
+type EnhancedTicket = Ticket & {
+  testing_ticket: TestingTicket & {
+    feature: Feature
+    validation: Validation | null
+  }
+}
 
 export const testerApi = {
   /**
@@ -20,7 +28,8 @@ export const testerApi = {
         *,
         testing_ticket:testing_tickets!inner(
           *,
-          feature:features(*)
+          feature:features(*),
+          validation:validations(*)
         )
       `)
       .eq('type', 'testing')
@@ -30,7 +39,7 @@ export const testerApi = {
 
     console.log('Queue response:', { tickets, error })
     if (error) throw error
-    return tickets as (Ticket & { testing_ticket: TestingTicket & { feature: Feature } })[]
+    return tickets as EnhancedTicket[]
   },
 
   /**
@@ -134,7 +143,8 @@ export const testerApi = {
         *,
         testing_ticket:testing_tickets!inner(
           *,
-          feature:features(*)
+          feature:features(*),
+          validation:validations(*)
         )
       `)
       .eq('type', 'testing')
@@ -143,6 +153,6 @@ export const testerApi = {
       .order('updated_at', { ascending: false })
 
     if (error) throw error
-    return tickets as (Ticket & { testing_ticket: TestingTicket & { feature: Feature } })[]
+    return tickets as EnhancedTicket[]
   }
 } 

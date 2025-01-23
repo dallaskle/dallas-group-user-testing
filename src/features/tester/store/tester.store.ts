@@ -6,10 +6,12 @@ import { testerApi } from '../api/tester.api'
 type Ticket = Database['public']['Tables']['tickets']['Row']
 type TestingTicket = Database['public']['Tables']['testing_tickets']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
+type Validation = Database['public']['Tables']['validations']['Row']
 
 type EnhancedTicket = Ticket & {
   testing_ticket: TestingTicket & {
     feature: Feature
+    validation: Validation | null
   }
 }
 
