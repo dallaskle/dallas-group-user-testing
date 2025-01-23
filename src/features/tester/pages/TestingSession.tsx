@@ -291,16 +291,6 @@ const TestingSession = () => {
             )}
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Test Notes</h2>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Enter your test notes here..."
-              className="min-h-[200px]"
-            />
-          </Card>
-
           {/* Comments Section */}
           <Card className="p-6">
             <Comments featureId={currentTest.testing_ticket.feature.id} />
@@ -320,6 +310,16 @@ const TestingSession = () => {
             onFileComplete={handleFileComplete}
             maxSize={10} // 10MB max
           />
+
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Test Notes</h2>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Enter your test notes here..."
+              className="min-h-[200px]"
+            />
+          </Card>
 
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Submit Validation</h2>
