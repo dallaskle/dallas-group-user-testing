@@ -20,6 +20,9 @@ interface OutstandingTestingTicket {
     title: string
     status: string
     priority: string
+    assignedTo?: {
+      name: string
+    }
   }
 }
 
@@ -110,30 +113,35 @@ export function OutstandingTestingTickets() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex-1">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-start justify-between">
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              className={priorityColors[ticket.ticket.priority]}
-                              variant="secondary"
-                            >
-                              {ticket.ticket.priority}
-                            </Badge>
-                            <span className="text-muted-foreground line-clamp-1">
-                              {ticket.ticket.title}
-                            </span>
-                          </div>
+                          
                           <p className="text-sm">
                             <span className="font-medium">{ticket.feature.name}</span>
                             <span className="text-muted-foreground"> in </span>
                             <span className="font-medium">{ticket.feature.project.name}</span>
                           </p>
                         </div>
+                        <time className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDeadline(ticket.deadline)}
+                        </time>
                       </div>
-                      <time className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDeadline(ticket.deadline)}
-                      </time>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-muted-foreground">
+                          {ticket.ticket.assignedTo ? (
+                            <>Assigned to <span className="font-medium">{ticket.ticket.assignedTo.name}</span></>
+                          ) : (
+                            'Unassigned'
+                          )}
+                        </div>
+                        <Badge
+                          className={priorityColors[ticket.ticket.priority]}
+                          variant="secondary"
+                        >
+                          {ticket.ticket.priority}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 </div>

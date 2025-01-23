@@ -173,6 +173,9 @@ interface OutstandingTestingTicket {
     title: string
     status: string
     priority: string
+    assignedTo?: {
+      name: string
+    }
   }
 }
 
@@ -208,7 +211,11 @@ export const studentDashboardApi = {
         ticket:tickets!inner(
           title,
           status,
-          priority
+          priority,
+          assigned_to,
+          assignedToUser:users!tickets_assigned_to_fkey(
+            name
+          )
         )
       `)
       .in('feature_id', featureIds)
@@ -236,7 +243,8 @@ export const studentDashboardApi = {
         ticket: {
           title: testingTicket.ticket.title,
           status: testingTicket.ticket.status,
-          priority: testingTicket.ticket.priority
+          priority: testingTicket.ticket.priority,
+          assignedTo: testingTicket.ticket.assignedToUser
         }
       }
     })
