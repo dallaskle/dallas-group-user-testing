@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,13 @@ import { useTesterStore } from '../store/tester.store'
 import { TesterMetrics } from '@/features/admin/components/TesterMetrics'
 import { QAScorecard } from '@/features/admin/components/QAScorecard'
 import { Database } from '@/shared/types/database.types'
+import { Play } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 type Validation = Database['public']['Tables']['validations']['Row']
 type TestingTicket = Database['public']['Tables']['testing_tickets']['Row'] & {
@@ -22,6 +29,7 @@ const TesterDashboard = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { queue, ticketHistory, fetchQueue, fetchTicketHistory, isLoading } = useTesterStore()
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
 
   useEffect(() => {
     fetchQueue()
@@ -119,14 +127,15 @@ const TesterDashboard = () => {
                               {ticket.testing_ticket.validation.notes && (
                                 <p>Notes: {ticket.testing_ticket.validation.notes}</p>
                               )}
-                              <a 
-                                href={ticket.testing_ticket.validation.video_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline"
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-blue-600 hover:text-blue-800 p-0"
+                                onClick={() => setSelectedVideo(ticket.testing_ticket.validation?.video_url || null)}
                               >
+                                <Play className="h-4 w-4 mr-2" />
                                 View Test Video
-                              </a>
+                              </Button>
                             </div>
                           </>
                         )}
@@ -151,6 +160,25 @@ const TesterDashboard = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Validation Recording</DialogTitle>
+          </DialogHeader>
+          {selectedVideo && (
+            <div className="aspect-video">
+              <video
+                src={selectedVideo}
+                controls
+                className="w-full h-full rounded-lg"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
