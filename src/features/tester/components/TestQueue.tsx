@@ -136,7 +136,7 @@ export const TestQueue = () => {
       </div>
 
       {/* Filtering and Sorting Controls */}
-      <Card className="p-4">
+      <Card className="p-4" hover={false}>
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
             <div className="flex-1">
@@ -151,7 +151,7 @@ export const TestQueue = () => {
                 {searchQuery && (
                   <button
                     onClick={handleClearSearch}
-                    className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
+                    className="absolute right-2 top-2.5 text-gray-400"
                   >
                     <X className="h-4 w-4" />
                   </button>
