@@ -119,5 +119,30 @@ export const testerApi = {
 
     if (error) throw error
     return data
+  },
+
+  /**
+   * Get tester's completed ticket history
+   */
+  getTicketHistory: async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('No user logged in')
+
+    const { data: tickets, error } = await supabase
+      .from('tickets')
+      .select(`
+        *,
+        testing_ticket:testing_tickets!inner(
+          *,
+          feature:features(*)
+        )
+      `)
+      .eq('type', 'testing')
+      .eq('assigned_to', user.id)
+      .in('status', ['resolved', 'closed'])
+      .order('updated_at', { ascending: false })
+
+    if (error) throw error
+    return tickets as (Ticket & { testing_ticket: TestingTicket & { feature: Feature } })[]
   }
 } 

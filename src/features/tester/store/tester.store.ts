@@ -24,6 +24,7 @@ interface TesterState {
     avgResponseTime: number
     validationRate: number
   }
+  ticketHistory: EnhancedTicket[]
 }
 
 interface TesterActions {
@@ -36,6 +37,9 @@ interface TesterActions {
     videoUrl: string
     notes?: string
   }) => Promise<void>
+  
+  // Ticket history
+  fetchTicketHistory: () => Promise<void>
   
   // Local state management
   setCurrentTest: (test: TesterState['currentTest']) => void
@@ -57,6 +61,7 @@ export const useTesterStore = create<TesterState & TesterActions>()(
         avgResponseTime: 0,
         validationRate: 0
       },
+      ticketHistory: [],
 
       // Queue management
       fetchQueue: async () => {
@@ -80,6 +85,17 @@ export const useTesterStore = create<TesterState & TesterActions>()(
         } catch (error) {
           set({ error: error as Error, isLoading: false })
           throw error
+        }
+      },
+
+      // Ticket history
+      fetchTicketHistory: async () => {
+        try {
+          set({ isLoading: true, error: null })
+          const tickets = await testerApi.getTicketHistory()
+          set({ ticketHistory: tickets, isLoading: false })
+        } catch (error) {
+          set({ error: error as Error, isLoading: false })
         }
       },
 

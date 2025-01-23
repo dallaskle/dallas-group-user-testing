@@ -11,11 +11,12 @@ import { QAScorecard } from '@/features/admin/components/QAScorecard'
 const TesterDashboard = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { queue, currentTest, fetchQueue, isLoading } = useTesterStore()
+  const { queue, ticketHistory, fetchQueue, fetchTicketHistory, isLoading } = useTesterStore()
 
   useEffect(() => {
     fetchQueue()
-  }, [fetchQueue])
+    fetchTicketHistory()
+  }, [fetchQueue, fetchTicketHistory])
 
   return (
     <div className="container mx-auto py-8">
@@ -24,7 +25,7 @@ const TesterDashboard = () => {
       <Tabs defaultValue="queue">
         <TabsList className="grid w-full grid-cols-3 mb-8">
           <TabsTrigger value="queue">Test Queue</TabsTrigger>
-          <TabsTrigger value="current">Current Test</TabsTrigger>
+          <TabsTrigger value="history">Test History</TabsTrigger>
           <TabsTrigger value="metrics">My Metrics</TabsTrigger>
         </TabsList>
 
@@ -74,33 +75,35 @@ const TesterDashboard = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="current">
+        <TabsContent value="history">
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Current Test</h2>
-            {currentTest ? (
-              <Card className="p-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-lg">{currentTest.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Feature: {currentTest.testing_ticket.feature.name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Deadline: {new Date(currentTest.testing_ticket.deadline).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => navigate(`/testing/${currentTest.id}`)}
-                    variant="secondary"
-                  >
-                    Continue Testing
-                  </Button>
-                </div>
-                <p className="mt-4 text-gray-700">{currentTest.description}</p>
-              </Card>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Test History</h2>
+              <Button onClick={() => fetchTicketHistory()}>Refresh History</Button>
+            </div>
+
+            {isLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              </div>
+            ) : ticketHistory.length > 0 ? (
+              <div className="grid gap-4">
+                {ticketHistory.map((ticket) => (
+                  <Card key={ticket.id} className="p-6">
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-lg">{ticket.title}</h3>
+                      <div className="text-sm text-gray-600">
+                        <p>Feature: {ticket.testing_ticket.feature.name}</p>
+                        <p>Completed: {new Date(ticket.updated_at).toLocaleDateString()}</p>
+                      </div>
+                      <p className="text-gray-700 mt-4">{ticket.description}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
             ) : (
               <Card className="p-6">
-                <p className="text-center text-gray-500">No active test</p>
+                <p className="text-center text-gray-500">No completed tests</p>
               </Card>
             )}
           </div>
