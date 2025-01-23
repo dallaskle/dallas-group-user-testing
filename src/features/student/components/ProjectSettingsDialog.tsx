@@ -20,6 +20,7 @@ export const ProjectSettingsDialog = ({ isOpen, onClose, projectId, projectName 
   const [name, setName] = useState(projectName)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [deleteConfirmation, setDeleteConfirmation] = useState('')
 
   const handleUpdateName = async () => {
     if (!name.trim() || name === projectName) return
@@ -102,21 +103,38 @@ export const ProjectSettingsDialog = ({ isOpen, onClose, projectId, projectName 
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={(open: boolean) => {
+        setIsDeleteDialogOpen(open)
+        if (!open) setDeleteConfirmation('')
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your project
-              and all its features.
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p>
+                This action cannot be undone. This will permanently delete your project
+                and all its features.
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="confirmDelete">
+                  Type <span className="font-semibold">{projectName}</span> to confirm
+                </Label>
+                <Input
+                  id="confirmDelete"
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  placeholder="Enter project name"
+                  autoComplete="off"
+                />
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteProject}
-              disabled={isLoading}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isLoading || deleteConfirmation !== projectName}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
             >
               Delete Project
             </AlertDialogAction>
