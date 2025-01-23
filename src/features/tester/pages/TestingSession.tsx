@@ -10,6 +10,8 @@ import { ScreenRecorder } from '../components/ScreenRecorder/ScreenRecorder'
 import { FileUploader } from '../components/FileUploader/FileUploader'
 import { supabase } from '@/lib/supabase'
 import { Comments } from '@/features/student/components/Comments'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Play } from 'lucide-react'
 
 const TestingSession = () => {
   const { id } = useParams<{ id: string }>()
@@ -20,6 +22,7 @@ const TestingSession = () => {
   const [videoUrl, setVideoUrl] = useState('')
   const [fileUrl, setFileUrl] = useState('')
   const [isUploading, setIsUploading] = useState(false)
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
 
   // Set current test if not set
   useEffect(() => {
@@ -218,8 +221,12 @@ const TestingSession = () => {
                 <p className="mt-1 text-gray-600">{currentTest.description}</p>
               </div>
               <div>
-                <h3 className="font-medium text-gray-700">Test Instructions</h3>
-                <p className="mt-1 text-gray-600">{currentTest.description}</p>
+                <h3 className="font-medium text-gray-700">Project Details</h3>
+                <div className="mt-1 space-y-1 text-gray-600">
+                  <p>Project: {currentTest.testing_ticket.feature.project.name}</p>
+                  <p>Student: {currentTest.testing_ticket.feature.project.student.name}</p>
+                  <p>Assigned by: {currentTest.created_by_user.name}</p>
+                </div>
               </div>
               <div>
                 <h3 className="font-medium text-gray-700">Deadline</h3>
@@ -228,6 +235,60 @@ const TestingSession = () => {
                 </p>
               </div>
             </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Validation History</h2>
+              <div className="flex items-center gap-2">
+                <p className="text-gray-600">
+                  {currentTest.testing_ticket.feature.validations.length > 0 
+                    ? "Previous Validations"
+                    : "No Previous Validations"
+                  }
+                </p>
+                <span className="text-sm text-gray-500">
+                  ({currentTest.testing_ticket.feature.current_validations} of {currentTest.testing_ticket.feature.required_validations} required)
+                </span>
+              </div>
+            </div>
+            
+            {currentTest.testing_ticket.feature.validations.length > 0 ? (
+              <div className="space-y-4">
+                {currentTest.testing_ticket.feature.validations.map((validation) => (
+                  <div key={validation.id} className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          validation.status === 'Working' 
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {validation.status}
+                        </span>
+                        <span className="text-gray-700">by {validation.validated_by.name}</span>
+                      </div>
+                      {validation.video_url && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedVideo(validation.video_url)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          View Recording
+                        </Button>
+                      )}
+                    </div>
+                    {validation.notes && (
+                      <p className="mt-2 text-gray-600">{validation.notes}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-4">No validation history available</p>
+            )}
           </Card>
 
           <Card className="p-6">
@@ -294,6 +355,25 @@ const TestingSession = () => {
           </Card>
         </div>
       </div>
+
+      <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Validation Recording</DialogTitle>
+          </DialogHeader>
+          {selectedVideo && (
+            <div className="aspect-video">
+              <video
+                src={selectedVideo}
+                controls
+                className="w-full h-full rounded-lg"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
