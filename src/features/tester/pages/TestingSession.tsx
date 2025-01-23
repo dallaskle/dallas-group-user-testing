@@ -299,28 +299,6 @@ const TestingSession = () => {
 
         {/* Right Column - Testing Interface */}
         <div className="space-y-6">
-          <EmbeddedBrowser />
-          
-          <ScreenRecorder
-            onRecordingComplete={handleRecordingComplete}
-            maxDuration={120} // 2 minutes max
-          />
-          
-          <FileUploader
-            onFileComplete={handleFileComplete}
-            maxSize={10} // 10MB max
-          />
-
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Test Notes</h2>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Enter your test notes here..."
-              className="min-h-[200px]"
-            />
-          </Card>
-
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Submit Validation</h2>
             <div className="space-y-4">
@@ -353,6 +331,28 @@ const TestingSession = () => {
               </div>
             </div>
           </Card>
+
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Test Notes</h2>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Enter your test notes here..."
+              className="min-h-[200px]"
+            />
+          </Card>
+          
+          <ScreenRecorder
+            onRecordingComplete={handleRecordingComplete}
+            maxDuration={120} // 2 minutes max
+          />
+          
+          <FileUploader
+            onFileComplete={handleFileComplete}
+            maxSize={10} // 10MB max
+          />
+
+          <EmbeddedBrowser />
         </div>
       </div>
 
