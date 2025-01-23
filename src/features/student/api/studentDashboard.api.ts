@@ -160,7 +160,65 @@ interface CommentWithFeature {
   }
 }
 
+interface OutstandingTestingTicket {
+  id: string
+  deadline: string
+  feature: {
+    name: string
+    project: {
+      name: string
+    }
+  }
+  ticket: {
+    title: string
+    status: string
+    priority: string
+  }
+}
+
 export const studentDashboardApi = {
+  async getOutstandingTestingTickets(studentId: string): Promise<OutstandingTestingTicket[]> {
+    const { data: tickets, error } = await supabase
+      .from('testing_tickets')
+      .select(`
+        id,
+        deadline,
+        feature:features!testing_tickets_feature_id_fkey(
+          name,
+          project:projects!features_project_id_fkey(
+            name
+          )
+        ),
+        ticket:tickets!testing_tickets_id_fkey(
+          title,
+          status,
+          priority
+        )
+      `)
+      .eq('feature.project.student_id', studentId)
+      .eq('ticket.status', 'open')
+      .order('deadline', { ascending: true })
+      .limit(10)
+
+    if (error) throw error
+
+    return (tickets || []).map(ticket => ({
+      id: ticket.id,
+      deadline: ticket.deadline,
+      feature: {
+        name: ticket.feature.name,
+        project: {
+          name: ticket.feature.project.name
+        }
+      },
+      ticket: {
+        title: ticket.ticket.title,
+        status: ticket.ticket.status,
+        priority: ticket.ticket.priority
+      }
+    })) as OutstandingTestingTicket[]
+  },
+
   async getDashboardData(studentId: string) {
     // Get projects with their registries and features
     const { data: projects, error: projectsError } = await supabase

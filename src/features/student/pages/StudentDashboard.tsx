@@ -7,6 +7,7 @@ import { studentDashboardApi } from '../api/studentDashboard.api'
 import { DashboardStats } from '../components/dashboard/DashboardStats'
 import { ProjectsList } from '../components/dashboard/ProjectsList'
 import { RecentActivity } from '../components/dashboard/RecentActivity'
+import { OutstandingTestingTickets } from '../components/dashboard/OutstandingTestingTickets'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -121,8 +122,8 @@ export const StudentDashboard = () => {
 
       <DashboardStats stats={dashboardData.stats} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-2 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-4 space-y-4">
           <h2 className="text-2xl font-bold">My Projects</h2>
           <div className="space-y-4">
             {dashboardData.projects.map((project) => (
@@ -210,7 +211,12 @@ export const StudentDashboard = () => {
             ))}
           </div>
         </div>
-        <div className="lg:col-span-2">
+
+        <div className="lg:col-span-4">
+          <OutstandingTestingTickets />
+        </div>
+
+        <div className="lg:col-span-4">
           <RecentActivity activities={dashboardData.recentActivity} />
         </div>
       </div>
