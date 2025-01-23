@@ -68,16 +68,18 @@ export const validationsApi = {
       throw new Error(validationError.message)
     }
 
-    // Update feature validation count and status
-    const { error: updateError } = await supabase
-      .from('features')
+    // Update feature validation count and status if status is 'Working'
+    if (status === 'Working') {
+      const { error: updateError } = await supabase
+        .from('features')
       .update({
         current_validations: (feature?.current_validations || 0) + 1
       })
-      .eq('id', featureId)
+        .eq('id', featureId)
 
-    if (updateError) {
-      throw new Error(updateError.message)
+      if (updateError) {
+        throw new Error(updateError.message)
+      }
     }
 
     // Create a testing ticket for self-testing
