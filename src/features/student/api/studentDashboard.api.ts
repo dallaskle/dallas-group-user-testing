@@ -178,45 +178,68 @@ interface OutstandingTestingTicket {
 
 export const studentDashboardApi = {
   async getOutstandingTestingTickets(studentId: string): Promise<OutstandingTestingTicket[]> {
-    const { data: tickets, error } = await supabase
+    // First, get all features for the student's projects
+    const { data: features, error: featuresError } = await supabase
+      .from('features')
+      .select(`
+        id,
+        name,
+        project:projects!inner(
+          name,
+          student_id
+        )
+      `)
+      .eq('project.student_id', studentId)
+
+    if (featuresError) throw featuresError
+
+    if (!features || features.length === 0) {
+      return []
+    }
+
+    // Get testing tickets for these features
+    const featureIds = features.map(f => f.id)
+    const { data: testingTickets, error: ticketsError } = await supabase
       .from('testing_tickets')
       .select(`
         id,
         deadline,
-        feature:features!testing_tickets_feature_id_fkey(
-          name,
-          project:projects!features_project_id_fkey(
-            name
-          )
-        ),
-        ticket:tickets!testing_tickets_id_fkey(
+        feature_id,
+        ticket:tickets!inner(
           title,
           status,
           priority
         )
       `)
-      .eq('feature.project.student_id', studentId)
+      .in('feature_id', featureIds)
       .eq('ticket.status', 'open')
       .order('deadline', { ascending: true })
-      .limit(10)
 
-    if (error) throw error
+    if (ticketsError) throw ticketsError
 
-    return (tickets || []).map(ticket => ({
-      id: ticket.id,
-      deadline: ticket.deadline,
-      feature: {
-        name: ticket.feature.name,
-        project: {
-          name: ticket.feature.project.name
-        }
-      },
-      ticket: {
-        title: ticket.ticket.title,
-        status: ticket.ticket.status,
-        priority: ticket.ticket.priority
+    // Map the data to include feature and project information
+    return (testingTickets || []).map(testingTicket => {
+      const feature = features.find(f => f.id === testingTicket.feature_id)
+      if (!feature || !feature.project || !testingTicket.ticket) {
+        throw new Error('Invalid data structure in testing ticket response')
       }
-    })) as OutstandingTestingTicket[]
+
+      return {
+        id: testingTicket.id,
+        deadline: testingTicket.deadline,
+        feature: {
+          name: feature.name,
+          project: {
+            name: feature.project.name
+          }
+        },
+        ticket: {
+          title: testingTicket.ticket.title,
+          status: testingTicket.ticket.status,
+          priority: testingTicket.ticket.priority
+        }
+      }
+    })
   },
 
   async getDashboardData(studentId: string) {

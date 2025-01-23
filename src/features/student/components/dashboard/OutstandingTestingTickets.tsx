@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Clock, AlertTriangle } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { studentDashboardApi } from '../../api/studentDashboard.api'
 
@@ -51,15 +53,28 @@ export function OutstandingTestingTickets() {
     loadTickets()
   }, [user?.id])
 
+  const formatDeadline = (dateString: string) => {
+    const deadline = new Date(dateString)
+    const now = new Date()
+    const diffInHours = Math.floor((deadline.getTime() - now.getTime()) / (1000 * 60 * 60))
+    
+    if (diffInHours < 24) {
+      return `${diffInHours}h left`
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24)
+      return `${diffInDays}d left`
+    }
+  }
+
   const handleTicketClick = (ticketId: string) => {
     navigate(`/tickets/${ticketId}`)
   }
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="bg-muted/50">
         <CardHeader>
-          <CardTitle>Outstanding Tests</CardTitle>
+          <CardTitle className="text-lg">Outstanding Tests</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center p-4">
@@ -71,40 +86,61 @@ export function OutstandingTestingTickets() {
   }
 
   return (
-    <Card>
+    <Card className="bg-muted/50">
       <CardHeader>
-        <CardTitle>Outstanding Tests</CardTitle>
+        <CardTitle className="text-lg">Outstanding Tests</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {tickets.length === 0 ? (
-          <p className="text-center text-muted-foreground">No outstanding tests</p>
-        ) : (
-          tickets.map((ticket) => (
-            <div
-              key={ticket.id}
-              onClick={() => handleTicketClick(ticket.id)}
-              className="p-4 rounded-lg border bg-card hover:bg-accent/50 cursor-pointer transition-colors"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <h4 className="font-medium leading-none">{ticket.ticket.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {ticket.feature.name} in {ticket.feature.project.name}
-                  </p>
-                </div>
-                <Badge
-                  className={priorityColors[ticket.ticket.priority]}
-                  variant="secondary"
+      <CardContent>
+        <ScrollArea className="h-[400px] pr-4">
+          <div className="space-y-4">
+            {tickets.length === 0 ? (
+              <p className="text-center text-muted-foreground">No outstanding tests</p>
+            ) : (
+              tickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  onClick={() => handleTicketClick(ticket.id)}
+                  className="flex items-start gap-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
                 >
-                  {ticket.ticket.priority}
-                </Badge>
-              </div>
-              <div className="mt-2 text-sm text-muted-foreground">
-                Due: {new Date(ticket.deadline).toLocaleDateString()}
-              </div>
-            </div>
-          ))
-        )}
+                  <div className="mt-1">
+                    {ticket.ticket.priority === 'high' ? (
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                    ) : (
+                      <Clock className="h-4 w-4 text-blue-500" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              className={priorityColors[ticket.ticket.priority]}
+                              variant="secondary"
+                            >
+                              {ticket.ticket.priority}
+                            </Badge>
+                            <span className="text-muted-foreground line-clamp-1">
+                              {ticket.ticket.title}
+                            </span>
+                          </div>
+                          <p className="text-sm">
+                            <span className="font-medium">{ticket.feature.name}</span>
+                            <span className="text-muted-foreground"> in </span>
+                            <span className="font-medium">{ticket.feature.project.name}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <time className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatDeadline(ticket.deadline)}
+                      </time>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   )
