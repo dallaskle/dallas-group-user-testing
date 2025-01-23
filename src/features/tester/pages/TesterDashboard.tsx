@@ -39,9 +39,36 @@ const TesterDashboard = () => {
   // Local filtering and sorting state
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'in_progress'>('all')
   const [priorityFilter, setPriorityFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
+  const [projectFilter, setProjectFilter] = useState<string>('all')
+  const [studentFilter, setStudentFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'deadline' | 'priority'>('newest')
+
+  // Get unique projects and students from queue
+  const projects = Array.from(
+    new Map(
+      queue.map(ticket => [
+        ticket.testing_ticket.feature.project.id,
+        {
+          id: ticket.testing_ticket.feature.project.id,
+          name: ticket.testing_ticket.feature.project.name
+        }
+      ])
+    ).values()
+  ).sort((a, b) => a.name.localeCompare(b.name))
+
+  const students = Array.from(
+    new Map(
+      queue.map(ticket => [
+        ticket.testing_ticket.feature.project.student.id,
+        {
+          id: ticket.testing_ticket.feature.project.student.id,
+          name: ticket.testing_ticket.feature.project.student.name
+        }
+      ])
+    ).values()
+  ).sort((a, b) => a.name.localeCompare(b.name))
 
   // Debounce search query updates
   const debouncedSetSearch = useCallback(
@@ -80,13 +107,26 @@ const TesterDashboard = () => {
       if (priorityFilter !== 'all' && ticket.priority !== priorityFilter) {
         return false
       }
+
+      // Project filter
+      if (projectFilter !== 'all' && ticket.testing_ticket.feature.project.id !== projectFilter) {
+        return false
+      }
+
+      // Student filter
+      if (studentFilter !== 'all' && ticket.testing_ticket.feature.project.student.id !== studentFilter) {
+        return false
+      }
       
       // Search filter
       if (debouncedSearchQuery) {
         const search = debouncedSearchQuery.toLowerCase()
         return (
           ticket.title.toLowerCase().includes(search) ||
-          ticket.description.toLowerCase().includes(search)
+          ticket.description.toLowerCase().includes(search) ||
+          ticket.testing_ticket.feature.name.toLowerCase().includes(search) ||
+          ticket.testing_ticket.feature.project.name.toLowerCase().includes(search) ||
+          ticket.testing_ticket.feature.project.student.name.toLowerCase().includes(search)
         )
       }
       
@@ -135,7 +175,7 @@ const TesterDashboard = () => {
                     <div className="relative">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="Search ticket title or description..."
+                        placeholder="Search ticket title, description, feature, project, or student..."
                         value={searchQuery}
                         onChange={handleSearchChange}
                         className="pl-8 pr-8"
@@ -150,7 +190,9 @@ const TesterDashboard = () => {
                       )}
                     </div>
                   </div>
-                  
+                </div>
+
+                <div className="flex items-center gap-4">
                   <Select value={statusFilter} onValueChange={(value: typeof statusFilter) => setStatusFilter(value)}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Filter by status" />
@@ -171,6 +213,34 @@ const TesterDashboard = () => {
                       <SelectItem value="high">High</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={projectFilter} onValueChange={setProjectFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Projects</SelectItem>
+                      {projects.map(project => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={studentFilter} onValueChange={setStudentFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by student" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Students</SelectItem>
+                      {students.map(student => (
+                        <SelectItem key={student.id} value={student.id}>
+                          {student.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
 
