@@ -352,7 +352,9 @@ const TestingSession = () => {
             maxSize={10} // 10MB max
           />
 
-          <EmbeddedBrowser />
+          <EmbeddedBrowser 
+            onRecordingComplete={handleRecordingComplete}
+          />
         </div>
       </div>
 
