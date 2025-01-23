@@ -10,6 +10,7 @@ import { Plus, Layout, LayoutDashboard, LayoutPanelLeft, Settings } from 'lucide
 import { CreateFeature } from '../components/CreateFeature'
 import { FeatureDetailsPanel } from '../components/FeatureDetailsPanel'
 import { ProjectSettingsDialog } from '../components/ProjectSettingsDialog'
+import { ValidationHistoryPanel } from '../components/ValidationHistoryPanel'
 import { useProjects } from '../components/ProjectsProvider'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { supabase } from '@/lib/supabase'
@@ -357,6 +358,10 @@ export const ProjectDetailsPage = () => {
       </div>
 
       {viewContent}
+
+      <div className="mt-8">
+        <ValidationHistoryPanel projectId={id!} />
+      </div>
 
       <Dialog open={isAddFeatureOpen} onOpenChange={setIsAddFeatureOpen}>
         <DialogContent>
