@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase'
 import type { ProjectProgress } from '../store/adminDashboard.store'
 
+const FUNCTION_PREFIX = import.meta.env.VITE_SUPABASE_FUNCTION_PREFIX || ''
+
 export type ActivityType = 'user' | 'project_registry' | 'feature_registry' | 'project' | 'feature' | 'comment' | 'ticket' | 'validation'
 
 export interface ActivityItem {
@@ -808,52 +810,188 @@ export interface UpdateTicketRequest {
 
 // Add ticket-related API functions
 export const getTickets = async (request: ListTicketsRequest): Promise<ListTicketsResponse> => {
-  const { data, error } = await supabase.rpc('admin_list_tickets', request)
-  
-  if (error) throw error
-  return data
+  const session = await supabase.auth.getSession()
+  if (!session.data.session?.access_token) {
+    throw new Error('No active session')
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-list`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+      body: JSON.stringify(request),
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to list tickets')
+  }
+
+  return await response.json()
 }
 
 export const getTicketById = async (id: string): Promise<TicketResponse> => {
-  const { data, error } = await supabase.rpc('admin_get_ticket', { ticket_id: id })
+  const session = await supabase.auth.getSession()
+  if (!session.data.session?.access_token) {
+    throw new Error('No active session')
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-get`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+      body: JSON.stringify({ id }),
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to get ticket')
+  }
   
-  if (error) throw error
-  if (!data) throw new Error('Ticket not found')
-  
+  const data = await response.json()
+  if (!data.ticket_data) {
+    throw new Error('Invalid ticket data received from server')
+  }
+
   return data
 }
 
 export const createTicket = async (request: CreateTicketRequest): Promise<TicketResponse> => {
-  const { data, error } = await supabase.rpc('admin_create_ticket', request)
-  
-  if (error) throw error
-  return data
+  const session = await supabase.auth.getSession()
+  if (!session.data.session?.access_token) {
+    throw new Error('No active session')
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-create`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+      body: JSON.stringify(request),
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to create ticket')
+  }
+
+  return await response.json()
 }
 
 export const updateTicket = async (request: UpdateTicketRequest): Promise<TicketResponse> => {
-  const { data, error } = await supabase.rpc('admin_update_ticket', request)
-  
-  if (error) throw error
-  return data
+  const session = await supabase.auth.getSession()
+  if (!session.data.session?.access_token) {
+    throw new Error('No active session')
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-update`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+      body: JSON.stringify(request),
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to update ticket')
+  }
+
+  return await response.json()
 }
 
 export const assignTicket = async (id: string, assignedTo: string | null): Promise<TicketResponse> => {
-  const { data, error } = await supabase.rpc('admin_assign_ticket', { ticket_id: id, assigned_to: assignedTo })
-  
-  if (error) throw error
-  return data
+  const session = await supabase.auth.getSession()
+  if (!session.data.session?.access_token) {
+    throw new Error('No active session')
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-assign`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+      body: JSON.stringify({ id, assignedTo }),
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to assign ticket')
+  }
+
+  return await response.json()
 }
 
 export const transitionTicket = async (id: string, status: TicketStatus): Promise<TicketResponse> => {
-  const { data, error } = await supabase.rpc('admin_transition_ticket', { ticket_id: id, new_status: status })
-  
-  if (error) throw error
-  return data
+  const session = await supabase.auth.getSession()
+  if (!session.data.session?.access_token) {
+    throw new Error('No active session')
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-transition`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+      body: JSON.stringify({ id, status }),
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to transition ticket')
+  }
+
+  return await response.json()
 }
 
 export const getTicketAuditLog = async (ticketId?: string): Promise<TicketAuditLogResponse> => {
-  const { data, error } = await supabase.rpc('admin_get_ticket_audit_log', { ticket_id: ticketId })
-  
-  if (error) throw error
-  return { audit_logs: data }
+  const session = await supabase.auth.getSession()
+  if (!session.data.session?.access_token) {
+    throw new Error('No active session')
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-audit-log`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+      body: JSON.stringify({ ticketId }),
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to get ticket audit log')
+  }
+
+  return await response.json()
 }
