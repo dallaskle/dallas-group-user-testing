@@ -310,7 +310,8 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
   assignTicket: async (id, assignedTo) => {
     set({ isLoading: true, error: null })
     try {
-      const updatedTicket = await api.assignTicket(id, assignedTo)
+      await api.assignTicket(id, assignedTo)
+      const updatedTicket = await api.getTicketById(id)
       set((state) => ({
         tickets: state.tickets.map((t) =>
           t.ticket_data.ticket.id === updatedTicket.ticket_data.ticket.id ? updatedTicket : t

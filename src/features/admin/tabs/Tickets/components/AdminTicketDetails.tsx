@@ -43,6 +43,7 @@ export function AdminTicketDetails({ ticketId, className }: TicketDetailsProps) 
     fetchTicketById,
     transitionTicket,
     assignTicket,
+    fetchTicketAuditLog,
   } = useAdminDashboardStore()
 
   useEffect(() => {
@@ -100,7 +101,13 @@ export function AdminTicketDetails({ ticketId, className }: TicketDetailsProps) 
     selectedTicket.ticket_data
 
   const handleStatusTransition = async (newStatus: TicketStatus) => {
-    await transitionTicket(ticket.id, newStatus)
+    try {
+      await transitionTicket(ticket.id, newStatus)
+      // Refresh ticket data after transition
+      await fetchTicketById(ticket.id)
+    } catch (error) {
+      console.error('Failed to transition ticket:', error)
+    }
   }
 
   const handleAssign = async (userId: string | null) => {
@@ -112,6 +119,8 @@ export function AdminTicketDetails({ ticketId, className }: TicketDetailsProps) 
       await assignTicket(ticket.id, userId)
       // Refresh ticket data after assignment
       await fetchTicketById(ticket.id)
+      // Also refresh audit log since we made a change
+      await fetchTicketAuditLog(ticket.id)
     } catch (error) {
       console.error('Failed to assign ticket:', error)
       // You might want to add toast notification here
