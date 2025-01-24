@@ -123,7 +123,7 @@ export const testerApi = {
     const filename = `${crypto.randomUUID()}-${file.name}`
 
     // Upload to Supabase Storage
-    const { error: storageError, data } = await supabase.storage
+    const { error: storageError } = await supabase.storage
       .from('test-attachments')
       .upload(filename, file, {
         cacheControl: '3600',

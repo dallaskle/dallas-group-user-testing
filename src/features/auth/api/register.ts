@@ -2,6 +2,7 @@ export interface RegisterRequest {
   email: string
   password: string
   name: string
+  role: 'student' | 'tester'
 }
 
 export interface RegisterResponse {

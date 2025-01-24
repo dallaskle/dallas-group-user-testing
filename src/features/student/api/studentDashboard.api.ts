@@ -170,16 +170,16 @@ export const studentDashboardApi = {
         feature: {
           name: feature.name,
           project: {
-            name: feature.project.name
+            name: feature.project[0]?.name
           },
           current_validations: feature.current_validations,
           required_validations: feature.required_validations
         },
         ticket: {
-          title: testingTicket.ticket.title,
-          status: testingTicket.ticket.status,
-          priority: testingTicket.ticket.priority,
-          assignedTo: testingTicket.ticket.assignedToUser
+          title: testingTicket.ticket[0]?.title,
+          status: testingTicket.ticket[0]?.status,
+          priority: testingTicket.ticket[0]?.priority,
+          assignedTo: testingTicket.ticket[0]?.assignedToUser[0]
         },
         validation: testingTicket.validation?.[0]
       }

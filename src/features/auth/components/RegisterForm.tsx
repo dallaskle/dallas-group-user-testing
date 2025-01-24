@@ -16,7 +16,8 @@ const registerSchema = z.object({
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
-  confirmPassword: z.string()
+  confirmPassword: z.string(),
+  role: z.enum(['student', 'tester'])
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"]
@@ -42,7 +43,12 @@ export const RegisterForm = () => {
       setIsLoading(true)
       toast.info('Creating your account...')
 
-      const { error } = await registerUser(data)
+      const { error } = await registerUser({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        role: data.role
+      })
 
       if (error) {
         toast.error(error)
@@ -123,6 +129,34 @@ export const RegisterForm = () => {
                 {errors.email && (
                   <p id="email-error" className="mt-1.5 text-sm text-destructive" role="alert">
                     {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label 
+                  htmlFor="role" 
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                >
+                  Role
+                </label>
+                <select
+                  {...register('role')}
+                  id="role"
+                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                           bg-pearl dark:bg-charcoal 
+                           text-slate-900 dark:text-slate-100
+                           focus-natural transition-natural
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading}
+                >
+                  <option value="">Select a role</option>
+                  <option value="student">Student</option>
+                  <option value="tester">Tester</option>
+                </select>
+                {errors.role && (
+                  <p id="role-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                    {errors.role.message}
                   </p>
                 )}
               </div>

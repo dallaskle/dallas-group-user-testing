@@ -444,7 +444,10 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
         name,
         created_at,
         student_id,
-        users!projects_student_id_fkey (id, name)
+        users!projects_student_id_fkey (
+          id,
+          name
+        )
       `)
       .gte('created_at', startDate)
       .order('created_at', { ascending: false }),
@@ -459,7 +462,10 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
         projects (
           id,
           name,
-          users!projects_student_id_fkey (id, name)
+          users!projects_student_id_fkey (
+            id,
+            name
+          )
         )
       `)
       .gte('created_at', startDate)
@@ -473,7 +479,10 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
         content,
         created_at,
         author_id,
-        users!comments_author_id_fkey (id, name),
+        users!comments_author_id_fkey (
+          id,
+          name
+        ),
         features (
           id,
           name,
@@ -494,7 +503,10 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
         status,
         created_at,
         validated_by,
-        users!validations_validated_by_fkey (id, name),
+        users!validations_validated_by_fkey (
+          id,
+          name
+        ),
         features (
           id,
           name,
@@ -517,8 +529,14 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
         created_at,
         created_by,
         assigned_to,
-        users!tickets_created_by_fkey (id, name),
-        assignee:users!tickets_assigned_to_fkey (id, name)
+        users!tickets_created_by_fkey (
+          id,
+          name
+        ),
+        assignee:users!tickets_assigned_to_fkey (
+          id,
+          name
+        )
       `)
       .gte('created_at', startDate)
       .order('created_at', { ascending: false }),
@@ -531,7 +549,10 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
         name,
         created_at,
         created_by,
-        users!project_registry_created_by_fkey (id, name)
+        users!project_registry_created_by_fkey (
+          id,
+          name
+        )
       `)
       .gte('created_at', startDate)
       .order('created_at', { ascending: false }),
@@ -547,7 +568,10 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
           id,
           name,
           created_by,
-          users!project_registry_created_by_fkey (id, name)
+          users!project_registry_created_by_fkey (
+            id,
+            name
+          )
         )
       `)
       .gte('created_at', startDate)
@@ -572,7 +596,7 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
       id: `project-${project.id}`,
       type: 'project' as ActivityType,
       created_at: project.created_at,
-      actor: { id: project.users.id, name: project.users.name },
+      actor: { id: project.users?.[0]?.id, name: project.users?.[0]?.name },
       data: { name: project.name }
     })))
   }
@@ -582,10 +606,13 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
       id: `feature-${feature.id}`,
       type: 'feature' as ActivityType,
       created_at: feature.created_at,
-      actor: { id: feature.projects.users.id, name: feature.projects.users.name },
+      actor: { 
+        id: feature.projects?.[0]?.users?.[0]?.id, 
+        name: feature.projects?.[0]?.users?.[0]?.name 
+      },
       data: {
         name: feature.name,
-        project_name: feature.projects.name
+        project_name: feature.projects?.[0]?.name
       }
     })))
   }
@@ -595,11 +622,11 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
       id: `comment-${comment.id}`,
       type: 'comment' as ActivityType,
       created_at: comment.created_at,
-      actor: { id: comment.users.id, name: comment.users.name },
+      actor: { id: comment.users?.[0]?.id, name: comment.users?.[0]?.name },
       data: {
         content: comment.content,
-        feature_name: comment.features.name,
-        project_name: comment.features.projects.name
+        feature_name: comment.features?.[0]?.name,
+        project_name: comment.features?.[0]?.projects?.[0]?.name
       }
     })))
   }
@@ -609,11 +636,11 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
       id: `validation-${validation.id}`,
       type: 'validation' as ActivityType,
       created_at: validation.created_at,
-      actor: { id: validation.users.id, name: validation.users.name },
+      actor: { id: validation.users?.[0]?.id, name: validation.users?.[0]?.name },
       data: {
         status: validation.status,
-        feature_name: validation.features.name,
-        project_name: validation.features.projects.name
+        feature_name: validation.features?.[0]?.name,
+        project_name: validation.features?.[0]?.projects?.[0]?.name
       }
     })))
   }
@@ -623,13 +650,13 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
       id: `ticket-${ticket.id}`,
       type: 'ticket' as ActivityType,
       created_at: ticket.created_at,
-      actor: { id: ticket.users.id, name: ticket.users.name },
+      actor: { id: ticket.users?.[0]?.id, name: ticket.users?.[0]?.name },
       data: {
         title: ticket.title,
         ticket_type: ticket.type,
-        assigned_to: ticket.assignee ? {
-          id: ticket.assignee.id,
-          name: ticket.assignee.name
+        assigned_to: ticket.assignee?.[0] ? {
+          id: ticket.assignee[0].id,
+          name: ticket.assignee[0].name
         } : undefined
       }
     })))
@@ -640,7 +667,7 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
       id: `project-registry-${registry.id}`,
       type: 'project_registry' as ActivityType,
       created_at: registry.created_at,
-      actor: { id: registry.users.id, name: registry.users.name },
+      actor: { id: registry.users?.[0]?.id, name: registry.users?.[0]?.name },
       data: { name: registry.name }
     })))
   }
@@ -651,12 +678,12 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
       type: 'feature_registry' as ActivityType,
       created_at: registry.created_at,
       actor: { 
-        id: registry.project_registry.users.id, 
-        name: registry.project_registry.users.name 
+        id: registry.project_registry?.[0]?.users?.[0]?.id, 
+        name: registry.project_registry?.[0]?.users?.[0]?.name 
       },
       data: {
         name: registry.name,
-        project_name: registry.project_registry.name
+        project_name: registry.project_registry?.[0]?.name
       }
     })))
   }
@@ -687,7 +714,7 @@ export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
   if (error) throw error
 
   // Then get all features for these projects
-  const { data: features, error: featuresError } = await supabase
+  const { data: projectFeatures, error: featuresError } = await supabase
     .from('features')
     .select(`
       id,
@@ -703,29 +730,30 @@ export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
 
   // Map the data together
   return projects.map(project => {
-    const projectFeatures = features?.filter(f => f.project_id === project.id) || []
+    const projectFeatureList = projectFeatures?.filter(f => f.project_id === project.id) || [];
+    
     return {
       id: project.id,
       name: project.name,
       registry: {
-        id: project.project_registry.id,
-        name: project.project_registry.name
+        id: project.project_registry?.[0]?.id,
+        name: project.project_registry?.[0]?.name
       },
       user: {
-        id: project.users.id,
-        name: project.users.name
+        id: project.users?.[0]?.id,
+        name: project.users?.[0]?.name
       },
-      features: projectFeatures,
-      features_count: projectFeatures.length,
+      features: projectFeatureList,
+      features_count: projectFeatureList.length,
       validations: {
-        completed: projectFeatures.reduce((sum, f) => sum + (f.current_validations || 0), 0),
-        required: projectFeatures.reduce((sum, f) => sum + (f.required_validations || 0), 0)
+        completed: projectFeatureList.reduce((sum: number, f) => sum + (f.current_validations || 0), 0),
+        required: projectFeatureList.reduce((sum: number, f) => sum + (f.required_validations || 0), 0)
       },
       status_counts: {
-        not_started: projectFeatures.filter(f => f.status === 'Not Started').length,
-        in_progress: projectFeatures.filter(f => f.status === 'In Progress').length,
-        successful_test: projectFeatures.filter(f => f.status === 'Successful Test').length,
-        failed_test: projectFeatures.filter(f => f.status === 'Failed Test').length
+        not_started: projectFeatureList.filter(f => f.status === 'Not Started').length,
+        in_progress: projectFeatureList.filter(f => f.status === 'In Progress').length,
+        successful_test: projectFeatureList.filter(f => f.status === 'Successful Test').length,
+        failed_test: projectFeatureList.filter(f => f.status === 'Failed Test').length
       }
     }
   })
@@ -762,8 +790,8 @@ export const getProjectRegistriesWithDetails = async (): Promise<ProjectRegistry
     description: registry.description,
     created_at: registry.created_at,
     created_by: {
-      id: registry.users.id,
-      name: registry.users.name
+      id: registry.users?.[0]?.id,
+      name: registry.users?.[0]?.name
     },
     feature_count: registry.feature_registry?.length || 0,
     projects_count: registry.projects?.length || 0,
