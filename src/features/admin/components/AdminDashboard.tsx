@@ -1,6 +1,4 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QAScorecard } from './QAScorecard';
-import { TesterMetrics } from './TesterMetrics';
 import { AdminOverviewTab } from '../tabs/Overview/AdminOverviewTab';
 import { AdminProjectsTab } from '../tabs/Projects/AdminProjectsTab';
 import { AdminTestersTab } from '../tabs/Testers/AdminTestersTab';

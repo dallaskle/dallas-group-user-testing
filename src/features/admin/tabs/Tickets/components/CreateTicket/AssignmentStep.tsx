@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useAdminDashboardStore } from '../../../../store/adminDashboard.store'
 import type { CreateTicketStepProps } from './types'
-import type { TesterUser } from '../../../../api/adminDashboard.api'
 
 export function AssignmentStep({ 
   formData, 

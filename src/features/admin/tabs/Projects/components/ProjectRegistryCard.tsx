@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from 'date-fns';
 import { Users, FileText, GitBranch } from 'lucide-react';
 import type { ProjectRegistryDetails } from '../../../api/adminDashboard.api';
@@ -14,7 +13,6 @@ export const ProjectRegistryCard = ({ registry }: ProjectRegistryCardProps) => {
   const navigate = useNavigate();
 
   const requiredFeatures = registry.features.filter(f => f.is_required).length;
-  const optionalFeatures = registry.features.length - requiredFeatures;
 
   return (
     <Card className="flex flex-col">

@@ -3,8 +3,6 @@ import { Database } from '@/shared/types/database.types'
 
 type Project = Database['public']['Tables']['projects']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
-type Validation = Database['public']['Tables']['validations']['Row']
-type Ticket = Database['public']['Tables']['tickets']['Row']
 
 interface DashboardProject extends Project {
   registry: {
@@ -40,84 +38,6 @@ interface RecentActivity {
     status?: string
     content?: string
     title?: string
-  }
-}
-
-interface ValidationResponse {
-  id: string
-  created_at: string
-  status: string
-  feature: {
-    name: string
-    project: {
-      name: string
-    }
-  }
-}
-
-interface TicketResponse {
-  id: string
-  created_at: string
-  title: string
-  status: string
-  testing_tickets: Array<{
-    feature: {
-      name: string
-      project: {
-        name: string
-      }
-    } | null
-  }>
-}
-
-interface CommentResponse {
-  id: string
-  created_at: string
-  content: string
-  feature: {
-    name: string
-    project: {
-      name: string
-    }
-  }
-}
-
-type DatabaseValidation = {
-  id: string
-  created_at: string
-  status: string
-  feature: {
-    name: string
-    project: {
-      name: string
-    }
-  }
-}
-
-type DatabaseTicket = {
-  id: string
-  created_at: string
-  title: string
-  status: string
-  testing_tickets: Array<{
-    feature: {
-      name: string
-      project: {
-        name: string
-      }
-    } | null
-  }>
-}
-
-type DatabaseComment = {
-  id: string
-  created_at: string
-  content: string
-  feature: {
-    name: string
-    project: {
-      name: string
-    }
   }
 }
 

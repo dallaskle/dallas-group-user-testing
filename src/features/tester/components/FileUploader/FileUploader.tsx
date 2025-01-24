@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Upload, X, Video } from 'lucide-react'
+import { Upload, X } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { supabase } from '@/lib/supabase'
 
@@ -48,7 +48,7 @@ export const FileUploader = ({ onFileComplete, maxSize = 100 }: FileUploaderProp
       const filename = `${crypto.randomUUID()}-${file.name}`
 
       // Upload to Supabase Storage
-      const { error: storageError, data } = await supabase.storage
+      const { error: storageError } = await supabase.storage
         .from('test-recordings')
         .upload(filename, file, {
           cacheControl: '3600',

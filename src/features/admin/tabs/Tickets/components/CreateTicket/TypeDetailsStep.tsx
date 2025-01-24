@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAdminDashboardStore } from '../../../../store/adminDashboard.store'
 import type { CreateTicketStepProps, TicketCategory } from './types'
-import type { ProjectDetails } from '../../../../api/adminDashboard.api'
 
 const SUPPORT_CATEGORIES: { value: TicketCategory; label: string }[] = [
   { value: 'project', label: 'Project Issue' },

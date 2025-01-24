@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Plus } from 'lucide-react'
@@ -18,7 +17,6 @@ import { Badge } from '@/components/ui/badge'
 
 export const AdminProjectsTab = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const navigate = useNavigate()
   const { 
     projects, 
     projectRegistries,

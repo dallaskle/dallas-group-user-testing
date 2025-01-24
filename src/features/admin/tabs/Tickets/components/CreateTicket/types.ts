@@ -1,5 +1,3 @@
-import type { CreateTicketRequest } from '../../../../api/adminDashboard.api'
-
 export type TicketType = 'support' | 'testing' | 'question'
 export type TicketPriority = 'low' | 'medium' | 'high'
 export type TicketCategory = 'project' | 'feature' | 'testing' | 'other'

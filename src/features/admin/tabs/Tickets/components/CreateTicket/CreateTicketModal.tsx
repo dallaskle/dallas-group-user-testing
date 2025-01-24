@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useAdminDashboardStore } from '../../../../store/adminDashboard.store'
-import type { CreateTicketFormData, TicketCategory } from './types'
+import type { CreateTicketFormData, TicketCategory, TicketType } from './types'
 
 const INITIAL_FORM_DATA: CreateTicketFormData = {
   ticketType: 'support',
@@ -159,7 +159,7 @@ function CreateTicketModal({ isOpen, onClose }: CreateTicketModalProps) {
                   <button
                     key={type.value}
                     type="button"
-                    onClick={() => handleFormChange({ ticketType: type.value })}
+                    onClick={() => handleFormChange({ ticketType: type.value as TicketType })}
                     className={`
                       flex flex-col items-start p-4 rounded-lg border-2 transition-colors
                       ${formData.ticketType === type.value 

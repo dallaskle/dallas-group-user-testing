@@ -1,10 +1,8 @@
-import { useParams, useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
+import { useParams } from 'react-router-dom'
 import { TicketDetails } from '../components/TicketDetails/TicketDetails'
 
 export default function TicketDetailsPage() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
 
   if (!id) {
     return <div>Invalid ticket ID</div>
