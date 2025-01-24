@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import type { ProjectProgress } from '../store/adminDashboard.store'
 
 export const getProjectRegistriesCount = async () => {
   const { count, error } = await supabase
@@ -52,21 +53,22 @@ export const getTotalTestersCount = async () => {
   return count || 0
 }
 
-export const getProjectProgress = async () => {
+export const getProjectProgress = async (): Promise<ProjectProgress[]> => {
   const { data, error } = await supabase
     .from('features')
     .select(`
       status,
-      project:projects!inner(
+      projects (
         name
       )
     `)
+    .returns<Array<{ status: ProjectProgress['status']; projects: { name: string } | null }>>()
   
   if (error) throw error
   
   return data.map(feature => ({
     status: feature.status,
-    project: feature.project
+    project: feature.projects ? { name: feature.projects.name } : null
   }))
 }
 

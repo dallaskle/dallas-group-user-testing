@@ -1,14 +1,14 @@
 import { create } from 'zustand'
 import * as api from '../api/adminDashboard.api'
 
-interface TesterStats {
+export interface TesterStats {
   name: string
   testsPending: number
   testsCompleted: number
   lastTestCompleted: string | null
 }
 
-interface ProjectProgress {
+export interface ProjectProgress {
   status: 'Not Started' | 'In Progress' | 'Successful Test' | 'Failed Test'
   project: {
     name: string
