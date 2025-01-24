@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../components/AuthProvider'
 import { RegisterForm } from '../components/RegisterForm'
 import image2 from '../../../assets/image2.jpg'
+import logo from '../../../assets/image.jpg'
 
 const Register = () => {
   const navigate = useNavigate()
@@ -31,7 +32,7 @@ const Register = () => {
           <div className="w-full max-w-md">
             <div className="p-8">
               <div className="text-center mb-8">
-                <img src="/src/assets/image.jpg" alt="Logo" className="h-28 w-28 rounded-full object-cover mx-auto mb-6" />
+                <img src={logo} alt="Logo" className="h-28 w-28 rounded-full object-cover mx-auto mb-6" />
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">
                   Group User Testing
                 </h1>

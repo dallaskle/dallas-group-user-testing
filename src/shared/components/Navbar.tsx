@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../features/auth/store/auth.store'
 import { supabase } from '../../lib/supabase'
 import { toast } from 'sonner'
+import logo from '../../assets/image.jpg'
 
 const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => {
   const location = useLocation()
@@ -44,7 +45,7 @@ export const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/dashboard" className="flex items-center text-xl font-bold text-gray-900">
-              <img src="/src/assets/image.jpg" alt="Logo" className="h-10 w-10 mr-2 rounded-full object-cover" />
+              <img src={logo} alt="Logo" className="h-10 w-10 mr-2 rounded-full object-cover" />
               Group User Testing
             </Link>
             
