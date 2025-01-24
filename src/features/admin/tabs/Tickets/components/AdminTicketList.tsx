@@ -17,6 +17,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { MoreHorizontal } from 'lucide-react'
@@ -55,12 +58,16 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
     fetchTickets,
     transitionTicket,
     updateTicket,
-    deleteTicket 
+    deleteTicket,
+    assignTicket,
+    testers,
+    fetchTesters
   } = useAdminDashboardStore()
 
   useEffect(() => {
     fetchTickets()
-  }, [fetchTickets])
+    fetchTesters()
+  }, [fetchTickets, fetchTesters])
 
   const handleRowClick = (ticketId: string) => {
     navigate(`/admin/tickets/${ticketId}`)
@@ -81,6 +88,11 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
       await deleteTicket(ticketId)
       await fetchTickets()
     }
+  }
+
+  const handleAssign = async (ticketId: string, assignedTo: string | null) => {
+    await assignTicket(ticketId, assignedTo)
+    await fetchTickets()
   }
 
   if (isLoading) {
@@ -192,6 +204,30 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
                             Set {priority} priority
                           </DropdownMenuItem>
                         ))}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            Reassign Ticket
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            {testers.map((tester) => (
+                              <DropdownMenuItem
+                                key={tester.id}
+                                onClick={() => handleAssign(ticket.id, tester.id)}
+                                disabled={ticketResponse.ticket_data.assignedToUser?.id === tester.id}
+                              >
+                                {tester.name}
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => handleAssign(ticket.id, null)}
+                              disabled={!ticketResponse.ticket_data.assignedToUser}
+                            >
+                              Unassign
+                            </DropdownMenuItem>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-600"

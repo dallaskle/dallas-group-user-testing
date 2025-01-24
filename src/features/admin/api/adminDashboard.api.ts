@@ -1019,3 +1019,21 @@ export const deleteTicket = async (id: string): Promise<void> => {
     throw new Error(error.error || 'Failed to delete ticket')
   }
 }
+
+export interface TesterUser {
+  id: string
+  name: string
+  email: string
+  is_tester: boolean
+}
+
+export const getTesters = async (): Promise<TesterUser[]> => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, name, email, is_tester')
+    .eq('is_tester', true)
+    .order('name')
+
+  if (error) throw error
+  return data
+}

@@ -11,7 +11,8 @@ import type {
   CreateTicketRequest,
   UpdateTicketRequest,
   TicketAuditLogEntry,
-  TicketStatus
+  TicketStatus,
+  TesterUser
 } from '../api/adminDashboard.api'
 
 export interface TesterStats {
@@ -58,6 +59,7 @@ interface AdminDashboardState {
   ticketsPage: number
   ticketsLimit: number
   currentTicketAuditLogId?: string
+  testers: TesterUser[]
 }
 
 interface AdminDashboardActions {
@@ -72,6 +74,7 @@ interface AdminDashboardActions {
   setSelectedTicket: (ticket: TicketResponse | null) => void
   setTicketFilters: (filters: Partial<ListTicketsRequest>) => void
   clearTicketAuditLog: () => void
+  fetchTesters: () => Promise<void>
 }
 
 export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboardActions>((set, get) => ({
@@ -97,6 +100,7 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
   ticketsPage: 1,
   ticketsLimit: 10,
   currentTicketAuditLogId: undefined,
+  testers: [],
 
   fetchOverviewData: async () => {
     set({ isLoading: true, error: null })
@@ -351,4 +355,17 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
   
   clearTicketAuditLog: () => 
     set({ ticketAuditLogs: [], currentTicketAuditLogId: undefined }),
+
+  fetchTesters: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const testers = await api.getTesters()
+      set({ testers, isLoading: false })
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to fetch testers',
+        isLoading: false
+      })
+    }
+  },
 }))
