@@ -140,53 +140,202 @@ export const getProjectProgress = async (): Promise<ProjectProgress[]> => {
   }))
 }
 
-export const getTesterPerformance = async () => {
+export type TesterPerformanceData = {
+  id: string
+  name: string
+  email: string
+  testsPending: number
+  testsCompleted: number
+  lastTestCompleted: string | null
+  accuracyRate: number
+  avgResponseTime: number
+}
+
+export type TestHistoryItem = {
+  id: string
+  type: 'testing'
+  status: 'resolved' | 'closed'
+  title: string
+  description: string
+  priority: 'low' | 'medium' | 'high'
+  created_at: string
+  updated_at: string
+  created_by: {
+    id: string
+    name: string
+  }
+  assigned_to: {
+    id: string
+    name: string
+  }
+  testing_ticket: {
+    id: string
+    feature_id: string
+    deadline: string
+    feature: {
+      id: string
+      name: string
+      project: {
+        id: string
+        name: string
+        student: {
+          id: string
+          name: string
+        }
+      }
+    }
+    validation: {
+      id: string
+      status: 'Working' | 'Needs Fixing'
+      video_url: string
+      notes: string | null
+      created_at: string
+    } | null
+  }
+}
+
+export const getTesterPerformance = async (): Promise<TesterPerformanceData[]> => {
   // Get all testers
   const { data: testers, error: testersError } = await supabase
     .from('users')
-    .select('id, name')
+    .select('id, name, email')
     .eq('is_tester', true)
-  
+
   if (testersError) throw testersError
 
-  // For each tester, get their tickets
+  // For each tester, get their stats
   const testerStats = await Promise.all(testers.map(async (tester) => {
-    const { count: pendingCount, error: pendingError } = await supabase
-      .from('tickets')
-      .select('*', { count: 'exact', head: true })
-      .eq('type', 'testing')
-      .eq('assigned_to', tester.id)
-      .in('status', ['open', 'in_progress'])
+    const [
+      pendingTickets,
+      completedTickets,
+      lastCompletedTicket,
+      validations
+    ] = await Promise.all([
+      // Get pending tickets count
+      supabase
+        .from('tickets')
+        .select('*', { count: 'exact', head: true })
+        .eq('type', 'testing')
+        .eq('assigned_to', tester.id)
+        .in('status', ['open', 'in_progress']),
 
-    const { count: completedCount, error: completedError } = await supabase
-      .from('tickets')
-      .select('*', { count: 'exact', head: true })
-      .eq('type', 'testing')
-      .eq('assigned_to', tester.id)
-      .eq('status', 'resolved')
+      // Get completed tickets count
+      supabase
+        .from('tickets')
+        .select('*', { count: 'exact', head: true })
+        .eq('type', 'testing')
+        .eq('assigned_to', tester.id)
+        .in('status', ['resolved', 'closed']),
 
-    const { data: lastCompleted, error: lastCompletedError } = await supabase
-      .from('tickets')
-      .select('created_at')
-      .eq('type', 'testing')
-      .eq('assigned_to', tester.id)
-      .eq('status', 'resolved')
-      .order('created_at', { ascending: false })
-      .limit(1)
+      // Get last completed ticket
+      supabase
+        .from('tickets')
+        .select('updated_at')
+        .eq('type', 'testing')
+        .eq('assigned_to', tester.id)
+        .in('status', ['resolved', 'closed'])
+        .order('updated_at', { ascending: false })
+        .limit(1),
 
-    if (pendingError || completedError || lastCompletedError) {
-      throw pendingError || completedError || lastCompletedError
-    }
+      // Get validations for accuracy rate
+      supabase
+        .from('validations')
+        .select('status, created_at')
+        .eq('validated_by', tester.id)
+    ])
+
+    // Calculate accuracy rate
+    const totalValidations = validations.data?.length || 0
+    const successfulValidations = validations.data?.filter(v => v.status === 'Working').length || 0
+    const accuracyRate = totalValidations > 0 ? (successfulValidations / totalValidations) * 100 : 0
+
+    // Calculate average response time (time between ticket creation and validation)
+    const responseTimesSum = validations.data?.reduce((sum, validation) => {
+      const validationDate = new Date(validation.created_at)
+      // TODO: Add ticket creation date to calculation when available
+      return sum + validationDate.getTime()
+    }, 0)
+
+    const avgResponseTime = responseTimesSum && validations.data 
+      ? responseTimesSum / validations.data.length 
+      : 0
 
     return {
+      id: tester.id,
       name: tester.name,
-      testsPending: pendingCount || 0,
-      testsCompleted: completedCount || 0,
-      lastTestCompleted: lastCompleted?.[0]?.created_at || null
+      email: tester.email,
+      testsPending: pendingTickets.count || 0,
+      testsCompleted: completedTickets.count || 0,
+      lastTestCompleted: lastCompletedTicket.data?.[0]?.updated_at || null,
+      accuracyRate,
+      avgResponseTime
     }
   }))
 
   return testerStats
+}
+
+export const getTestHistory = async (): Promise<TestHistoryItem[]> => {
+  const { data, error } = await supabase
+    .from('testing_tickets')
+    .select(`
+      id,
+      feature_id,
+      deadline,
+      ticket:tickets!inner(
+        id,
+        type,
+        status,
+        title,
+        description,
+        priority,
+        created_at,
+        updated_at,
+        created_by_user:users!tickets_created_by_fkey (
+          id,
+          name
+        ),
+        assigned_to_user:users!tickets_assigned_to_fkey (
+          id,
+          name
+        )
+      ),
+      feature:features!inner(
+        id,
+        name,
+        project:projects!inner(
+          id,
+          name,
+          student:users!projects_student_id_fkey (
+            id,
+            name
+          )
+        )
+      ),
+      validation:validations(
+        id,
+        status,
+        video_url,
+        notes,
+        created_at
+      )
+    `)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+
+  return data.map(testingTicket => ({
+    ...testingTicket.ticket,
+    created_by: testingTicket.ticket.created_by_user,
+    assigned_to: testingTicket.ticket.assigned_to_user,
+    testing_ticket: {
+      id: testingTicket.id,
+      feature_id: testingTicket.feature_id,
+      deadline: testingTicket.deadline,
+      feature: testingTicket.feature,
+      validation: testingTicket.validation?.[0] || null
+    }
+  })) as TestHistoryItem[]
 }
 
 export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[]> => {

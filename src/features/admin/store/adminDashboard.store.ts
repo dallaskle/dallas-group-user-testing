@@ -1,6 +1,12 @@
 import { create } from 'zustand'
 import * as api from '../api/adminDashboard.api'
-import type { ActivityItem, ProjectDetails, ProjectRegistryDetails } from '../api/adminDashboard.api'
+import type { 
+  ActivityItem, 
+  ProjectDetails, 
+  ProjectRegistryDetails,
+  TesterPerformanceData,
+  TestHistoryItem
+} from '../api/adminDashboard.api'
 
 export interface TesterStats {
   name: string
@@ -23,7 +29,8 @@ interface AdminDashboardState {
   pendingTestsCount: number
   totalTestersCount: number
   projectProgress: ProjectProgress[]
-  testerPerformance: TesterStats[]
+  testerPerformance: TesterPerformanceData[]
+  testHistory: TestHistoryItem[]
   activities: ActivityItem[]
   projects: ProjectDetails[]
   projectRegistries: ProjectRegistryDetails[]
@@ -34,6 +41,8 @@ interface AdminDashboardState {
   fetchActivities: (days?: number) => Promise<void>
   fetchProjects: () => Promise<void>
   fetchProjectRegistries: () => Promise<void>
+  fetchTesterPerformance: () => Promise<void>
+  fetchTestHistory: () => Promise<void>
   setSelectedTimeframe: (days: number) => void
 }
 
@@ -45,6 +54,7 @@ export const useAdminDashboardStore = create<AdminDashboardState>((set, get) => 
   totalTestersCount: 0,
   projectProgress: [],
   testerPerformance: [],
+  testHistory: [],
   activities: [],
   projects: [],
   projectRegistries: [],
@@ -126,6 +136,32 @@ export const useAdminDashboardStore = create<AdminDashboardState>((set, get) => 
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to fetch project registries',
+        isLoading: false
+      })
+    }
+  },
+
+  fetchTesterPerformance: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const testerPerformance = await api.getTesterPerformance()
+      set({ testerPerformance, isLoading: false })
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to fetch tester performance',
+        isLoading: false
+      })
+    }
+  },
+
+  fetchTestHistory: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const testHistory = await api.getTestHistory()
+      set({ testHistory, isLoading: false })
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to fetch test history',
         isLoading: false
       })
     }

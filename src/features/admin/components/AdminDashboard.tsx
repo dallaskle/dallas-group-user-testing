@@ -3,6 +3,7 @@ import { QAScorecard } from './QAScorecard';
 import { TesterMetrics } from './TesterMetrics';
 import { AdminOverviewTab } from '../tabs/Overview/AdminOverviewTab';
 import { AdminProjectsTab } from '../tabs/Projects/AdminProjectsTab';
+import { AdminTestersTab } from '../tabs/Testers/AdminTestersTab';
 import TicketsPage from '@/features/tickets/pages/TicketsPage';
 import { useSearchParams } from 'react-router-dom';
 
@@ -35,16 +36,7 @@ export const AdminDashboard = () => {
         </TabsContent>
         
         <TabsContent value="testers">
-          {/* Testers Tab Content */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Tester Performance</h2>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <QAScorecard />
-              <TesterMetrics fullWidth />
-            </div>
-          </div>
+          <AdminTestersTab />
         </TabsContent>
         
         <TabsContent value="tickets">
