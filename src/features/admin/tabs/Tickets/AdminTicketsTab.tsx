@@ -6,7 +6,7 @@ import { AdminTicketList } from './components/AdminTicketList'
 import { AdminTicketFilters } from './components/AdminTicketFilters'
 import { AdminTicketAuditLog } from './components/AdminTicketAuditLog'
 import { Card, CardContent } from '@/components/ui/card'
-import { CreateTicketModal } from './components/CreateTicketModal'
+import { CreateTicketModal } from './components/CreateTicket/CreateTicketModal'
 
 export const AdminTicketsTab = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
