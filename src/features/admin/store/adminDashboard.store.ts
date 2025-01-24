@@ -254,10 +254,18 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
   fetchTicketAuditLog: async (ticketId?: string) => {
     const currentState = get()
     
-    if (!ticketId || 
-        currentState.isAuditLogLoading || 
-        (currentState.currentTicketAuditLogId === ticketId && currentState.ticketAuditLogs.length > 0)) {
-      return
+    // Don't fetch if already loading
+    if (currentState.isAuditLogLoading) return
+
+    // Don't fetch if we already have the data for this specific ticket or all tickets
+    if (ticketId) {
+      if (currentState.currentTicketAuditLogId === ticketId && currentState.ticketAuditLogs.length > 0) {
+        return
+      }
+    } else {
+      if (currentState.currentTicketAuditLogId === undefined && currentState.ticketAuditLogs.length > 0) {
+        return
+      }
     }
 
     set({ isAuditLogLoading: true, error: null })

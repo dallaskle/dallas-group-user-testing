@@ -14,30 +14,16 @@ export const AdminTicketAuditLog = ({ ticketId, className = '' }: AdminTicketAud
     isAuditLogLoading, 
     error, 
     fetchTicketAuditLog, 
-    clearTicketAuditLog,
-    currentTicketAuditLogId
+    clearTicketAuditLog
   } = useAdminDashboardStore()
 
   useEffect(() => {
-    // Only fetch if we have a ticketId and it's different from current
-    if (ticketId && ticketId !== currentTicketAuditLogId) {
-      fetchTicketAuditLog(ticketId)
-    }
-
-    // Only cleanup on unmount, not on ticketId changes
+    fetchTicketAuditLog(ticketId)
+    
     return () => {
-      if (!ticketId) {
-        clearTicketAuditLog()
-      }
+      clearTicketAuditLog()
     }
-  }, [ticketId, currentTicketAuditLogId, fetchTicketAuditLog])
-
-  console.log('🎨 [AdminTicketAuditLog] Rendering:', { 
-    ticketId,
-    isAuditLogLoading,
-    hasError: !!error,
-    logsCount: ticketAuditLogs.length 
-  })
+  }, [ticketId]) // Only re-fetch when ticketId changes
 
   if (isAuditLogLoading) {
     return (

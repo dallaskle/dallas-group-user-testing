@@ -11,11 +11,13 @@ const CreateTicketModal = lazy(() => import('./components/CreateTicket/CreateTic
 
 export const AdminTicketsTab = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const { clearTicketAuditLog, tickets } = useAdminDashboardStore()
+  const { clearTicketAuditLog, tickets, fetchTicketAuditLog } = useAdminDashboardStore()
 
   const handleTabChange = (value: string) => {
     if (value === 'list') {
       clearTicketAuditLog()
+    } else if (value === 'audit') {
+      fetchTicketAuditLog()
     }
   }
 
