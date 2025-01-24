@@ -39,6 +39,14 @@ export interface ProjectDetails {
     id: string
     name: string
   }
+  features: {
+    id: string
+    name: string
+    status: string
+    project_id: string
+    required_validations: number
+    current_validations: number
+  }[]
   features_count: number
   validations: {
     completed: number
@@ -153,7 +161,7 @@ export type TesterPerformanceData = {
   avgResponseTime: number
 }
 
-export type TestHistoryItem = {
+export interface TestHistoryItem {
   id: string
   type: 'testing'
   status: 'resolved' | 'closed'
@@ -193,6 +201,42 @@ export type TestHistoryItem = {
       notes: string | null
       created_at: string
     }[]
+  }
+}
+
+interface TestingTicketResponse {
+  id: string
+  feature_id: string
+  deadline: string
+  ticket: {
+    id: string
+    type: string
+    status: string
+    title: string
+    description: string
+    priority: string
+    created_at: string
+    updated_at: string
+    created_by_user: {
+      id: string
+      name: string
+    }
+    assigned_to_user: {
+      id: string
+      name: string
+    }
+  }
+  feature: {
+    id: string
+    name: string
+    project: {
+      id: string
+      name: string
+      student: {
+        id: string
+        name: string
+      }
+    }
   }
 }
 
@@ -316,6 +360,7 @@ export const getTestHistory = async (): Promise<TestHistoryItem[]> => {
         )
       )
     `)
+    .returns<TestingTicketResponse[]>()
     .order('created_at', { ascending: false })
 
   if (ticketsError) throw ticketsError
@@ -333,17 +378,41 @@ export const getTestHistory = async (): Promise<TestHistoryItem[]> => {
 
   // Map the data together
   return testingTickets.map(testingTicket => ({
-    ...testingTicket.ticket,
-    created_by: testingTicket.ticket.created_by_user,
-    assigned_to: testingTicket.ticket.assigned_to_user,
+    id: testingTicket.ticket.id,
+    type: testingTicket.ticket.type as 'testing',
+    status: testingTicket.ticket.status as 'resolved' | 'closed',
+    title: testingTicket.ticket.title,
+    description: testingTicket.ticket.description,
+    priority: testingTicket.ticket.priority as 'low' | 'medium' | 'high',
+    created_at: testingTicket.ticket.created_at,
+    updated_at: testingTicket.ticket.updated_at,
+    created_by: {
+      id: testingTicket.ticket.created_by_user.id,
+      name: testingTicket.ticket.created_by_user.name
+    },
+    assigned_to: {
+      id: testingTicket.ticket.assigned_to_user.id,
+      name: testingTicket.ticket.assigned_to_user.name
+    },
     testing_ticket: {
       id: testingTicket.id,
       feature_id: testingTicket.feature_id,
       deadline: testingTicket.deadline,
-      feature: testingTicket.feature,
+      feature: {
+        id: testingTicket.feature.id,
+        name: testingTicket.feature.name,
+        project: {
+          id: testingTicket.feature.project.id,
+          name: testingTicket.feature.project.name,
+          student: {
+            id: testingTicket.feature.project.student.id,
+            name: testingTicket.feature.project.student.name
+          }
+        }
+      },
       validations: validations?.filter(v => v.feature_id === testingTicket.feature_id) || []
     }
-  })) as TestHistoryItem[]
+  }))
 }
 
 export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[]> => {
@@ -599,7 +668,8 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
 }
 
 export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
-  const { data, error } = await supabase
+  // First get all projects with their basic info
+  const { data: projects, error } = await supabase
     .from('projects')
     .select(`
       id,
@@ -611,19 +681,29 @@ export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
       users!projects_student_id_fkey (
         id,
         name
-      ),
-      features (
-        id,
-        status,
-        required_validations,
-        current_validations
       )
     `)
 
   if (error) throw error
 
-  return data.map(project => {
-    const features = project.features || []
+  // Then get all features for these projects
+  const { data: features, error: featuresError } = await supabase
+    .from('features')
+    .select(`
+      id,
+      name,
+      status,
+      project_id,
+      required_validations,
+      current_validations
+    `)
+    .in('project_id', projects.map(p => p.id))
+
+  if (featuresError) throw featuresError
+
+  // Map the data together
+  return projects.map(project => {
+    const projectFeatures = features?.filter(f => f.project_id === project.id) || []
     return {
       id: project.id,
       name: project.name,
@@ -635,16 +715,17 @@ export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
         id: project.users.id,
         name: project.users.name
       },
-      features_count: features.length,
+      features: projectFeatures,
+      features_count: projectFeatures.length,
       validations: {
-        completed: features.reduce((sum, f) => sum + (f.current_validations || 0), 0),
-        required: features.reduce((sum, f) => sum + (f.required_validations || 0), 0)
+        completed: projectFeatures.reduce((sum, f) => sum + (f.current_validations || 0), 0),
+        required: projectFeatures.reduce((sum, f) => sum + (f.required_validations || 0), 0)
       },
       status_counts: {
-        not_started: features.filter(f => f.status === 'Not Started').length,
-        in_progress: features.filter(f => f.status === 'In Progress').length,
-        successful_test: features.filter(f => f.status === 'Successful Test').length,
-        failed_test: features.filter(f => f.status === 'Failed Test').length
+        not_started: projectFeatures.filter(f => f.status === 'Not Started').length,
+        in_progress: projectFeatures.filter(f => f.status === 'In Progress').length,
+        successful_test: projectFeatures.filter(f => f.status === 'Successful Test').length,
+        failed_test: projectFeatures.filter(f => f.status === 'Failed Test').length
       }
     }
   })
