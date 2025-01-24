@@ -184,13 +184,13 @@ export type TestHistoryItem = {
         }
       }
     }
-    validation: {
+    validations: {
       id: string
       status: 'Working' | 'Needs Fixing'
       video_url: string
       notes: string | null
       created_at: string
-    } | null
+    }[]
   }
 }
 
@@ -276,7 +276,8 @@ export const getTesterPerformance = async (): Promise<TesterPerformanceData[]> =
 }
 
 export const getTestHistory = async (): Promise<TestHistoryItem[]> => {
-  const { data, error } = await supabase
+  // First get all testing tickets with their related data
+  const { data: testingTickets, error: ticketsError } = await supabase
     .from('testing_tickets')
     .select(`
       id,
@@ -311,20 +312,25 @@ export const getTestHistory = async (): Promise<TestHistoryItem[]> => {
             name
           )
         )
-      ),
-      validation:validations(
-        id,
-        status,
-        video_url,
-        notes,
-        created_at
       )
     `)
     .order('created_at', { ascending: false })
 
-  if (error) throw error
+  if (ticketsError) throw ticketsError
 
-  return data.map(testingTicket => ({
+  // Get all validations for the features in these testing tickets
+  const featureIds = testingTickets.map(ticket => ticket.feature_id)
+  
+  const { data: validations, error: validationsError } = await supabase
+    .from('validations')
+    .select('*')
+    .in('feature_id', featureIds)
+    .order('created_at', { ascending: false })
+
+  if (validationsError) throw validationsError
+
+  // Map the data together
+  return testingTickets.map(testingTicket => ({
     ...testingTicket.ticket,
     created_by: testingTicket.ticket.created_by_user,
     assigned_to: testingTicket.ticket.assigned_to_user,
@@ -333,7 +339,7 @@ export const getTestHistory = async (): Promise<TestHistoryItem[]> => {
       feature_id: testingTicket.feature_id,
       deadline: testingTicket.deadline,
       feature: testingTicket.feature,
-      validation: testingTicket.validation?.[0] || null
+      validations: validations?.filter(v => v.feature_id === testingTicket.feature_id) || []
     }
   })) as TestHistoryItem[]
 }

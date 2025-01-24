@@ -2,9 +2,8 @@ import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, X, Play } from 'lucide-react'
+import { Search, X, Play, Info } from 'lucide-react'
 import debounce from 'lodash/debounce'
-import { formatDistanceToNow } from 'date-fns'
 import type { TestHistoryItem } from '../../../api/adminDashboard.api'
 import {
   Dialog,
@@ -28,11 +27,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 interface TestHistoryProps {
   testHistory: TestHistoryItem[]
@@ -113,6 +111,7 @@ export const TestHistory = ({ testHistory, onRefresh, isLoading }: TestHistoryPr
     setDebouncedSearchQuery('')
   }
 
+  console.log(testHistory)
   // Filter and sort history
   const filteredAndSortedHistory = testHistory
     .filter(ticket => {
@@ -323,27 +322,78 @@ export const TestHistory = ({ testHistory, onRefresh, isLoading }: TestHistoryPr
                   <TableCell>{ticket.assigned_to?.name}</TableCell>
                   <TableCell>{new Date(ticket.updated_at).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    {ticket.testing_ticket.validation && (
-                      <div className="space-y-1">
-                        <div className={
-                          ticket.testing_ticket.validation.status === 'Working' 
-                            ? 'text-green-600 font-medium'
-                            : 'text-red-600 font-medium'
-                        }>
-                          {ticket.testing_ticket.validation.status}
-                        </div>
-                        {ticket.testing_ticket.validation.video_url && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-blue-600 hover:text-blue-800 p-0 h-auto"
-                            onClick={() => setSelectedVideo(ticket.testing_ticket.validation?.video_url || null)}
-                          >
-                            <Play className="h-4 w-4 mr-2" />
-                            View Video
-                          </Button>
-                        )}
+                    {ticket.testing_ticket.validations && ticket.testing_ticket.validations.length > 0 ? (
+                      <div className="flex items-center gap-2">
+                        {ticket.testing_ticket.validations.map((validation) => (
+                          <div key={validation.id} className="flex items-center">
+                            <div 
+                              className={`h-2 w-2 rounded-full ${
+                                validation.status === 'Working' 
+                                  ? 'bg-green-500'
+                                  : 'bg-red-500'
+                              }`}
+                            />
+                            {validation.video_url && (
+                              <Play 
+                                className="h-3 w-3 ml-1 text-blue-600 cursor-pointer" 
+                                onClick={() => setSelectedVideo(validation.video_url)}
+                              />
+                            )}
+                          </div>
+                        ))}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                              <Info className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-80">
+                            <div className="space-y-4">
+                              {ticket.testing_ticket.validations.map((validation, index) => (
+                                <div key={validation.id} className={index > 0 ? "border-t pt-4" : ""}>
+                                  <div className="flex items-center gap-2">
+                                    <div 
+                                      className={`h-2 w-2 rounded-full ${
+                                        validation.status === 'Working' 
+                                          ? 'bg-green-500'
+                                          : 'bg-red-500'
+                                      }`}
+                                    />
+                                    <span className={
+                                      validation.status === 'Working' 
+                                        ? 'text-green-600 font-medium'
+                                        : 'text-red-600 font-medium'
+                                    }>
+                                      {validation.status}
+                                    </span>
+                                  </div>
+                                  {validation.notes && (
+                                    <p className="text-sm text-muted-foreground mt-2">
+                                      {validation.notes}
+                                    </p>
+                                  )}
+                                  {validation.video_url && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-blue-600 hover:text-blue-800 p-0 h-auto mt-2"
+                                      onClick={() => setSelectedVideo(validation.video_url)}
+                                    >
+                                      <Play className="h-4 w-4 mr-2" />
+                                      View Video
+                                    </Button>
+                                  )}
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    {new Date(validation.created_at).toLocaleString()}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">No validations</span>
                     )}
                   </TableCell>
                 </TableRow>
