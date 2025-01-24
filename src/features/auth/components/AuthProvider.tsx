@@ -24,7 +24,7 @@ export const useAuth = () => {
     return result
   }
 
-  const register = async (data: { email: string; password: string; name: string; role: 'student' | 'tester' }) => {
+  const register = async (data: { email: string; password: string; name: string }) => {
     const result = await authService.register(data)
     return result
   }

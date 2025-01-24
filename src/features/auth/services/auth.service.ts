@@ -18,7 +18,6 @@ interface RegisterData {
   email: string
   password: string
   name: string
-  role: 'student' | 'tester'
 }
 
 class AuthService {
