@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { TicketDetails } from '../tabs/Tickets/components/TicketDetails'
+import { AdminTicketDetails } from '../tabs/Tickets/components/AdminTicketDetails'
 
 export default function TicketDetailsPage() {
   const { id } = useParams<{ id: string }>()
@@ -19,7 +19,7 @@ export default function TicketDetailsPage() {
         </Button>
       </div>
 
-      <TicketDetails ticketId={id} />
+      <AdminTicketDetails ticketId={id} />
     </div>
   )
 } 

@@ -1,14 +1,14 @@
 import { useEffect } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useAdminDashboardStore } from '../../../store/adminDashboard.store'
-import { TicketDetailsAuditLogItem } from './TicketDetailsAuditLogItem'
+import { AdminTicketAuditLogItem } from './AdminTicketAuditLogItem'
 
 interface TicketDetailsAuditLogProps {
   ticketId: string
   className?: string
 }
 
-export const TicketDetailsAuditLog = ({ ticketId, className = '' }: TicketDetailsAuditLogProps) => {
+export const AdminTicketDetailsAuditLog = ({ ticketId, className = '' }: TicketDetailsAuditLogProps) => {
   const { ticketAuditLogs, isLoading, error, fetchTicketAuditLog, clearTicketAuditLog } = useAdminDashboardStore()
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export const TicketDetailsAuditLog = ({ ticketId, className = '' }: TicketDetail
     <ScrollArea className={`h-[600px] ${className}`}>
       <div className="space-y-4 px-4">
         {ticketAuditLogs.map((entry) => (
-          <TicketDetailsAuditLogItem key={entry.id} entry={entry} />
+          <AdminTicketAuditLogItem key={entry.id} entry={entry} />
         ))}
       </div>
     </ScrollArea>

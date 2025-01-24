@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useAdminDashboardStore } from '../../../store/adminDashboard.store'
 import type { TicketStatus } from '../../../api/adminDashboard.api'
 import { supabase } from '@/lib/supabase'
-import { TicketDetailsAuditLog } from './TicketDetailsAuditLog'
+import { AdminTicketDetailsAuditLog } from './AdminTicketDetailsAuditLog'
 
 const statusColors: Record<TicketStatus, string> = {
   open: 'bg-blue-100 text-blue-800',
@@ -32,7 +32,7 @@ export interface TicketDetailsProps {
   className?: string
 }
 
-export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
+export function AdminTicketDetails({ ticketId, className }: TicketDetailsProps) {
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   
@@ -241,7 +241,7 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
           <CardTitle className="text-xl">Audit Log</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <TicketDetailsAuditLog ticketId={ticketId} />
+          <AdminTicketDetailsAuditLog ticketId={ticketId} />
         </CardContent>
       </Card>
     </div>
