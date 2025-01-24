@@ -1,22 +1,15 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAdminDashboardStore } from '../../store/adminDashboard.store'
 import { AdminTicketList } from './components/AdminTicketList'
-import { AdminTicketForm } from './components/AdminTicketForm'
 import { AdminTicketFilters } from './components/AdminTicketFilters'
 import { AdminTicketAuditLog } from './components/AdminTicketAuditLog'
 import { Card, CardContent } from '@/components/ui/card'
+import { CreateTicketModal } from './components/CreateTicketModal'
 
 export const AdminTicketsTab = () => {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const { clearTicketAuditLog, tickets } = useAdminDashboardStore()
 
   const handleTabChange = (value: string) => {
@@ -38,20 +31,9 @@ export const AdminTicketsTab = () => {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Admin Ticket Management</h1>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>Create Ticket</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Create New Ticket</DialogTitle>
-            </DialogHeader>
-            <AdminTicketForm
-              onSuccess={() => setIsCreateDialogOpen(false)}
-              className="mt-4"
-            />
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsCreateModalOpen(true)}>
+          Create Ticket
+        </Button>
       </div>
 
       <div className="grid grid-cols-4 gap-4 mb-8">
@@ -101,6 +83,11 @@ export const AdminTicketsTab = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      <CreateTicketModal 
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+      />
     </div>
   )
 }
