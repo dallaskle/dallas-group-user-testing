@@ -46,13 +46,16 @@ export function AdminTicketDetails({ ticketId, className }: TicketDetailsProps) 
   } = useAdminDashboardStore()
 
   useEffect(() => {
-    fetchTicketById(ticketId)
-  }, [ticketId, fetchTicketById])
+    if (ticketId && (!selectedTicket || selectedTicket.ticket_data.ticket.id !== ticketId)) {
+      fetchTicketById(ticketId)
+    }
+  }, [ticketId, selectedTicket, fetchTicketById])
 
   useEffect(() => {
+    let isMounted = true
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
+      if (user && isMounted) {
         setCurrentUser(user)
         // Get user data including is_admin
         const { data: userData } = await supabase
@@ -60,10 +63,15 @@ export function AdminTicketDetails({ ticketId, className }: TicketDetailsProps) 
           .select('is_admin')
           .eq('id', user.id)
           .single()
-        setIsAdmin(userData?.is_admin ?? false)
+        if (isMounted) {
+          setIsAdmin(userData?.is_admin ?? false)
+        }
       }
     }
     getCurrentUser()
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   if (isLoading) {

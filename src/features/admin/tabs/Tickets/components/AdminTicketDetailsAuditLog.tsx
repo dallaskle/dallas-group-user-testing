@@ -9,19 +9,30 @@ interface TicketDetailsAuditLogProps {
 }
 
 export const AdminTicketDetailsAuditLog = ({ ticketId, className = '' }: TicketDetailsAuditLogProps) => {
-  const { ticketAuditLogs, isLoading, error, fetchTicketAuditLog, clearTicketAuditLog } = useAdminDashboardStore()
+  const { 
+    ticketAuditLogs, 
+    isAuditLogLoading, 
+    error, 
+    fetchTicketAuditLog, 
+    clearTicketAuditLog,
+    currentTicketAuditLogId
+  } = useAdminDashboardStore()
 
   useEffect(() => {
-    console.log('🔄 [TicketDetailsAuditLog] Effect triggered:', { ticketId })
-    fetchTicketAuditLog(ticketId)
-
-    return () => {
-      console.log('🧹 [TicketDetailsAuditLog] Cleanup triggered:', { ticketId })
-      clearTicketAuditLog()
+    // Only fetch if we have a ticketId and it's different from current
+    if (ticketId && ticketId !== currentTicketAuditLogId) {
+      fetchTicketAuditLog(ticketId)
     }
-  }, [ticketId])
 
-  if (isLoading) {
+    // Only cleanup on unmount, not on ticketId changes
+    return () => {
+      if (ticketId === currentTicketAuditLogId) {
+        clearTicketAuditLog()
+      }
+    }
+  }, [ticketId, currentTicketAuditLogId, fetchTicketAuditLog])
+
+  if (isAuditLogLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />

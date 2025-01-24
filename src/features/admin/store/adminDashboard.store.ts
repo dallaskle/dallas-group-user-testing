@@ -43,6 +43,7 @@ interface AdminDashboardState {
   projectRegistries: ProjectRegistryDetails[]
   selectedTimeframe: number
   isLoading: boolean
+  isAuditLogLoading: boolean
   error: string | null
   fetchOverviewData: () => Promise<void>
   fetchActivities: (days?: number) => Promise<void>
@@ -91,6 +92,7 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
   projectRegistries: [],
   selectedTimeframe: 7,
   isLoading: false,
+  isAuditLogLoading: false,
   error: null,
   tickets: [],
   selectedTicket: null,
@@ -229,6 +231,11 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
   },
 
   fetchTicketById: async (id) => {
+    const currentState = get()
+    if (currentState.selectedTicket?.ticket_data.ticket.id === id) {
+      return
+    }
+
     set({ isLoading: true, error: null })
     try {
       const ticket = await api.getTicketById(id)
@@ -240,21 +247,31 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
     }
   },
 
-  fetchTicketAuditLog: async (ticketId) => {
+  fetchTicketAuditLog: async (ticketId?: string) => {
     const currentState = get()
     
-    if (currentState.currentTicketAuditLogId === ticketId && currentState.ticketAuditLogs.length > 0) {
+    if (!ticketId || 
+        currentState.isAuditLogLoading || 
+        (currentState.currentTicketAuditLogId === ticketId && currentState.ticketAuditLogs.length > 0)) {
       return
     }
 
-    set({ isLoading: true, error: null, currentTicketAuditLogId: ticketId })
+    set({ isAuditLogLoading: true, error: null })
     try {
       const response = await api.getTicketAuditLog(ticketId)
-      set({ ticketAuditLogs: response.audit_logs })
+      set({ 
+        ticketAuditLogs: response.audit_logs, 
+        isAuditLogLoading: false,
+        currentTicketAuditLogId: ticketId,
+        error: null
+      })
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to fetch audit log' })
-    } finally {
-      set({ isLoading: false })
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch audit log',
+        isAuditLogLoading: false,
+        ticketAuditLogs: [],
+        currentTicketAuditLogId: undefined
+      })
     }
   },
 
@@ -354,7 +371,11 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
     set((state) => ({ ticketFilters: { ...state.ticketFilters, ...filters } })),
   
   clearTicketAuditLog: () => 
-    set({ ticketAuditLogs: [], currentTicketAuditLogId: undefined }),
+    set({ 
+      ticketAuditLogs: [], 
+      currentTicketAuditLogId: undefined,
+      error: null 
+    }),
 
   fetchTesters: async () => {
     set({ isLoading: true, error: null })
