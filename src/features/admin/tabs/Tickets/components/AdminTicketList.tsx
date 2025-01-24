@@ -107,8 +107,10 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
                 key={ticket.id}
                 className="cursor-pointer hover:bg-gray-50"
                 onClick={(e) => {
-                  // Don't navigate if clicking on the actions button
-                  if ((e.target as HTMLElement).closest('.actions-button')) {
+                  // Don't navigate if clicking on the actions button or menu items
+                  const isActionClick = (e.target as HTMLElement).closest('.actions-button, [role="menuitem"]')
+                  if (isActionClick) {
+                    e.preventDefault()
                     e.stopPropagation()
                     return
                   }
