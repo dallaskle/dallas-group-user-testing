@@ -43,7 +43,8 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link to="/dashboard" className="text-xl font-bold text-gray-900">
+            <Link to="/dashboard" className="flex items-center text-xl font-bold text-gray-900">
+              <img src="/src/assets/image.jpg" alt="Logo" className="h-10 w-10 mr-2 rounded-full object-cover" />
               Group User Testing
             </Link>
             

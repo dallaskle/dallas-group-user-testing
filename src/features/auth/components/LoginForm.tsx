@@ -54,7 +54,6 @@ export const LoginForm = () => {
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
-
       <Card className="w-full bg-white dark:bg-charcoal shadow-lg shadow-slate-200/50 dark:shadow-none border-none">
         <CardContent className="p-8">
           <form 

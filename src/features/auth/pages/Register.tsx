@@ -31,17 +31,17 @@ const Register = () => {
           <div className="w-full max-w-md">
             <div className="p-8">
               <div className="text-center mb-8">
+                <img src="/src/assets/image.jpg" alt="Logo" className="h-28 w-28 rounded-full object-cover mx-auto mb-6" />
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">
                   Group User Testing
                 </h1>
                 <h2 className="text-2xl font-medium text-gray-700 mb-2">
-                  Create Account
+                  Create an Account
                 </h2>
                 <p className="text-gray-500">
-                  Join us to start managing your user tests
+                  Join our community of testers and students
                 </p>
               </div>
-              
               <RegisterForm />
             </div>
           </div>
