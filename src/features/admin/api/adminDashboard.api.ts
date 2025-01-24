@@ -50,6 +50,25 @@ export interface ProjectDetails {
   }
 }
 
+export interface ProjectRegistryDetails {
+  id: string
+  name: string
+  description: string
+  created_at: string
+  created_by: {
+    id: string
+    name: string
+  }
+  feature_count: number
+  projects_count: number
+  features: {
+    id: string
+    name: string
+    description: string
+    is_required: boolean
+  }[]
+}
+
 export const getProjectRegistriesCount = async () => {
   const { count, error } = await supabase
     .from('project_registry')
@@ -472,4 +491,44 @@ export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
       }
     }
   })
+}
+
+export const getProjectRegistriesWithDetails = async (): Promise<ProjectRegistryDetails[]> => {
+  const { data, error } = await supabase
+    .from('project_registry')
+    .select(`
+      id,
+      name,
+      description,
+      created_at,
+      users!project_registry_created_by_fkey (
+        id,
+        name
+      ),
+      feature_registry (
+        id,
+        name,
+        description,
+        is_required
+      ),
+      projects (
+        id
+      )
+    `)
+
+  if (error) throw error
+
+  return data.map(registry => ({
+    id: registry.id,
+    name: registry.name,
+    description: registry.description,
+    created_at: registry.created_at,
+    created_by: {
+      id: registry.users.id,
+      name: registry.users.name
+    },
+    feature_count: registry.feature_registry?.length || 0,
+    projects_count: registry.projects?.length || 0,
+    features: registry.feature_registry || []
+  }))
 }

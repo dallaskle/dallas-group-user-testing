@@ -13,22 +13,25 @@ import {
 } from '@/components/ui/table'
 import { ProjectRegistryCard } from '../../components/ProjectRegistryCard'
 import { CreateProjectRegistry } from '../../components/CreateProjectRegistry'
-import { useRegistry } from '../../components/RegistryProvider'
 import { useAdminDashboardStore } from '../../store/adminDashboard.store'
 import { Badge } from '@/components/ui/badge'
 
 export const AdminProjectsTab = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const navigate = useNavigate()
-  const { projectRegistries, isLoading: isRegistryLoading, error: registryError } = useRegistry()
-  const { projects, isLoading: isProjectsLoading, error: projectsError, fetchProjects } = useAdminDashboardStore()
+  const { 
+    projects, 
+    projectRegistries,
+    isLoading,
+    error,
+    fetchProjects,
+    fetchProjectRegistries
+  } = useAdminDashboardStore()
 
   useEffect(() => {
     fetchProjects()
-  }, [fetchProjects])
-
-  const isLoading = isRegistryLoading || isProjectsLoading
-  const error = registryError || projectsError
+    fetchProjectRegistries()
+  }, [fetchProjects, fetchProjectRegistries])
 
   return (
     <div className="space-y-8">
@@ -53,7 +56,7 @@ export const AdminProjectsTab = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {projectRegistries.map((registry) => (
               <ProjectRegistryCard 
                 key={registry.id} 
