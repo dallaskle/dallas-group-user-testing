@@ -16,8 +16,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useToast } from '@/components/ui/use-toast'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { createProjectRegistry } from '../api/createProjectRegistry'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card'
+import { createProjectRegistry } from '../../../api/createProjectRegistry'
 
 const projectRegistrySchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),

@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useToast } from '@/components/ui/use-toast'
-import { createFeatureRegistry } from '../api/createFeatureRegistry'
+import { createFeatureRegistry } from '../../../api/createFeatureRegistry'
 
 const featureRegistrySchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),

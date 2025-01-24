@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CreateProjectRegistry } from '../components/CreateProjectRegistry'
-import { CreateFeatureRegistry } from '../components/CreateFeatureRegistry'
+import { CreateProjectRegistry } from '../tabs/Projects/components/CreateProjectRegistry'
+import { CreateFeatureRegistry } from '../tabs/Projects/components/CreateFeatureRegistry'
 
 export const RegistryManagement = () => {
   const [activeTab, setActiveTab] = useState('project')

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from 'date-fns';
 import { Users, FileText, GitBranch } from 'lucide-react';
-import type { ProjectRegistryDetails } from '../api/adminDashboard.api';
+import type { ProjectRegistryDetails } from '../../../api/adminDashboard.api';
 
 interface ProjectRegistryCardProps {
   registry: ProjectRegistryDetails;

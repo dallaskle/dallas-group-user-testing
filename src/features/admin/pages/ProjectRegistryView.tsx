@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { CreateFeatureRegistry } from '../components/CreateFeatureRegistry';
+import { CreateFeatureRegistry } from '../tabs/Projects/components/CreateFeatureRegistry';
 import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useRegistry } from '../components/RegistryProvider';

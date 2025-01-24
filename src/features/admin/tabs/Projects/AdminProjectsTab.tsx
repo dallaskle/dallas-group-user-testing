@@ -11,8 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ProjectRegistryCard } from '../../components/ProjectRegistryCard'
-import { CreateProjectRegistry } from '../../components/CreateProjectRegistry'
+import { ProjectRegistryCard } from './components/ProjectRegistryCard'
+import { CreateProjectRegistry } from './components/CreateProjectRegistry'
 import { useAdminDashboardStore } from '../../store/adminDashboard.store'
 import { Badge } from '@/components/ui/badge'
 
