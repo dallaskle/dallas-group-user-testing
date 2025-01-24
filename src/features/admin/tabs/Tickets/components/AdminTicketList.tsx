@@ -9,6 +9,17 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
+import { MoreHorizontal } from 'lucide-react'
 import { useAdminDashboardStore } from '../../../store/adminDashboard.store'
 import type { TicketStatus, TicketPriority } from '../../../api/adminDashboard.api'
 
@@ -31,7 +42,14 @@ export interface AdminTicketListProps {
 
 export function AdminTicketList({ className }: AdminTicketListProps) {
   const navigate = useNavigate()
-  const { tickets, isLoading, fetchTickets } = useAdminDashboardStore()
+  const { 
+    tickets, 
+    isLoading, 
+    fetchTickets,
+    transitionTicket,
+    updateTicket,
+    deleteTicket 
+  } = useAdminDashboardStore()
 
   useEffect(() => {
     fetchTickets()
@@ -39,6 +57,23 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
 
   const handleRowClick = (ticketId: string) => {
     navigate(`/admin/tickets/${ticketId}`)
+  }
+
+  const handleStatusChange = async (ticketId: string, status: TicketStatus) => {
+    await transitionTicket(ticketId, status)
+    await fetchTickets()
+  }
+
+  const handlePriorityChange = async (ticketId: string, priority: TicketPriority) => {
+    await updateTicket({ id: ticketId, priority })
+    await fetchTickets()
+  }
+
+  const handleDelete = async (ticketId: string) => {
+    if (window.confirm('Are you sure you want to delete this ticket?')) {
+      await deleteTicket(ticketId)
+      await fetchTickets()
+    }
   }
 
   if (isLoading) {
@@ -61,6 +96,7 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
             <TableHead>Assigned To</TableHead>
             <TableHead>Created By</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -70,7 +106,14 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
               <TableRow
                 key={ticket.id}
                 className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleRowClick(ticket.id)}
+                onClick={(e) => {
+                  // Don't navigate if clicking on the actions button
+                  if ((e.target as HTMLElement).closest('.actions-button')) {
+                    e.stopPropagation()
+                    return
+                  }
+                  handleRowClick(ticket.id)
+                }}
               >
                 <TableCell className="font-medium">{ticket.title}</TableCell>
                 <TableCell>
@@ -101,12 +144,62 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
                 <TableCell>
                   {new Date(ticket.created_at).toLocaleDateString()}
                 </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 actions-button"
+                      >
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                          Set Status
+                        </DropdownMenuLabel>
+                        {['open', 'in_progress', 'resolved', 'closed'].map((status) => (
+                          <DropdownMenuItem
+                            key={status}
+                            onClick={() => handleStatusChange(ticket.id, status as TicketStatus)}
+                            disabled={ticket.status === status}
+                          >
+                            Mark as {status.replace('_', ' ')}
+                          </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                          Set Priority
+                        </DropdownMenuLabel>
+                        {['low', 'medium', 'high'].map((priority) => (
+                          <DropdownMenuItem
+                            key={priority}
+                            onClick={() => handlePriorityChange(ticket.id, priority as TicketPriority)}
+                            disabled={ticket.priority === priority}
+                          >
+                            Set {priority} priority
+                          </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-red-600"
+                          onClick={() => handleDelete(ticket.id)}
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
               </TableRow>
             )
           })}
           {(!tickets || tickets.length === 0) && (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-gray-500">
+              <TableCell colSpan={8} className="text-center text-gray-500">
                 No tickets found
               </TableCell>
             </TableRow>

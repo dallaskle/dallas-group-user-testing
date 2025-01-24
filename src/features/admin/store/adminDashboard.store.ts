@@ -68,6 +68,7 @@ interface AdminDashboardActions {
   updateTicket: (request: UpdateTicketRequest) => Promise<void>
   assignTicket: (id: string, assignedTo: string | null) => Promise<void>
   transitionTicket: (id: string, status: TicketStatus) => Promise<void>
+  deleteTicket: (id: string) => Promise<void>
   setSelectedTicket: (ticket: TicketResponse | null) => void
   setTicketFilters: (filters: Partial<ListTicketsRequest>) => void
   clearTicketAuditLog: () => void
@@ -323,6 +324,24 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
       }))
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to transition ticket' })
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  deleteTicket: async (id) => {
+    set({ isLoading: true, error: null })
+    try {
+      await api.deleteTicket(id)
+      set((state) => ({
+        tickets: state.tickets.filter((t) => t.ticket_data.ticket.id !== id),
+        selectedTicket:
+          state.selectedTicket?.ticket_data.ticket.id === id
+            ? null
+            : state.selectedTicket,
+      }))
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to delete ticket' })
     } finally {
       set({ isLoading: false })
     }

@@ -17,7 +17,8 @@ export const AdminDashboard = () => {
 
   return (
     <>
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+      <p className="text-muted-foreground mb-8">Monitor and manage projects, testers, and validations</p>
       
       <Tabs value={currentTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-4 mb-8">

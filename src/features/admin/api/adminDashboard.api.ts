@@ -995,3 +995,27 @@ export const getTicketAuditLog = async (ticketId?: string): Promise<TicketAuditL
 
   return await response.json()
 }
+
+export const deleteTicket = async (id: string): Promise<void> => {
+  const session = await supabase.auth.getSession()
+  if (!session.data.session?.access_token) {
+    throw new Error('No active session')
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-delete`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+      body: JSON.stringify({ id }),
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to delete ticket')
+  }
+}
