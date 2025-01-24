@@ -213,7 +213,7 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
     set({ selectedTimeframe: days })
   },
 
-  fetchTickets: async (request) => {
+  fetchTickets: async (request?: ListTicketsRequest) => {
     set({ isLoading: true, error: null })
     try {
       const response = await api.getTickets({ ...get().ticketFilters, ...request })

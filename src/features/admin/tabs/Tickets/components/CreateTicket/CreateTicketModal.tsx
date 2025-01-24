@@ -106,7 +106,7 @@ function CreateTicketModal({ isOpen, onClose }: CreateTicketModalProps) {
     try {
       setIsSubmitting(true)
       await store.createTicket(formData)
-      await store.fetchTickets()
+      await store.fetchTickets() // Refetch tickets to get updated list
       onClose()
       setFormData(INITIAL_FORM_DATA)
     } catch (error) {

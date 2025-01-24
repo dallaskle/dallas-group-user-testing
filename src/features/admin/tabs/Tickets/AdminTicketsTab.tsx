@@ -29,37 +29,37 @@ export const AdminTicketsTab = () => {
   const highPriorityPercentage = totalTickets > 0 ? Math.round((highPriorityTickets.length / totalTickets) * 100) : 0
 
   return (
-    <div>
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Admin Ticket Management</h1>
-        <Button onClick={() => setIsCreateModalOpen(true)} variant="default">
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Tickets</h2>
+        <Button onClick={() => setIsCreateModalOpen(true)}>
           Create Ticket
         </Button>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{totalTickets}</div>
-            <p className="text-sm text-muted-foreground">Total Tickets</p>
+            <div className="text-sm text-gray-500">Total Tickets</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{openTickets.length} ({openPercentage}%)</div>
-            <p className="text-sm text-muted-foreground">Open Tickets</p>
+            <div className="text-2xl font-bold">{openTickets.length}</div>
+            <div className="text-sm text-gray-500">Open ({openPercentage}%)</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{inProgressTickets.length} ({inProgressPercentage}%)</div>
-            <p className="text-sm text-muted-foreground">In Progress</p>
+            <div className="text-2xl font-bold">{inProgressTickets.length}</div>
+            <div className="text-sm text-gray-500">In Progress ({inProgressPercentage}%)</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{highPriorityTickets.length} ({highPriorityPercentage}%)</div>
-            <p className="text-sm text-muted-foreground">High Priority</p>
+            <div className="text-2xl font-bold">{highPriorityTickets.length}</div>
+            <div className="text-sm text-gray-500">High Priority ({highPriorityPercentage}%)</div>
           </CardContent>
         </Card>
       </div>

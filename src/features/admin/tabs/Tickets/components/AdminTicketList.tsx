@@ -120,7 +120,7 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
         </TableHeader>
         <TableBody>
           {tickets?.map((ticketResponse) => {
-            const ticket = ticketResponse.ticket_data.ticket
+            const { ticket } = ticketResponse.ticket_data
             return (
               <TableRow
                 key={ticket.id}
