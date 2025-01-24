@@ -105,6 +105,40 @@ interface OutstandingTestingTicket {
   }
 }
 
+interface FeatureWithProject {
+  id: string
+  name: string
+  current_validations: number
+  required_validations: number
+  project: {
+    name: string
+    student_id: string
+  }
+}
+
+interface TestingTicketResponse {
+  id: string
+  deadline: string
+  feature_id: string
+  validation_id: string | null
+  validation: {
+    status: string
+    notes: string | null
+  }[] | null
+  ticket: {
+    id: string
+    title: string
+    status: string
+    priority: string
+    assigned_to: string | null
+    assignedTo: {
+      id: string
+      name: string
+      email: string
+    } | null
+  }
+}
+
 export const studentDashboardApi = {
   async getOutstandingTestingTickets(studentId: string): Promise<OutstandingTestingTicket[]> {
     // First, get all features for the student's projects
@@ -121,6 +155,7 @@ export const studentDashboardApi = {
         )
       `)
       .eq('project.student_id', studentId)
+      .returns<FeatureWithProject[]>()
 
     if (featuresError) throw featuresError
 
@@ -142,18 +177,22 @@ export const studentDashboardApi = {
           notes
         ),
         ticket:tickets!inner(
+          id,
           title,
           status,
           priority,
           assigned_to,
-          assignedToUser:users!tickets_assigned_to_fkey(
-            name
+          assignedTo:users!tickets_assigned_to_fkey(
+            id,
+            name,
+            email
           )
         )
       `)
       .in('feature_id', featureIds)
       .eq('ticket.status', 'open')
       .order('deadline', { ascending: true })
+      .returns<TestingTicketResponse[]>()
 
     if (ticketsError) throw ticketsError
 
@@ -170,18 +209,23 @@ export const studentDashboardApi = {
         feature: {
           name: feature.name,
           project: {
-            name: feature.project[0]?.name
+            name: feature.project.name
           },
           current_validations: feature.current_validations,
           required_validations: feature.required_validations
         },
         ticket: {
-          title: testingTicket.ticket[0]?.title,
-          status: testingTicket.ticket[0]?.status,
-          priority: testingTicket.ticket[0]?.priority,
-          assignedTo: testingTicket.ticket[0]?.assignedToUser[0]
+          title: testingTicket.ticket.title,
+          status: testingTicket.ticket.status,
+          priority: testingTicket.ticket.priority,
+          assignedTo: testingTicket.ticket.assignedTo ? {
+            name: testingTicket.ticket.assignedTo.name
+          } : undefined
         },
-        validation: testingTicket.validation?.[0]
+        validation: testingTicket.validation?.[0] ? {
+          status: testingTicket.validation[0].status,
+          notes: testingTicket.validation[0].notes || undefined
+        } : undefined
       }
     })
   },
