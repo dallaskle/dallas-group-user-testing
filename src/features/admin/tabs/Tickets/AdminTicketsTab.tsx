@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Suspense, lazy } from 'react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAdminDashboardStore } from '../../store/adminDashboard.store'
@@ -6,7 +6,8 @@ import { AdminTicketList } from './components/AdminTicketList'
 import { AdminTicketFilters } from './components/AdminTicketFilters'
 import { AdminTicketAuditLog } from './components/AdminTicketAuditLog'
 import { Card, CardContent } from '@/components/ui/card'
-import { CreateTicketModal } from './components/CreateTicket/CreateTicketModal'
+
+const CreateTicketModal = lazy(() => import('./components/CreateTicket/CreateTicketModal'))
 
 export const AdminTicketsTab = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -31,7 +32,7 @@ export const AdminTicketsTab = () => {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Admin Ticket Management</h1>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
+        <Button onClick={() => setIsCreateModalOpen(true)} variant="default">
           Create Ticket
         </Button>
       </div>
@@ -63,31 +64,28 @@ export const AdminTicketsTab = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="list" className="space-y-6" onValueChange={handleTabChange}>
+      <Tabs defaultValue="list" className="space-y-4" onValueChange={handleTabChange}>
         <TabsList>
-          <TabsTrigger value="list">Tickets List</TabsTrigger>
+          <TabsTrigger value="list">Tickets</TabsTrigger>
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="list" className="space-y-6">
+        
+        <TabsContent value="list" className="space-y-4">
           <AdminTicketFilters />
-          <AdminTicketList className="rounded-md border" />
+          <AdminTicketList />
         </TabsContent>
-
+        
         <TabsContent value="audit">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <h2 className="text-lg font-medium">Global Ticket Audit Log</h2>
-            </div>
-            <AdminTicketAuditLog className="rounded-md border" />
-          </div>
+          <AdminTicketAuditLog />
         </TabsContent>
       </Tabs>
 
-      <CreateTicketModal 
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        <CreateTicketModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+        />
+      </Suspense>
     </div>
   )
 }

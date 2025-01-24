@@ -1,271 +1,379 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogOverlay,
+  DialogFooter,
+  DialogDescription
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Loader2, X } from 'lucide-react'
 import { useAdminDashboardStore } from '../../../../store/adminDashboard.store'
-import type { CreateTicketRequest } from '../../../../api/adminDashboard.api'
-import { STEPS } from './constants'
-import { BasicInfoStep } from './BasicInfoStep'
-import { TypeDetailsStep } from './TypeDetailsStep'
-import { AssignmentStep } from './AssignmentStep'
-import type { CreateTicketFormData } from './types'
+import type { CreateTicketFormData, TicketCategory } from './types'
 
-interface CreateTicketModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+const INITIAL_FORM_DATA: CreateTicketFormData = {
+  ticketType: 'support',
+  title: '',
+  description: '',
+  priority: 'medium',
 }
 
-export const CreateTicketModal = ({ open, onOpenChange }: CreateTicketModalProps) => {
-  // Form state
-  const [step, setStep] = useState(1)
-  const [formData, setFormData] = useState<CreateTicketFormData>({
-    title: '',
-    description: '',
-    priority: 'medium',
-    selectedTime: Date.now(),
-    status: 'open',
-  })
+const TICKET_TYPES = [
+  { 
+    value: 'support', 
+    label: 'Support Request',
+    description: 'Get help with technical issues'
+  },
+  { 
+    value: 'testing', 
+    label: 'Testing Request',
+    description: 'Request feature validation'
+  },
+  { 
+    value: 'question', 
+    label: 'General Question',
+    description: 'Ask about the platform'
+  },
+]
 
-  // Store state and actions
-  const {
-    createTicket,
-    testers,
-    projects,
-    fetchTesters,
-    fetchProjects,
-    isLoading,
-    error
-  } = useAdminDashboardStore()
+const PRIORITY_LEVELS = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+]
 
-  // Debug logs for store data
-  useEffect(() => {
-    console.group('CreateTicketModal - Store Data')
-    console.log('Testers:', testers)
-    console.log('Projects:', projects)
-    console.log('Loading:', isLoading)
-    console.log('Error:', error)
-    console.groupEnd()
-  }, [testers, projects, isLoading, error])
+const SUPPORT_CATEGORIES: { value: TicketCategory; label: string }[] = [
+  { value: 'project', label: 'Project Issue' },
+  { value: 'feature', label: 'Feature Issue' },
+  { value: 'testing', label: 'Testing Issue' },
+  { value: 'other', label: 'Other' },
+]
 
-  // Debug log for form data changes
-  useEffect(() => {
-    console.group('CreateTicketModal - Form Data')
-    console.log('Current Step:', step)
-    console.log('Form Data:', formData)
-    console.groupEnd()
-  }, [step, formData])
+interface CreateTicketModalProps {
+  isOpen: boolean
+  onClose: () => void
+}
 
-  // Fetch necessary data when modal opens
-  useEffect(() => {
-    if (open) {
-      console.log('Modal opened - Fetching data...')
-      fetchTesters()
-      fetchProjects()
+function CreateTicketModal({ isOpen, onClose }: CreateTicketModalProps) {
+  const [formData, setFormData] = useState<CreateTicketFormData>(INITIAL_FORM_DATA)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(false)
+  
+  const store = useAdminDashboardStore()
+  
+  const loadData = useCallback(async () => {
+    if (!isOpen) return
+    
+    try {
+      setIsLoadingData(true)
+      await Promise.all([
+        store.fetchProjects(),
+        store.fetchTesters()
+      ])
+    } catch (error) {
+      console.error('Failed to load data:', error)
+    } finally {
+      setIsLoadingData(false)
     }
-  }, [open, fetchTesters, fetchProjects])
+  }, [isOpen, store.fetchProjects, store.fetchTesters])
 
-  // Transform projects data for components
-  const projectsWithFeatures = projects?.map(project => ({
-    id: project.id,
-    name: project.name,
-    features: project.features?.map(feature => ({
-      id: feature.id,
-      name: feature.name
-    })) || []
-  })) || []
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const handleFormChange = (updates: Partial<CreateTicketFormData>) => {
+    setFormData(prev => ({ ...prev, ...updates }))
+  }
 
   const handleSubmit = async () => {
-    console.group('CreateTicketModal - Submitting')
-    const request: CreateTicketRequest = {
-      type: formData.ticketType!,
-      title: formData.title,
-      description: formData.description,
-      priority: formData.priority,
-      assignedTo: formData.assignedTo || null,
-    }
-
-    if (formData.ticketType === 'testing') {
-      if (!formData.featureId || !formData.deadline) {
-        console.error('Missing required testing ticket data')
-        return
-      }
-      request.featureId = formData.featureId
-      request.projectId = formData.projectId // Include project ID for testing tickets
-      request.deadline = formData.deadline.toISOString()
-    } else if (formData.ticketType === 'support') {
-      if (!formData.category) {
-        console.error('Missing required support ticket data')
-        return
-      }
-      request.category = formData.category
-      request.projectId = formData.projectId // Project ID is optional for support tickets
-    }
-
-    console.log('Submit Request:', request)
-    console.groupEnd()
-
     try {
-      await createTicket(request)
-      onOpenChange(false)
-      resetForm()
-    } catch (err) {
-      console.error('Failed to create ticket:', err)
+      setIsSubmitting(true)
+      await store.createTicket(formData)
+      await store.fetchTickets()
+      onClose()
+      setFormData(INITIAL_FORM_DATA)
+    } catch (error) {
+      console.error('Failed to create ticket:', error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  const resetForm = () => {
-    console.log('Resetting form...')
-    setStep(1)
-    setFormData({
-      title: '',
-      description: '',
-      priority: 'medium',
-      selectedTime: Date.now(),
-      status: 'open',
-      assignedTo: undefined,
-      projectId: undefined,
-      featureId: undefined,
-      aiResponse: undefined,
-      resolutionNotes: undefined,
-      validationId: undefined
-    })
-  }
-
-  const handleClose = () => {
-    console.log('Closing modal...')
-    onOpenChange(false)
-    resetForm()
-  }
-
-  const canProceed = () => {
-    const can = step === 1
-      ? formData.ticketType && formData.title && formData.description
-      : step === 2
-      ? formData.ticketType === 'testing'
-        ? formData.featureId && formData.projectId && formData.deadline // Require both feature and project IDs
-        : formData.ticketType === 'support'
-        ? formData.category
-        : true
-      : true
-
-    console.log(`Step ${step} can proceed:`, can)
-    return can
-  }
-
-  if (!open) return null
+  const selectedProject = store.projects.find(p => p.id === formData.projectId)
+  
+  const isFormValid = 
+    formData.ticketType &&
+    formData.title &&
+    formData.description &&
+    formData.priority &&
+    (formData.ticketType === 'testing' 
+      ? formData.projectId && formData.featureId && formData.deadline
+      : formData.ticketType === 'support'
+      ? formData.category
+      : true) &&
+    formData.assignedTo
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-      <div className="fixed inset-0 z-50 flex items-start justify-center">
-        <div className="flex h-full w-full flex-col bg-background shadow-lg">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b px-6 py-4">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogOverlay />
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Create New Ticket</DialogTitle>
+          <DialogDescription>
+            Fill out the form below to create a new ticket. All fields marked with * are required.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="py-4 space-y-8 max-h-[70vh] overflow-y-auto">
+          {/* Basic Info Section */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Basic Information</h2>
+            
             <div>
-              <h2 className="text-lg font-semibold">Create New Ticket</h2>
-              <p className="text-sm text-muted-foreground">
-                Step {step} of {STEPS.length}: {STEPS[step - 1].title}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={handleClose}
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </Button>
-          </div>
-
-          {/* Progress bar */}
-          <div className="relative h-2 bg-muted">
-            <div
-              className="absolute inset-y-0 left-0 bg-primary transition-all duration-300"
-              style={{ width: `${(step / STEPS.length) * 100}%` }}
-            />
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="mx-auto max-w-3xl space-y-8">
-              {/* Step description */}
-              <div className="text-center">
-                <h3 className="text-lg font-medium">{STEPS[step - 1].title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {STEPS[step - 1].description}
-                </p>
+              <label className="block text-sm font-medium text-gray-700">
+                Ticket Type *
+              </label>
+              <div className="grid grid-cols-3 gap-4 mt-1">
+                {TICKET_TYPES.map(type => (
+                  <button
+                    key={type.value}
+                    type="button"
+                    onClick={() => handleFormChange({ ticketType: type.value })}
+                    className={`
+                      flex flex-col items-start p-4 rounded-lg border-2 transition-colors
+                      ${formData.ticketType === type.value 
+                        ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                        : 'border-gray-200 hover:border-blue-200 text-gray-900'
+                      }
+                      disabled:opacity-50 disabled:cursor-not-allowed
+                    `}
+                    disabled={isSubmitting}
+                  >
+                    <span className="font-medium mb-1">{type.label}</span>
+                    <span className="text-sm text-gray-500">{type.description}</span>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              {error && (
-                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                  {error}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Title *
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => handleFormChange({ title: e.target.value })}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Enter a descriptive title"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Description *
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleFormChange({ description: e.target.value })}
+                rows={4}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Provide detailed information about the ticket"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Priority *
+              </label>
+              <select
+                value={formData.priority}
+                onChange={(e) => handleFormChange({ priority: e.target.value as any })}
+                className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                disabled={isSubmitting}
+              >
+                <option value="">Select priority</option>
+                {PRIORITY_LEVELS.map(level => (
+                  <option key={level.value} value={level.value}>
+                    {level.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Type Details Section */}
+          {formData.ticketType && (
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Type Details</h2>
+
+              {formData.ticketType === 'testing' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Projects Column */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Projects *
+                      </label>
+                      <div className="border rounded-md overflow-hidden">
+                        <div className="max-h-60 overflow-y-auto">
+                          {isLoadingData ? (
+                            <div className="p-4 text-gray-500 text-center">
+                              Loading projects...
+                            </div>
+                          ) : store.projects.length > 0 ? (
+                            store.projects.map(project => (
+                              <button
+                                key={project.id}
+                                onClick={() => handleFormChange({ 
+                                  projectId: project.id,
+                                  featureId: undefined
+                                })}
+                                className={`w-full text-left px-4 py-2 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 ${
+                                  project.id === formData.projectId ? 'bg-blue-50' : ''
+                                }`}
+                                disabled={isSubmitting}
+                              >
+                                <div className="font-medium">{project.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {project.features.length} features
+                                </div>
+                              </button>
+                            ))
+                          ) : (
+                            <div className="p-4 text-gray-500 text-center">
+                              No projects available
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Features Column */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Features * {selectedProject && `for ${selectedProject.name}`}
+                      </label>
+                      <div className="border rounded-md overflow-hidden">
+                        <div className="max-h-60 overflow-y-auto">
+                          {selectedProject ? (
+                            selectedProject.features.length > 0 ? (
+                              selectedProject.features.map(feature => (
+                                <button
+                                  key={feature.id}
+                                  onClick={() => handleFormChange({ featureId: feature.id })}
+                                  className={`w-full text-left px-4 py-2 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 ${
+                                    feature.id === formData.featureId ? 'bg-blue-50' : ''
+                                  }`}
+                                  disabled={isSubmitting}
+                                >
+                                  <div className="font-medium">{feature.name}</div>
+                                  <div className="text-sm text-gray-500">
+                                    Status: {feature.status}
+                                  </div>
+                                </button>
+                              ))
+                            ) : (
+                              <div className="p-4 text-gray-500 text-center">
+                                No features available for this project
+                              </div>
+                            )
+                          ) : (
+                            <div className="p-4 text-gray-500 text-center">
+                              Select a project to view its features
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Deadline *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.deadline || ''}
+                      onChange={(e) => handleFormChange({ deadline: e.target.value })}
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </>
+              )}
+
+              {formData.ticketType === 'support' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Category *
+                  </label>
+                  <select
+                    value={formData.category || ''}
+                    onChange={(e) => handleFormChange({ category: e.target.value as any })}
+                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    disabled={isSubmitting}
+                  >
+                    <option value="">Select a category</option>
+                    {SUPPORT_CATEGORIES.map(category => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
-
-              {/* Step content */}
-              {step === 1 && (
-                <BasicInfoStep
-                  formData={formData}
-                  onFormDataChange={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
-                />
-              )}
-
-              {step === 2 && (
-                <TypeDetailsStep
-                  formData={formData}
-                  onFormDataChange={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
-                  projects={projectsWithFeatures}
-                />
-              )}
-
-              {step === 3 && (
-                <AssignmentStep
-                  formData={formData}
-                  onFormDataChange={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
-                  testers={testers}
-                  projects={projectsWithFeatures}
-                />
-              )}
             </div>
-          </div>
+          )}
 
-          {/* Footer */}
-          <div className="border-t bg-muted/50 px-6 py-4">
-            <div className="flex justify-between gap-4">
-              <Button
-                variant="outline"
-                onClick={() => step > 1 && setStep(step - 1)}
-                disabled={step === 1}
+          {/* Assignment Section */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Assignment</h2>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Assign To *
+              </label>
+              <select
+                value={formData.assignedTo || ''}
+                onChange={(e) => handleFormChange({ assignedTo: e.target.value })}
+                className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                disabled={isSubmitting}
               >
-                Previous
-              </Button>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleClose}
-                >
-                  Cancel
-                </Button>
-                {step < STEPS.length ? (
-                  <Button
-                    onClick={() => setStep(step + 1)}
-                    disabled={!canProceed() || isLoading}
-                  >
-                    Continue
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={!canProceed() || isLoading}
-                  >
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Ticket
-                  </Button>
-                )}
-              </div>
+                <option value="">Select a tester</option>
+                {store.testers.map(tester => (
+                  <option key={tester.id} value={tester.id}>
+                    {tester.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+
+        <DialogFooter>
+          <div className="flex justify-between w-full">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!isFormValid || isSubmitting}
+            >
+              {isSubmitting ? 'Creating...' : 'Create Ticket'}
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
-} 
+}
+
+export default CreateTicketModal
