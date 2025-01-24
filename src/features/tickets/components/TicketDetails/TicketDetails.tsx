@@ -113,7 +113,7 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
   const isAssignedToCurrentUser = currentUser && assignedToUser?.id === currentUser.id
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-6">
+    <div className="flex flex-col gap-6">
       <Card className={className}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-2xl font-bold">{ticket.title}</CardTitle>
