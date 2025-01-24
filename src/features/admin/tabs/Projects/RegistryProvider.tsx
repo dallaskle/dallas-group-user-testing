@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { useRegistriesStore } from '../store/registries.store'
-import { registryService } from '../services/registry.service'
+import { useRegistriesStore } from '../../store/registries.store'
+import { registryService } from '../../services/registry.service'
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import type { Tables } from '@/lib/supabase'
 

@@ -4,13 +4,21 @@ import { TesterMetrics } from './TesterMetrics';
 import { AdminOverviewTab } from '../tabs/Overview/AdminOverviewTab';
 import { AdminProjectsTab } from '../tabs/Projects/AdminProjectsTab';
 import TicketsPage from '@/features/tickets/pages/TicketsPage';
+import { useSearchParams } from 'react-router-dom';
 
 export const AdminDashboard = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = searchParams.get('tab') || 'overview';
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value });
+  };
+
   return (
     <>
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
       
-      <Tabs defaultValue="overview">
+      <Tabs value={currentTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>

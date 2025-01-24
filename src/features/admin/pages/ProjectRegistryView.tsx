@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { CreateFeatureRegistry } from '../tabs/Projects/components/CreateFeatureRegistry';
 import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { useRegistry } from '../components/RegistryProvider';
+import { useRegistry } from '../tabs/Projects/RegistryProvider';
 import { registryService } from '../services/registry.service';
 
 const ProjectRegistryView = () => {
@@ -97,7 +97,7 @@ const ProjectRegistryView = () => {
         <Button 
           variant="ghost" 
           className="gap-2"
-          onClick={() => navigate('/admin')}
+          onClick={() => navigate('/admin?tab=projects')}
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard

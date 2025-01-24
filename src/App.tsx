@@ -4,7 +4,7 @@ import { AuthProvider } from './features/auth/components/AuthProvider'
 import { AuthGuard } from './features/auth/components/AuthGuard'
 import React, { Suspense } from 'react'
 import { useAuthStore } from './features/auth/store/auth.store'
-import { RegistryProvider } from './features/admin/components/RegistryProvider'
+import { RegistryProvider } from './features/admin/tabs/Projects/RegistryProvider'
 import { Navbar } from './shared/components/Navbar'
 
 // Lazy load pages
