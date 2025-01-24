@@ -26,6 +26,30 @@ export interface ActivityItem {
   }
 }
 
+export interface ProjectDetails {
+  id: string
+  name: string
+  registry: {
+    id: string
+    name: string
+  }
+  user: {
+    id: string
+    name: string
+  }
+  features_count: number
+  validations: {
+    completed: number
+    required: number
+  }
+  status_counts: {
+    not_started: number
+    in_progress: number
+    successful_test: number
+    failed_test: number
+  }
+}
+
 export const getProjectRegistriesCount = async () => {
   const { count, error } = await supabase
     .from('project_registry')
@@ -396,4 +420,56 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
   return activities.sort((a, b) => 
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
+}
+
+export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
+  const { data, error } = await supabase
+    .from('projects')
+    .select(`
+      id,
+      name,
+      project_registry:project_registry_id (
+        id,
+        name
+      ),
+      users!projects_student_id_fkey (
+        id,
+        name
+      ),
+      features (
+        id,
+        status,
+        required_validations,
+        current_validations
+      )
+    `)
+
+  if (error) throw error
+
+  return data.map(project => {
+    const features = project.features || []
+    return {
+      id: project.id,
+      name: project.name,
+      registry: {
+        id: project.project_registry.id,
+        name: project.project_registry.name
+      },
+      user: {
+        id: project.users.id,
+        name: project.users.name
+      },
+      features_count: features.length,
+      validations: {
+        completed: features.reduce((sum, f) => sum + (f.current_validations || 0), 0),
+        required: features.reduce((sum, f) => sum + (f.required_validations || 0), 0)
+      },
+      status_counts: {
+        not_started: features.filter(f => f.status === 'Not Started').length,
+        in_progress: features.filter(f => f.status === 'In Progress').length,
+        successful_test: features.filter(f => f.status === 'Successful Test').length,
+        failed_test: features.filter(f => f.status === 'Failed Test').length
+      }
+    }
+  })
 }

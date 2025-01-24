@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import * as api from '../api/adminDashboard.api'
-import type { ActivityItem } from '../api/adminDashboard.api'
+import type { ActivityItem, ProjectDetails } from '../api/adminDashboard.api'
 
 export interface TesterStats {
   name: string
@@ -25,11 +25,13 @@ interface AdminDashboardState {
   projectProgress: ProjectProgress[]
   testerPerformance: TesterStats[]
   activities: ActivityItem[]
+  projects: ProjectDetails[]
   selectedTimeframe: number
   isLoading: boolean
   error: string | null
   fetchOverviewData: () => Promise<void>
   fetchActivities: (days?: number) => Promise<void>
+  fetchProjects: () => Promise<void>
   setSelectedTimeframe: (days: number) => void
 }
 
@@ -42,6 +44,7 @@ export const useAdminDashboardStore = create<AdminDashboardState>((set, get) => 
   projectProgress: [],
   testerPerformance: [],
   activities: [],
+  projects: [],
   selectedTimeframe: 7,
   isLoading: false,
   error: null,
@@ -94,6 +97,19 @@ export const useAdminDashboardStore = create<AdminDashboardState>((set, get) => 
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to fetch activities',
+        isLoading: false
+      })
+    }
+  },
+
+  fetchProjects: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const projects = await api.getProjectsWithDetails()
+      set({ projects, isLoading: false })
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to fetch projects',
         isLoading: false
       })
     }

@@ -1,22 +1,11 @@
-import { useState } from 'react'
-import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProjectRegistryCard } from './ProjectRegistryCard';
 import { QAScorecard } from './QAScorecard';
 import { TesterMetrics } from './TesterMetrics';
-import { ProjectProgress } from './ProjectProgress';
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { CreateProjectRegistry } from './CreateProjectRegistry'
-import { Plus } from 'lucide-react'
-import { useRegistry } from './RegistryProvider'
-import { AdminOverviewTab } from '../tabs/Overview/AdminOverviewTab'
-import TicketsPage from '@/features/tickets/pages/TicketsPage'
+import { AdminOverviewTab } from '../tabs/Overview/AdminOverviewTab';
+import { AdminProjectsTab } from '../tabs/Projects/AdminProjectsTab';
+import TicketsPage from '@/features/tickets/pages/TicketsPage';
 
 export const AdminDashboard = () => {
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const { projectRegistries, featureRegistries, isLoading, error } = useRegistry()
-
   return (
     <>
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
@@ -24,7 +13,7 @@ export const AdminDashboard = () => {
       <Tabs defaultValue="overview">
         <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="registry">Project Registry</TabsTrigger>
+          <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="testers">Testers</TabsTrigger>
           <TabsTrigger value="tickets">Tickets</TabsTrigger>
         </TabsList>
@@ -33,43 +22,8 @@ export const AdminDashboard = () => {
           <AdminOverviewTab />
         </TabsContent>
         
-        <TabsContent value="registry">
-          {/* Project Registry Tab */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Project Registry</h2>
-              <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add New Template
-              </Button>
-            </div>
-            
-            {error && (
-              <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-4">
-                {error}
-              </div>
-            )}
-
-            {isLoading ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {projectRegistries.map((registry) => (
-                  <ProjectRegistryCard 
-                    key={registry.id} 
-                    registry={registry}
-                  />
-                ))}
-                {projectRegistries.length === 0 && !isLoading && (
-                  <div className="col-span-full text-center py-8 text-gray-500">
-                    No project registries found. Create one to get started.
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+        <TabsContent value="projects">
+          <AdminProjectsTab />
         </TabsContent>
         
         <TabsContent value="testers">
@@ -89,15 +43,6 @@ export const AdminDashboard = () => {
           <TicketsPage />
         </TabsContent>
       </Tabs>
-
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Project Template</DialogTitle>
-          </DialogHeader>
-          <CreateProjectRegistry onSuccess={() => setIsCreateOpen(false)} />
-        </DialogContent>
-      </Dialog>
     </>
   )
 } 
