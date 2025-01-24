@@ -4,7 +4,7 @@ import { TesterMetrics } from './TesterMetrics';
 import { AdminOverviewTab } from '../tabs/Overview/AdminOverviewTab';
 import { AdminProjectsTab } from '../tabs/Projects/AdminProjectsTab';
 import { AdminTestersTab } from '../tabs/Testers/AdminTestersTab';
-import TicketsPage from '@/features/tickets/pages/TicketsPage';
+import { AdminTicketsTab } from '../tabs/Tickets/AdminTicketsTab';
 import { useSearchParams } from 'react-router-dom';
 
 export const AdminDashboard = () => {
@@ -40,7 +40,7 @@ export const AdminDashboard = () => {
         </TabsContent>
         
         <TabsContent value="tickets">
-          <TicketsPage />
+          <AdminTicketsTab />
         </TabsContent>
       </Tabs>
     </>

@@ -687,3 +687,173 @@ export const getProjectRegistriesWithDetails = async (): Promise<ProjectRegistry
     features: registry.feature_registry || []
   }))
 }
+
+// Ticket types
+export type TicketType = 'testing' | 'support' | 'question'
+export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
+export type TicketPriority = 'low' | 'medium' | 'high'
+export type SupportCategory = 'project' | 'feature' | 'testing' | 'other'
+
+export interface TicketData {
+  ticket: {
+    id: string
+    type: TicketType
+    title: string
+    description: string
+    status: TicketStatus
+    priority: TicketPriority
+    assigned_to: string | null
+    created_by: string
+    created_at: string
+    updated_at: string
+  }
+  testingDetails?: {
+    id: string
+    feature_id: string
+    validation_id: string | null
+    deadline: string
+  }
+  supportDetails?: {
+    id: string
+    category: SupportCategory
+    project_id: string | null
+    feature_id: string | null
+    ai_response: string | null
+    resolution_notes: string | null
+  }
+  assignedToUser?: {
+    id: string
+    name: string
+    email: string
+    is_student: boolean
+    is_admin: boolean
+  }
+  createdByUser?: {
+    id: string
+    name: string
+    email: string
+    is_student: boolean
+    is_admin: boolean
+  }
+}
+
+export interface TicketResponse {
+  ticket_data: TicketData
+  total_count: number
+}
+
+export interface ListTicketsResponse {
+  tickets: TicketResponse[]
+  total: number
+  page: number
+  limit: number
+}
+
+export interface TicketAuditLogEntry {
+  id: string
+  ticket_id: string
+  changed_by: string
+  field_name: string
+  old_value: string | null
+  new_value: string | null
+  created_at: string
+  users: {
+    id: string
+    name: string
+    email: string
+  }
+  tickets?: {
+    title: string
+    type: TicketType
+    status: TicketStatus
+    priority: TicketPriority
+  }
+}
+
+export interface TicketAuditLogResponse {
+  audit_logs: TicketAuditLogEntry[]
+}
+
+export interface ListTicketsRequest {
+  type?: TicketType
+  status?: TicketStatus
+  priority?: TicketPriority
+  assignedTo?: string
+  createdBy?: string
+  projectId?: string
+  page?: number
+  limit?: number
+}
+
+export interface CreateTicketRequest {
+  type: TicketType
+  title: string
+  description: string
+  priority?: TicketPriority
+  assignedTo?: string | null
+  featureId?: string
+  deadline?: string
+  category?: SupportCategory
+  projectId?: string
+}
+
+export interface UpdateTicketRequest {
+  id: string
+  status?: TicketStatus
+  title?: string
+  description?: string
+  priority?: TicketPriority
+  assignedTo?: string | null
+}
+
+// Add ticket-related API functions
+export const getTickets = async (request: ListTicketsRequest): Promise<ListTicketsResponse> => {
+  const { data, error } = await supabase.rpc('admin_list_tickets', request)
+  
+  if (error) throw error
+  return data
+}
+
+export const getTicketById = async (id: string): Promise<TicketResponse> => {
+  const { data, error } = await supabase.rpc('admin_get_ticket', { ticket_id: id })
+  
+  if (error) throw error
+  if (!data) throw new Error('Ticket not found')
+  
+  return data
+}
+
+export const createTicket = async (request: CreateTicketRequest): Promise<TicketResponse> => {
+  const { data, error } = await supabase.rpc('admin_create_ticket', request)
+  
+  if (error) throw error
+  return data
+}
+
+export const updateTicket = async (request: UpdateTicketRequest): Promise<TicketResponse> => {
+  const { data, error } = await supabase.rpc('admin_update_ticket', request)
+  
+  if (error) throw error
+  return data
+}
+
+export const assignTicket = async (id: string, assignedTo: string | null): Promise<TicketResponse> => {
+  const { data, error } = await supabase.rpc('admin_assign_ticket', { ticket_id: id, assigned_to: assignedTo })
+  
+  if (error) throw error
+  return data
+}
+
+export const transitionTicket = async (id: string, status: TicketStatus): Promise<TicketResponse> => {
+  const { data, error } = await supabase.rpc('admin_transition_ticket', { ticket_id: id, new_status: status })
+  
+  if (error) throw error
+  return data
+}
+
+export const getTicketAuditLog = async (ticketId?: string): Promise<TicketAuditLogResponse> => {
+  const { data, error } = await supabase.rpc('admin_get_ticket_audit_log', { ticket_id: ticketId })
+  
+  if (error) throw error
+  return { audit_logs: data }
+}
