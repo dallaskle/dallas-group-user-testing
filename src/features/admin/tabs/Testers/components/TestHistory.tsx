@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react'
-import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 interface TestHistoryProps {
   testHistory: TestHistoryItem[]
@@ -162,163 +169,180 @@ export const TestHistory = ({ testHistory, onRefresh, isLoading }: TestHistoryPr
       </div>
 
       {/* Filtering and Sorting Controls */}
-      <Card className="p-4" hover={false}>
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search ticket title, description, feature, project, student, or tester..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="pl-8 pr-8"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={handleClearSearch}
-                    className="absolute right-2 top-2.5 text-gray-400"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
+      <div className="space-y-4 bg-card p-4 rounded-lg border">
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search ticket title, description, feature, project, student, or tester..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="pl-8 pr-8"
+              />
+              {searchQuery && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-2 top-2.5 text-gray-400"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
-
-          <div className="flex items-center gap-4">
-            <Select value={statusFilter} onValueChange={(value: typeof statusFilter) => setStatusFilter(value)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={projectFilter} onValueChange={setProjectFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by project" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
-                {projects.map(project => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={studentFilter} onValueChange={setStudentFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by student" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Students</SelectItem>
-                {students.map(student => (
-                  <SelectItem key={student.id} value={student.id}>
-                    {student.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={testerFilter} onValueChange={setTesterFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by tester" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Testers</SelectItem>
-                {testers.map(tester => (
-                  <SelectItem key={tester.id} value={tester.id}>
-                    {tester.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={sortBy} onValueChange={(value: typeof sortBy) => setSortBy(value)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
-      </Card>
+
+        <div className="flex items-center gap-4">
+          <Select value={statusFilter} onValueChange={(value: typeof statusFilter) => setStatusFilter(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={projectFilter} onValueChange={setProjectFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by project" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Projects</SelectItem>
+              {projects.map(project => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={studentFilter} onValueChange={setStudentFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by student" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Students</SelectItem>
+              {students.map(student => (
+                <SelectItem key={student.id} value={student.id}>
+                  {student.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={testerFilter} onValueChange={setTesterFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by tester" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Testers</SelectItem>
+              {testers.map(tester => (
+                <SelectItem key={tester.id} value={tester.id}>
+                  {tester.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={(value: typeof sortBy) => setSortBy(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center h-32">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
         </div>
       ) : filteredAndSortedHistory.length > 0 ? (
-        <div className="grid gap-4">
-          {filteredAndSortedHistory.map((ticket) => (
-            <Card key={ticket.id} className="p-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-lg">{ticket.title}</h3>
-                  <Badge variant="outline">
-                    {ticket.status}
-                  </Badge>
-                  <Badge variant={
-                    ticket.priority === 'high' ? 'destructive' :
-                    ticket.priority === 'medium' ? 'default' :
-                    'secondary'
-                  }>
-                    {ticket.priority}
-                  </Badge>
-                </div>
-                <div className="text-sm text-gray-600">
-                  <p>Feature: {ticket.testing_ticket?.feature?.name}</p>
-                  <p>Project: {ticket.testing_ticket?.feature?.project?.name}</p>
-                  <p>Student: {ticket.testing_ticket?.feature?.project?.student?.name}</p>
-                  <p>Tester: {ticket.assigned_to?.name}</p>
-                  <p>Completed: {new Date(ticket.updated_at).toLocaleDateString()}</p>
-                  {ticket.testing_ticket?.validation && (
-                    <>
-                      <p className="mt-2 font-medium">Validation Details:</p>
-                      <div className="ml-2">
-                        <p>Status: <span className={
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Feature</TableHead>
+                <TableHead>Project</TableHead>
+                <TableHead>Student</TableHead>
+                <TableHead>Tester</TableHead>
+                <TableHead>Completed</TableHead>
+                <TableHead>Validation</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredAndSortedHistory.map((ticket) => (
+                <TableRow key={ticket.id}>
+                  <TableCell className="font-medium">
+                    <div className="max-w-[200px]">
+                      <div className="font-medium truncate" title={ticket.title}>
+                        {ticket.title}
+                      </div>
+                      <div className="text-sm text-muted-foreground truncate" title={ticket.description}>
+                        {ticket.description}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">
+                      {ticket.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={
+                      ticket.priority === 'high' ? 'destructive' :
+                      ticket.priority === 'medium' ? 'default' :
+                      'secondary'
+                    }>
+                      {ticket.priority}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{ticket.testing_ticket.feature.name}</TableCell>
+                  <TableCell>{ticket.testing_ticket.feature.project.name}</TableCell>
+                  <TableCell>{ticket.testing_ticket.feature.project.student?.name}</TableCell>
+                  <TableCell>{ticket.assigned_to?.name}</TableCell>
+                  <TableCell>{new Date(ticket.updated_at).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    {ticket.testing_ticket.validation && (
+                      <div className="space-y-1">
+                        <div className={
                           ticket.testing_ticket.validation.status === 'Working' 
                             ? 'text-green-600 font-medium'
                             : 'text-red-600 font-medium'
                         }>
                           {ticket.testing_ticket.validation.status}
-                        </span></p>
-                        {ticket.testing_ticket.validation.notes && (
-                          <p>Notes: {ticket.testing_ticket.validation.notes}</p>
-                        )}
+                        </div>
                         {ticket.testing_ticket.validation.video_url && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-blue-600 hover:text-blue-800 p-0"
+                            className="text-blue-600 hover:text-blue-800 p-0 h-auto"
                             onClick={() => setSelectedVideo(ticket.testing_ticket.validation?.video_url || null)}
                           >
                             <Play className="h-4 w-4 mr-2" />
-                            View Test Video
+                            View Video
                           </Button>
                         )}
                       </div>
-                    </>
-                  )}
-                </div>
-                <p className="text-gray-700 mt-4">{ticket.description}</p>
-              </div>
-            </Card>
-          ))}
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       ) : (
-        <Card className="p-6">
-          <p className="text-center text-gray-500">No completed tests</p>
-        </Card>
+        <div className="text-center p-8 border rounded-lg">
+          <p className="text-gray-500">No completed tests</p>
+        </div>
       )}
 
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
