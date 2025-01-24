@@ -270,7 +270,6 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
   },
 
   updateTicket: async (request) => {
-    set({ isLoading: true, error: null })
     try {
       const updatedTicket = await api.updateTicket(request)
       set((state) => ({
@@ -284,8 +283,6 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
       }))
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to update ticket' })
-    } finally {
-      set({ isLoading: false })
     }
   },
 

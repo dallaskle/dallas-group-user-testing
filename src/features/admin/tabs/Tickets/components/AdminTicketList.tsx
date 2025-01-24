@@ -36,6 +36,13 @@ const priorityColors: Record<TicketPriority, string> = {
   high: 'bg-red-100 text-red-800',
 }
 
+const validTransitions: Record<TicketStatus, TicketStatus[]> = {
+  open: ['in_progress', 'resolved', 'closed'],
+  in_progress: ['open', 'resolved', 'closed'],
+  resolved: ['open', 'in_progress', 'closed'],
+  closed: ['open', 'in_progress', 'resolved'],
+}
+
 export interface AdminTicketListProps {
   className?: string
 }
@@ -163,7 +170,7 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
                         <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
                           Set Status
                         </DropdownMenuLabel>
-                        {['open', 'in_progress', 'resolved', 'closed'].map((status) => (
+                        {validTransitions[ticket.status].map((status) => (
                           <DropdownMenuItem
                             key={status}
                             onClick={() => handleStatusChange(ticket.id, status as TicketStatus)}

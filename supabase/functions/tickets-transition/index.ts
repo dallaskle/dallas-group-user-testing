@@ -8,10 +8,10 @@ import { TicketResponse } from '../_shared/api.types.ts'
 console.log("Loading tickets-transition function...")
 
 const validTransitions = {
-  open: ['in_progress'],
-  in_progress: ['resolved'],
-  resolved: ['closed', 'in_progress'],
-  closed: ['in_progress'],
+  open: ['in_progress', 'resolved', 'closed'],
+  in_progress: ['open', 'resolved', 'closed'],
+  resolved: ['open', 'in_progress', 'closed'],
+  closed: ['open', 'in_progress', 'resolved'],
 }
 
 serve(async (req) => {
