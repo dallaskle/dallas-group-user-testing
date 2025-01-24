@@ -328,7 +328,7 @@ export interface TestHistoryItem {
         student: {
           id: string
           name: string
-        }
+        } | null
       }
     }
     validations: {
@@ -459,6 +459,7 @@ export const getTesterPerformance = async (): Promise<TesterPerformanceData[]> =
 }
 
 export const getTestHistory = async (): Promise<TestHistoryItem[]> => {
+  console.log('getTestHistory called')
   // First get all testing tickets with their related data
   const { data: testingTickets, error: ticketsError } = await supabase
     .from('testing_tickets')
@@ -500,56 +501,96 @@ export const getTestHistory = async (): Promise<TestHistoryItem[]> => {
     .returns<TestingTicketResponse[]>()
     .order('created_at', { ascending: false })
 
-  if (ticketsError) throw ticketsError
+  if (ticketsError) {
+    console.error('Error fetching testing tickets:', ticketsError)
+    throw ticketsError
+  }
+
+  if (!testingTickets || testingTickets.length === 0) {
+    console.log('No testing tickets found')
+    return []
+  }
+
+  // Filter testing tickets to only include resolved or closed testing tickets
+  const filteredTestingTickets = testingTickets.filter(ticket => 
+    ticket.ticket.type === 'testing' && 
+    (ticket.ticket.status === 'resolved' || ticket.ticket.status === 'closed')
+  )
+
+  if (filteredTestingTickets.length === 0) {
+    console.log('No resolved or closed testing tickets found')
+    return []
+  }
+
+  console.log('Fetched testing tickets:', filteredTestingTickets)
 
   // Get all validations for the features in these testing tickets
-  const featureIds = testingTickets.map(ticket => ticket.feature_id)
+  const featureIds = filteredTestingTickets
+    .map((ticket: TestingTicketResponse) => ticket.feature_id)
+    .filter((id: string | null): id is string => Boolean(id))
   
+  if (featureIds.length === 0) {
+    console.log('No feature IDs found')
+    return []
+  }
+
   const { data: validations, error: validationsError } = await supabase
     .from('validations')
     .select('*')
     .in('feature_id', featureIds)
     .order('created_at', { ascending: false })
 
-  if (validationsError) throw validationsError
+  if (validationsError) {
+    console.error('Error fetching validations:', validationsError)
+    throw validationsError
+  }
 
-  // Map the data together
-  return testingTickets.map(testingTicket => ({
-    id: testingTicket.ticket.id,
-    type: testingTicket.ticket.type as 'testing',
-    status: testingTicket.ticket.status as 'resolved' | 'closed',
-    title: testingTicket.ticket.title,
-    description: testingTicket.ticket.description,
-    priority: testingTicket.ticket.priority as 'low' | 'medium' | 'high',
-    created_at: testingTicket.ticket.created_at,
-    updated_at: testingTicket.ticket.updated_at,
-    created_by: {
-      id: testingTicket.ticket.created_by_user.id,
-      name: testingTicket.ticket.created_by_user.name
-    },
-    assigned_to: {
-      id: testingTicket.ticket.assigned_to_user.id,
-      name: testingTicket.ticket.assigned_to_user.name
-    },
-    testing_ticket: {
-      id: testingTicket.id,
-      feature_id: testingTicket.feature_id,
-      deadline: testingTicket.deadline,
-      feature: {
-        id: testingTicket.feature.id,
-        name: testingTicket.feature.name,
-        project: {
-          id: testingTicket.feature.project.id,
-          name: testingTicket.feature.project.name,
-          student: {
-            id: testingTicket.feature.project.student.id,
-            name: testingTicket.feature.project.student.name
-          }
-        }
+  console.log('Fetched validations:', validations)
+
+  // Map the data together, filtering out any tickets with missing required data
+  return filteredTestingTickets
+    .filter((testingTicket: TestingTicketResponse) => 
+      testingTicket?.ticket?.id &&
+      testingTicket?.ticket?.created_by_user?.id &&
+      testingTicket?.ticket?.assigned_to_user?.id &&
+      testingTicket?.feature?.id
+    )
+    .map((testingTicket: TestingTicketResponse) => ({
+      id: testingTicket.ticket.id,
+      type: testingTicket.ticket.type as 'testing',
+      status: testingTicket.ticket.status as 'resolved' | 'closed',
+      title: testingTicket.ticket.title,
+      description: testingTicket.ticket.description,
+      priority: testingTicket.ticket.priority as 'low' | 'medium' | 'high',
+      created_at: testingTicket.ticket.created_at,
+      updated_at: testingTicket.ticket.updated_at,
+      created_by: {
+        id: testingTicket.ticket.created_by_user.id,
+        name: testingTicket.ticket.created_by_user.name
       },
-      validations: validations?.filter(v => v.feature_id === testingTicket.feature_id) || []
-    }
-  }))
+      assigned_to: {
+        id: testingTicket.ticket.assigned_to_user.id,
+        name: testingTicket.ticket.assigned_to_user.name
+      },
+      testing_ticket: {
+        id: testingTicket.id,
+        feature_id: testingTicket.feature_id,
+        deadline: testingTicket.deadline,
+        feature: {
+          id: testingTicket.feature.id,
+          name: testingTicket.feature.name,
+          project: {
+            id: testingTicket.feature.project.id,
+            name: testingTicket.feature.project.name,
+            student: testingTicket.feature.project.student ? {
+              id: testingTicket.feature.project.student.id,
+              name: testingTicket.feature.project.student.name
+            } : null
+          }
+        },
+        validations: validations?.filter(v => v.feature_id === testingTicket.feature_id) || []
+      }
+    }))
 }
 
 export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[]> => {

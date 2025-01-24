@@ -48,6 +48,8 @@ export const TestHistory = ({ testHistory, onRefresh, isLoading }: TestHistoryPr
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
 
+  console.log('TestHistory props:', { testHistory, isLoading })
+
   // Get unique projects, students, and testers from history
   const projects = Array.from(
     new Map(
@@ -67,13 +69,18 @@ export const TestHistory = ({ testHistory, onRefresh, isLoading }: TestHistoryPr
     new Map(
       testHistory
         .filter(ticket => ticket.testing_ticket?.feature?.project?.student)
-        .map(ticket => [
-          ticket.testing_ticket.feature.project.student.id,
-          {
-            id: ticket.testing_ticket.feature.project.student.id,
-            name: ticket.testing_ticket.feature.project.student.name
-          }
-        ])
+        .map(ticket => {
+          const student = ticket.testing_ticket.feature.project.student
+          if (!student) return null
+          return [
+            student.id,
+            {
+              id: student.id,
+              name: student.name
+            }
+          ]
+        })
+        .filter((entry): entry is [string, { id: string; name: string }] => entry !== null)
     ).values()
   ).sort((a, b) => a.name.localeCompare(b.name))
 
