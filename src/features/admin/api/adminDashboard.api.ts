@@ -248,22 +248,42 @@ export const getTotalTestersCount = async () => {
   return count || 0
 }
 
+interface ProjectProgressResponse {
+  status: 'Not Started' | 'In Progress' | 'Successful Test' | 'Failed Test'
+  project: {
+    id: string
+    name: string
+    student: {
+      id: string
+      name: string
+    } | null
+  } | null
+}
+
 export const getProjectProgress = async (): Promise<ProjectProgress[]> => {
   const { data, error } = await supabase
     .from('features')
     .select(`
       status,
-      projects (
-        name
+      project:projects (
+        id,
+        name,
+        student:users!projects_student_id_fkey (
+          id,
+          name
+        )
       )
     `)
-    .returns<Array<{ status: ProjectProgress['status']; projects: { name: string } | null }>>()
+    .returns<ProjectProgressResponse[]>()
   
   if (error) throw error
   
   return data.map(feature => ({
     status: feature.status,
-    project: feature.projects ? { name: feature.projects.name } : null
+    project: feature.project ? { 
+      name: feature.project.name,
+      student: feature.project.student
+    } : null
   }))
 }
 
@@ -827,6 +847,66 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
   )
 }
 
+// Add these interfaces near the top with other interfaces
+interface ProjectWithDetailsResponse {
+  id: string
+  name: string
+  registry: {
+    id: string
+    name: string
+    created_by: string
+    creator: {
+      id: string
+      name: string
+    }
+  }[]
+  student: {
+    id: string
+    name: string
+  }
+}
+
+interface ProjectFeaturesResponse {
+  id: string
+  name: string
+  status: string
+  project_id: string
+  required_validations: number
+  current_validations: number
+  project: {
+    id: string
+    student: {
+      id: string
+      name: string
+    }
+  }
+}
+
+interface ProjectRegistryWithDetailsResponse {
+  id: string
+  name: string
+  description: string
+  created_at: string
+  creator: {
+    id: string
+    name: string
+  }
+  features: {
+    id: string
+    name: string
+    description: string
+    is_required: boolean
+  }[]
+  projects: {
+    id: string
+    student: {
+      id: string
+      name: string
+    }
+  }[]
+}
+
+// Update the function signatures to use these types
 export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
   // First get all projects with their basic info
   const { data: projects, error } = await supabase
@@ -834,15 +914,21 @@ export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
     .select(`
       id,
       name,
-      project_registry:project_registry_id (
+      registry:project_registry (
         id,
-        name
+        name,
+        created_by,
+        creator:users!project_registry_created_by_fkey (
+          id,
+          name
+        )
       ),
-      users!projects_student_id_fkey (
+      student:users!projects_student_id_fkey (
         id,
         name
       )
     `)
+    .returns<ProjectWithDetailsResponse[]>()
 
   if (error) throw error
 
@@ -855,9 +941,17 @@ export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
       status,
       project_id,
       required_validations,
-      current_validations
+      current_validations,
+      project:projects (
+        id,
+        student:users!projects_student_id_fkey (
+          id,
+          name
+        )
+      )
     `)
     .in('project_id', projects.map(p => p.id))
+    .returns<ProjectFeaturesResponse[]>()
 
   if (featuresError) throw featuresError
 
@@ -869,12 +963,12 @@ export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
       id: project.id,
       name: project.name,
       registry: {
-        id: project.project_registry?.[0]?.id,
-        name: project.project_registry?.[0]?.name
+        id: project.registry?.[0]?.id,
+        name: project.registry?.[0]?.name
       },
       user: {
-        id: project.users?.[0]?.id,
-        name: project.users?.[0]?.name
+        id: project.student?.id,
+        name: project.student?.name
       },
       features: projectFeatureList,
       features_count: projectFeatureList.length,
@@ -900,20 +994,25 @@ export const getProjectRegistriesWithDetails = async (): Promise<ProjectRegistry
       name,
       description,
       created_at,
-      users!project_registry_created_by_fkey (
+      creator:users!project_registry_created_by_fkey (
         id,
         name
       ),
-      feature_registry (
+      features:feature_registry (
         id,
         name,
         description,
         is_required
       ),
       projects (
-        id
+        id,
+        student:users!projects_student_id_fkey (
+          id,
+          name
+        )
       )
     `)
+    .returns<ProjectRegistryWithDetailsResponse[]>()
 
   if (error) throw error
 
@@ -923,12 +1022,12 @@ export const getProjectRegistriesWithDetails = async (): Promise<ProjectRegistry
     description: registry.description,
     created_at: registry.created_at,
     created_by: {
-      id: registry.users?.[0]?.id,
-      name: registry.users?.[0]?.name
+      id: registry.creator?.id,
+      name: registry.creator?.name
     },
-    feature_count: registry.feature_registry?.length || 0,
+    feature_count: registry.features?.length || 0,
     projects_count: registry.projects?.length || 0,
-    features: registry.feature_registry || []
+    features: registry.features || []
   }))
 }
 
