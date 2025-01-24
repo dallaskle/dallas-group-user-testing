@@ -105,7 +105,11 @@ function CreateTicketModal({ isOpen, onClose }: CreateTicketModalProps) {
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true)
-      await store.createTicket(formData)
+      const requestData = {
+        ...formData,
+        type: formData.ticketType
+      }
+      await store.createTicket(requestData)
       await store.fetchTickets() // Refetch tickets to get updated list
       onClose()
       setFormData(INITIAL_FORM_DATA)

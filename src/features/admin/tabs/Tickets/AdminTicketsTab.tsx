@@ -21,11 +21,11 @@ export const AdminTicketsTab = () => {
 
   // Calculate ticket statistics
   const totalTickets = tickets.length
-  const openTickets = tickets.filter(t => t.ticket_data.ticket.status === 'open')
+  const openTickets = tickets.filter(t => t?.ticket_data?.ticket?.status === 'open')
   const openPercentage = totalTickets > 0 ? Math.round((openTickets.length / totalTickets) * 100) : 0
-  const inProgressTickets = tickets.filter(t => t.ticket_data.ticket.status === 'in_progress')
+  const inProgressTickets = tickets.filter(t => t?.ticket_data?.ticket?.status === 'in_progress')
   const inProgressPercentage = totalTickets > 0 ? Math.round((inProgressTickets.length / totalTickets) * 100) : 0
-  const highPriorityTickets = tickets.filter(t => t.ticket_data.ticket.priority === 'high')
+  const highPriorityTickets = tickets.filter(t => t?.ticket_data?.ticket?.priority === 'high')
   const highPriorityPercentage = totalTickets > 0 ? Math.round((highPriorityTickets.length / totalTickets) * 100) : 0
 
   return (

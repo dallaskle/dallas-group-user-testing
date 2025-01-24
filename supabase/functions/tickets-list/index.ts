@@ -55,7 +55,7 @@ serve(async (req) => {
 
     // Get request body
     const request: ListTicketsRequest = await req.json()
-    console.log('Request parameters:', { ...request, page: request.page || 1, limit: request.limit || 10 })
+    console.log('Request parameters:', { ...request, page: request.page || 1, limit: request.limit || 1000 })
     const {
       type,
       status,
@@ -63,7 +63,7 @@ serve(async (req) => {
       assignedTo,
       createdBy,
       page = 1,
-      limit = 10,
+      limit = 1000, // Default to high limit
     } = request
 
     // Build query

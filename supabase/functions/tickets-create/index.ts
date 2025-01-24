@@ -121,7 +121,26 @@ serve(async (req) => {
       throw fetchError
     }
 
-    return new Response(JSON.stringify(completeTicket as TicketResponse), {
+    // Ensure consistent response structure
+    const response = {
+      ticket_data: {
+        ticket: {
+          id: ticket.id,
+          type: ticket.type,
+          status: ticket.status,
+          title: ticket.title,
+          description: ticket.description,
+          priority: ticket.priority,
+          created_by: ticket.created_by,
+          assigned_to: ticket.assigned_to,
+          created_at: ticket.created_at,
+          updated_at: ticket.updated_at
+        },
+        ...completeTicket
+      }
+    }
+
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })

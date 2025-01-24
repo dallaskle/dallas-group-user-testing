@@ -213,10 +213,14 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
     set({ selectedTimeframe: days })
   },
 
-  fetchTickets: async (request?: ListTicketsRequest) => {
+  fetchTickets: async (request) => {
     set({ isLoading: true, error: null })
     try {
-      const response = await api.getTickets({ ...get().ticketFilters, ...request })
+      const response = await api.getTickets({ 
+        ...get().ticketFilters, 
+        ...request,
+        limit: 1000 // Set a high limit to effectively get all tickets
+      })
       set({
         tickets: response.tickets,
         ticketsTotal: response.total,
