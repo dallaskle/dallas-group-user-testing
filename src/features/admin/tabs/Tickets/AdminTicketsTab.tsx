@@ -30,7 +30,9 @@ export const AdminTicketsTab = () => {
   const openTickets = tickets.filter(t => t.ticket_data.ticket.status === 'open')
   const openPercentage = totalTickets > 0 ? Math.round((openTickets.length / totalTickets) * 100) : 0
   const inProgressTickets = tickets.filter(t => t.ticket_data.ticket.status === 'in_progress')
+  const inProgressPercentage = totalTickets > 0 ? Math.round((inProgressTickets.length / totalTickets) * 100) : 0
   const highPriorityTickets = tickets.filter(t => t.ticket_data.ticket.priority === 'high')
+  const highPriorityPercentage = totalTickets > 0 ? Math.round((highPriorityTickets.length / totalTickets) * 100) : 0
 
   return (
     <div>
@@ -67,13 +69,13 @@ export const AdminTicketsTab = () => {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{inProgressTickets.length}</div>
+            <div className="text-2xl font-bold">{inProgressTickets.length} ({inProgressPercentage}%)</div>
             <p className="text-sm text-muted-foreground">In Progress</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{highPriorityTickets.length}</div>
+            <div className="text-2xl font-bold">{highPriorityTickets.length} ({highPriorityPercentage}%)</div>
             <p className="text-sm text-muted-foreground">High Priority</p>
           </CardContent>
         </Card>

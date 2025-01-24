@@ -27,16 +27,16 @@ import { useAdminDashboardStore } from '../../../store/adminDashboard.store'
 import type { TicketStatus, TicketPriority } from '../../../api/adminDashboard.api'
 
 const statusColors: Record<TicketStatus, string> = {
-  open: 'bg-blue-100 text-blue-800',
-  in_progress: 'bg-yellow-100 text-yellow-800',
-  resolved: 'bg-green-100 text-green-800',
-  closed: 'bg-gray-100 text-gray-800',
+  open: 'bg-primary text-white',
+  in_progress: 'bg-secondary text-white',
+  resolved: 'bg-secondary text-primary',
+  closed: 'bg-transparent text-primary',
 }
 
 const priorityColors: Record<TicketPriority, string> = {
-  low: 'bg-gray-100 text-gray-800',
-  medium: 'bg-yellow-100 text-yellow-800',
-  high: 'bg-red-100 text-red-800',
+  low: 'bg-pearl text-charcoal',
+  medium: 'bg-primary text-white',
+  high: 'bg-primary text-white border-b-2 border-red-600',
 }
 
 const validTransitions: Record<TicketStatus, TicketStatus[]> = {
@@ -109,12 +109,12 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Title</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Priority</TableHead>
-            <TableHead>Assigned To</TableHead>
-            <TableHead>Created By</TableHead>
-            <TableHead>Created</TableHead>
+            <TableHead className="text-center">Type</TableHead>
+            <TableHead className="text-center">Status</TableHead>
+            <TableHead className="text-center">Priority</TableHead>
+            <TableHead className="text-center">Assigned To</TableHead>
+            <TableHead className="text-center">Created By</TableHead>
+            <TableHead className="text-center">Created</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -137,10 +137,10 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
                 }}
               >
                 <TableCell className="font-medium">{ticket.title}</TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <Badge variant="outline">{ticket.type}</Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <Badge
                     className={statusColors[ticket.status]}
                     variant="secondary"
@@ -148,7 +148,7 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
                     {ticket.status}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <Badge
                     className={priorityColors[ticket.priority]}
                     variant="secondary"
@@ -156,13 +156,13 @@ export function AdminTicketList({ className }: AdminTicketListProps) {
                     {ticket.priority}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   {ticketResponse.ticket_data.assignedToUser?.name || 'Unassigned'}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   {ticketResponse.ticket_data.createdByUser?.name || 'Unknown'}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   {new Date(ticket.created_at).toLocaleDateString()}
                 </TableCell>
                 <TableCell className="text-right">
