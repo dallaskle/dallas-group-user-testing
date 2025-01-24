@@ -27,6 +27,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface TestHistoryProps {
   testHistory: TestHistoryItem[]
@@ -282,12 +288,18 @@ export const TestHistory = ({ testHistory, onRefresh, isLoading }: TestHistoryPr
               {filteredAndSortedHistory.map((ticket) => (
                 <TableRow key={ticket.id}>
                   <TableCell className="font-medium">
-                    <div className="max-w-[200px]">
-                      <div className="font-medium truncate" title={ticket.title}>
+                    <div className="max-w-[200px] group relative">
+                      <div className="font-medium truncate cursor-default">
                         {ticket.title}
                       </div>
-                      <div className="text-sm text-muted-foreground truncate" title={ticket.description}>
+                      <div className="text-sm text-muted-foreground truncate">
                         {ticket.description}
+                      </div>
+                      <div className="invisible group-hover:visible absolute left-full top-0 ml-2 p-2 bg-popover text-popover-foreground rounded-md shadow-md border w-[300px] z-50">
+                        <div className="space-y-2">
+                          <p className="font-medium break-words">{ticket.title}</p>
+                          <p className="text-sm text-muted-foreground break-words">{ticket.description}</p>
+                        </div>
                       </div>
                     </div>
                   </TableCell>
