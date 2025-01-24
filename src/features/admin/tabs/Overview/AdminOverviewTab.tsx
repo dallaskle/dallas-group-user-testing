@@ -19,12 +19,15 @@ export const AdminOverviewTab = () => {
     testerPerformance,
     isLoading,
     error,
-    fetchOverviewData
+    fetchOverviewData,
+    fetchActivities,
+    selectedTimeframe
   } = useAdminDashboardStore()
 
   useEffect(() => {
     fetchOverviewData()
-  }, [fetchOverviewData])
+    fetchActivities(selectedTimeframe)
+  }, [fetchOverviewData, fetchActivities, selectedTimeframe])
 
   if (isLoading) {
     return (
