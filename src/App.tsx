@@ -15,6 +15,7 @@ const Dashboard = React.lazy(() => import('./features/dashboard/pages/Dashboard'
 const Unauthorized = React.lazy(() => import('./shared/components/Unauthorized'))
 const AdminPage = React.lazy(() => import('./features/admin/pages/AdminPage'))
 const ProjectRegistryView = React.lazy(() => import('./features/admin/pages/ProjectRegistryView'))
+const AdminTicketDetailsPage = React.lazy(() => import('./features/admin/pages/TicketDetailsPage'))
 const StudentDashboard = React.lazy(() => import('./features/student/pages/StudentDashboard'))
 const ProjectDetailsPage = React.lazy(() => import('./features/student/pages/ProjectDetailsPage'))
 const TicketsPage = React.lazy(() => import('./features/tickets/pages/TicketsPage'))
@@ -94,6 +95,7 @@ function App() {
                     <Routes>
                       <Route index element={<AdminPage />} />
                       <Route path="registry/:id" element={<ProjectRegistryView />} />
+                      <Route path="tickets/:id" element={<AdminTicketDetailsPage />} />
                     </Routes>
                   </RegistryProvider>
                 </AuthGuard>
