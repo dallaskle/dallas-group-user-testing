@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
-import { useTesterStore } from '../store/tester.store'
+import { testerApi } from '../api/tester.api'
 import {
   Select,
   SelectContent,
@@ -12,84 +12,33 @@ import {
 type TimePeriod = '1d' | '7d' | '30d' | 'all'
 
 export const TesterMetrics = () => {
-  const { queue, ticketHistory } = useTesterStore()
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('all')
+  const [metrics, setMetrics] = useState({
+    totalAssigned: 0,
+    testsCompleted: 0,
+    testsInProgress: 0,
+    accuracyRate: 0,
+    avgResponseTime: 0,
+    validationRate: 0,
+    upcomingDeadlines: 0
+  })
+  const [isLoading, setIsLoading] = useState(false)
 
-  const metrics = useMemo(() => {
-    const now = new Date()
-    const filterDate = new Date(now)
-    
-    // Set filter date based on selected time period
-    switch (timePeriod) {
-      case '1d':
-        filterDate.setDate(now.getDate() - 1)
-        break
-      case '7d':
-        filterDate.setDate(now.getDate() - 7)
-        break
-      case '30d':
-        filterDate.setDate(now.getDate() - 30)
-        break
-      case 'all':
-        filterDate.setFullYear(2000) // Set to past date to include all
-        break
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        setIsLoading(true)
+        const data = await testerApi.getMetrics(timePeriod)
+        setMetrics(data)
+      } catch (error) {
+        console.error('Failed to fetch metrics:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    // Filter tickets based on time period
-    const filteredHistory = ticketHistory.filter(ticket => 
-      new Date(ticket.updated_at) > filterDate
-    )
-
-    // Calculate metrics
-    const totalAssigned = queue.length + filteredHistory.length
-    const testsCompleted = filteredHistory.length
-    const testsInProgress = queue.filter(t => t.status === 'in_progress').length
-    
-    // Calculate validation metrics
-    const allValidations = filteredHistory.flatMap(ticket => 
-      ticket.testing_ticket.feature.validations || []
-    )
-    const workingValidations = allValidations.filter(v => v.status === 'Working').length
-    const accuracyRate = allValidations.length > 0 
-      ? (workingValidations / allValidations.length) * 100 
-      : 0
-
-    // Calculate average response time
-    const responseTimes = filteredHistory.map(ticket => 
-      new Date(ticket.updated_at).getTime() - new Date(ticket.created_at).getTime()
-    )
-    const avgResponseTime = responseTimes.length > 0 
-      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length 
-      : 0
-
-    // Calculate validation rate
-    const totalRequired = filteredHistory.reduce((sum, ticket) => 
-      sum + ticket.testing_ticket.feature.required_validations, 0
-    )
-    const totalCompleted = filteredHistory.reduce((sum, ticket) => 
-      sum + ticket.testing_ticket.feature.current_validations, 0
-    )
-    const validationRate = totalRequired > 0 
-      ? (totalCompleted / totalRequired) * 100 
-      : 0
-
-    // Calculate upcoming deadlines (next 24 hours)
-    const upcomingDeadlines = queue.filter(ticket => {
-      const deadline = new Date(ticket.testing_ticket.deadline)
-      const timeDiff = deadline.getTime() - now.getTime()
-      return timeDiff <= 24 * 60 * 60 * 1000 && timeDiff > 0
-    }).length
-
-    return {
-      totalAssigned,
-      testsCompleted,
-      testsInProgress,
-      accuracyRate,
-      avgResponseTime,
-      validationRate,
-      upcomingDeadlines
-    }
-  }, [queue, ticketHistory, timePeriod])
+    fetchMetrics()
+  }, [timePeriod])
 
   return (
     <div className="space-y-4">

@@ -115,12 +115,12 @@ export const testerApi = {
   /**
    * Get tester metrics
    */
-  getMetrics: async () => {
+  getMetrics: async (timePeriod: '1d' | '7d' | '30d' | 'all' = 'all') => {
     const session = useAuthStore.getState().session
     if (!session?.access_token) throw new Error('No active session')
 
     const { data, error } = await supabase.functions.invoke('tester-metrics', {
-      body: {},
+      body: { timePeriod },
       headers: {
         Authorization: `Bearer ${session.access_token}`
       }
