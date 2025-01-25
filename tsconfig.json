@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
+    "incremental": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
