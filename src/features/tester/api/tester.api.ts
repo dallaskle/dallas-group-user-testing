@@ -33,41 +33,17 @@ export const testerApi = {
    * Fetch the test queue for the current tester
    */
   getQueue: async () => {
-    const user = useAuthStore.getState().user
-    if (!user) throw new Error('No user logged in')
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
 
-    const { data: tickets, error } = await supabase
-      .from('tickets')
-      .select(`
-        *,
-        created_by_user:users!tickets_created_by_fkey(*),
-        testing_ticket:testing_tickets!inner(
-          *,
-          feature:features(
-            *,
-            project:projects(
-              *,
-              student:users(*)
-            ),
-            validations(
-              *,
-              validated_by:users(*)
-            )
-          ),
-          validation:validations(
-            *,
-            validated_by:users(*)
-          )
-        )
-      `)
-      .eq('type', 'testing')
-      .eq('assigned_to', user.id)
-      .in('status', ['open', 'in_progress'])
-      .order('created_at', { ascending: false })
+    const { data, error } = await supabase.functions.invoke('tester-queue', {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    })
 
-    console.log('Queue response:', { tickets, error })
     if (error) throw error
-    return tickets as EnhancedTicket[]
+    return data as EnhancedTicket[]
   },
 
   /**
