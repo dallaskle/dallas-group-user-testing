@@ -1,8 +1,7 @@
 import { SupabaseClient } from '../_shared/deps.ts'
-import { Database } from '../_shared/database.types.ts'
 
 export const getTesterHistory = async (
-  client: SupabaseClient<Database>,
+  client: SupabaseClient,
   userId: string
 ) => {
   const { data: tickets, error } = await client
