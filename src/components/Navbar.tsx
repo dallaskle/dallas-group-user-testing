@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useAuthStore } from '../../features/auth/store/auth.store'
-import { supabase } from '../../lib/supabase'
+import { useAuthStore } from '../features/auth/store/auth.store'
+import { supabase } from '../lib/supabase'
 import { toast } from 'sonner'
-import logo from '../../assets/image.jpg'
+import logo from '../assets/image.jpg'
 
 const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => {
   const location = useLocation()

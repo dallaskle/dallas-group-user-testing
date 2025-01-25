@@ -5,14 +5,14 @@ import { AuthGuard } from './features/auth/components/AuthGuard'
 import React, { Suspense } from 'react'
 import { useAuthStore } from './features/auth/store/auth.store'
 import { RegistryProvider } from './features/admin/tabs/Projects/RegistryProvider'
-import { Navbar } from './shared/components/Navbar'
+import { Navbar } from './components/Navbar'
 
 // Lazy load pages
 const Login = React.lazy(() => import('./features/auth/pages/Login'))
 const Register = React.lazy(() => import('./features/auth/pages/Register'))
 const VerifyEmail = React.lazy(() => import('./features/auth/pages/VerifyEmail'))
-const Dashboard = React.lazy(() => import('./RoleRouter'))
-const Unauthorized = React.lazy(() => import('./shared/components/Unauthorized'))
+const RoleRouter = React.lazy(() => import('./RoleRouter'))
+const Unauthorized = React.lazy(() => import('./components/Unauthorized'))
 const AdminPage = React.lazy(() => import('./features/admin/pages/AdminPage'))
 const ProjectRegistryView = React.lazy(() => import('./features/admin/pages/ProjectRegistryView'))
 const AdminTicketDetailsPage = React.lazy(() => import('./features/admin/pages/TicketDetailsPage'))
@@ -84,7 +84,7 @@ function App() {
               {/* Protected routes */}
               <Route path="/dashboard" element={
                 <AuthGuard>
-                  <Dashboard />
+                  <RoleRouter />
                 </AuthGuard>
               } />
 
