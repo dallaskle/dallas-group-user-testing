@@ -22,19 +22,16 @@ interface RegisterData {
 
 class AuthService {
   async getUserData(userId: string) {
-    console.log('🔍 Fetching user data for ID:', userId)
     const response = await supabase
       .from('users')
       .select('*')
       .eq('id', userId)
       .single()
-    console.log('📦 User data response:', response)
     return response
   }
 
   // @ts-expect-error Method is used internally
   private async setUserData(session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']>) {
-    console.log('🔄 Setting user data for session:', session)
     try {
       const { data: userData, error: userError } = await this.getUserData(session.user.id)
       
@@ -43,7 +40,6 @@ class AuthService {
         throw userError
       }
 
-      console.log('✅ User data fetched successfully:', userData)
       const store = useAuthStore.getState()
       store.setSession({
         access_token: session.access_token,
@@ -67,7 +63,6 @@ class AuthService {
   }
 
   async login(data: LoginData): Promise<{ data?: LoginResponse['data'], error?: string, isVerificationError?: boolean }> {
-    console.log('🔑 Login attempt for:', data.email)
     const store = useAuthStore.getState()
     try {
       store.setLoading(true)
@@ -81,8 +76,6 @@ class AuthService {
         }
         throw new Error(result.error)
       }
-
-      console.log('✅ Login successful:', result.data)
 
       if (!result.data?.session) {
         throw new Error('No session in login response')
@@ -98,7 +91,6 @@ class AuthService {
 
       // Fetch and set user data
       const { data: userData, error: userError } = await this.getUserData(session.user.id)
-      console.log('📦 User data after login:', { userData, userError })
 
       if (userError) {
         throw new Error('Failed to fetch user data')
@@ -127,7 +119,6 @@ class AuthService {
   }
 
   async register(data: RegisterData): Promise<{ data?: RegisterResponse['data'], error?: string }> {
-    console.log('📝 Registration attempt for:', data.email)
     const store = useAuthStore.getState()
     try {
       store.setLoading(true)
@@ -178,7 +169,6 @@ class AuthService {
   }
 
   async verifyEmail(accessToken: string, refreshToken: string) {
-    console.log('✉️ Verifying email with tokens')
     const store = useAuthStore.getState()
     try {
       store.setLoading(true)
@@ -200,8 +190,6 @@ class AuthService {
         console.error('❌ No session after verification')
         throw new Error('Failed to establish session after verification')
       }
-
-      console.log('✅ Email verification complete')
       return { data: currentSession }
     } catch (error) {
       console.error('❌ Email verification error:', error)
@@ -228,19 +216,15 @@ class AuthService {
   }
 
   async initializeAuth() {
-    console.log('🚀 Initializing auth')
     const store = useAuthStore.getState()
     try {
       // Initialize Supabase auth and get session
       await supabase.auth.initialize()
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
-      console.log('📦 Initial session:', session)
-      
       if (sessionError) throw sessionError
 
       if (session) {
-        console.log('✅ Session found, setting user data')
         // Set session in store first
         store.setSession({
           access_token: session.access_token,

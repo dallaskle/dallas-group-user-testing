@@ -4,11 +4,6 @@ import type { Database } from '../shared/types/database.types'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-console.log('🔧 Initializing Supabase client with:', {
-  url: supabaseUrl,
-  hasAnonKey: !!supabaseAnonKey
-})
-
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('❌ Missing Supabase environment variables!')
 }

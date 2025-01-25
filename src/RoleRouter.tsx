@@ -1,4 +1,4 @@
-import { useAuthStore } from '../../auth/store/auth.store'
+import { useAuthStore } from './features/auth/store/auth.store'
 import { Navigate } from 'react-router-dom'
 
 const Dashboard = () => {

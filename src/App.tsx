@@ -11,7 +11,7 @@ import { Navbar } from './shared/components/Navbar'
 const Login = React.lazy(() => import('./features/auth/pages/Login'))
 const Register = React.lazy(() => import('./features/auth/pages/Register'))
 const VerifyEmail = React.lazy(() => import('./features/auth/pages/VerifyEmail'))
-const Dashboard = React.lazy(() => import('./features/dashboard/pages/Dashboard'))
+const Dashboard = React.lazy(() => import('./RoleRouter'))
 const Unauthorized = React.lazy(() => import('./shared/components/Unauthorized'))
 const AdminPage = React.lazy(() => import('./features/admin/pages/AdminPage'))
 const ProjectRegistryView = React.lazy(() => import('./features/admin/pages/ProjectRegistryView'))
