@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Upload, X } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
-import { supabase } from '@/lib/supabase'
+import { testerApi } from '../../api/tester.api'
 
 interface FileUploaderProps {
   onFileComplete: (fileUrl: string) => void
@@ -43,26 +43,9 @@ export const FileUploader = ({ onFileComplete, maxSize = 100 }: FileUploaderProp
 
     try {
       setIsUploading(true)
-
-      // Create a unique filename
-      const filename = `${crypto.randomUUID()}-${file.name}`
-
-      // Upload to Supabase Storage
-      const { error: storageError } = await supabase.storage
-        .from('test-recordings')
-        .upload(filename, file, {
-          cacheControl: '3600',
-          upsert: true,
-          contentType: file.type
-        })
-
-      if (storageError) throw storageError
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('test-recordings')
-        .getPublicUrl(filename)
-
+      
+      const publicUrl = await testerApi.uploadVideo(file)
+      
       setPreviewUrl(publicUrl)
       setFileName(file.name)
       onFileComplete(publicUrl)
@@ -75,7 +58,7 @@ export const FileUploader = ({ onFileComplete, maxSize = 100 }: FileUploaderProp
       console.error('Failed to upload video:', error)
       toast({
         title: 'Error',
-        description: 'Failed to upload video. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to upload video. Please try again.',
         variant: 'destructive',
       })
     } finally {

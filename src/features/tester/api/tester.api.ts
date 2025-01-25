@@ -195,5 +195,52 @@ export const testerApi = {
 
     if (error) throw error
     return tickets as EnhancedTicket[]
+  },
+
+  /**
+   * Upload video content (supports both File and Blob)
+   */
+  uploadVideo: async (content: File | Blob, options?: {
+    ticketId?: string
+    contentType?: string
+  }) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('No active session')
+
+    // Determine content type
+    let contentType = options?.contentType
+    if (!contentType) {
+      if (content instanceof File) {
+        if (!content.type.startsWith('video/')) {
+          throw new Error('Please select a video file')
+        }
+        contentType = content.type
+      } else {
+        contentType = 'video/webm' // Default for Blob recordings
+      }
+    }
+
+    // Create a unique filename
+    const filename = options?.ticketId
+      ? `${options.ticketId}-${Date.now()}.${contentType.split('/')[1]}`
+      : `${crypto.randomUUID()}-${Date.now()}.${contentType.split('/')[1]}`
+
+    // Upload to Supabase Storage
+    const { error: storageError } = await supabase.storage
+      .from('test-recordings')
+      .upload(filename, content, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType
+      })
+
+    if (storageError) throw storageError
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('test-recordings')
+      .getPublicUrl(filename)
+
+    return publicUrl
   }
 } 

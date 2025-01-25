@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase'
 import { Comments } from '@/features/student/components/Comments'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Play } from 'lucide-react'
+import { testerApi } from '../api/tester.api'
 
 const TestingSession = () => {
   const { id } = useParams<{ id: string }>()
@@ -50,34 +51,11 @@ const TestingSession = () => {
     try {
       setIsUploading(true)
       
-      // Get current session to ensure we're authenticated
-      const { data: { session } } = await supabase.auth.getSession()
-
-      if (!session) {
-        throw new Error('No active session')
-      }
+      const publicUrl = await testerApi.uploadVideo(videoBlob, {
+        ticketId: currentTest?.id,
+        contentType: 'video/webm'
+      })
       
-      // Create a unique filename using UUID v4
-      const filename = `${currentTest?.id}-${Date.now()}.webm`
-      
-      // Upload to Supabase Storage with explicit content type
-      const { error: storageError } = await supabase.storage
-        .from('test-recordings')
-        .upload(filename, videoBlob, {
-          cacheControl: '3600',
-          upsert: true,
-          contentType: 'video/webm'
-        })
-
-      if (storageError) {
-        throw new Error(storageError.message || 'Failed to upload recording. Please try again.')
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('test-recordings')
-        .getPublicUrl(filename)
-
       setVideoUrl(publicUrl)
       
       toast({
