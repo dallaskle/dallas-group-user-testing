@@ -112,34 +112,6 @@ export const testerApi = {
   },
 
   /**
-   * Upload a file attachment for validation
-   */
-  uploadAttachment: async (file: File) => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('No active session')
-
-    // Create a unique filename using UUID v4
-    const filename = `${crypto.randomUUID()}-${file.name}`
-
-    // Upload to Supabase Storage
-    const { error: storageError } = await supabase.storage
-      .from('test-attachments')
-      .upload(filename, file, {
-        cacheControl: '3600',
-        upsert: true
-      })
-
-    if (storageError) throw storageError
-
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('test-attachments')
-      .getPublicUrl(filename)
-
-    return publicUrl
-  },
-
-  /**
    * Get tester metrics
    */
   getMetrics: async () => {
