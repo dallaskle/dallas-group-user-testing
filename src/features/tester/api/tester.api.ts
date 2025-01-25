@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/database.types'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 
 type Ticket = Database['public']['Tables']['tickets']['Row']
 type TestingTicket = Database['public']['Tables']['testing_tickets']['Row']
@@ -32,7 +33,7 @@ export const testerApi = {
    * Fetch the test queue for the current tester
    */
   getQueue: async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = useAuthStore.getState().user
     if (!user) throw new Error('No user logged in')
 
     const { data: tickets, error } = await supabase
@@ -73,8 +74,8 @@ export const testerApi = {
    * Claim a test ticket
    */
   claimTest: async (ticketId: string) => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('No active session')
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
 
     const { data, error } = await supabase.functions.invoke('tester-claim', {
       body: { ticketId },
@@ -97,8 +98,8 @@ export const testerApi = {
     videoUrl: string
     notes?: string
   }) => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('No active session')
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
 
     const { data, error } = await supabase.functions.invoke('tester-submit', {
       body: validation,
@@ -115,8 +116,8 @@ export const testerApi = {
    * Get tester metrics
    */
   getMetrics: async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('No active session')
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
 
     const { data, error } = await supabase.functions.invoke('tester-metrics', {
       body: {},
@@ -133,7 +134,7 @@ export const testerApi = {
    * Get tester's completed ticket history
    */
   getTicketHistory: async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = useAuthStore.getState().user
     if (!user) throw new Error('No user logged in')
 
     const { data: tickets, error } = await supabase
@@ -176,8 +177,8 @@ export const testerApi = {
     ticketId?: string
     contentType?: string
   }) => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('No active session')
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
 
     // Determine content type
     let contentType = options?.contentType
