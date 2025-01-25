@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Database } from '@/database.types'
 
 export const TestQueue = () => {
   const navigate = useNavigate()
@@ -119,7 +120,7 @@ export const TestQueue = () => {
         case 'deadline':
           return new Date(a.testing_ticket.deadline).getTime() - new Date(b.testing_ticket.deadline).getTime()
         case 'priority': {
-          const priorityOrder = { high: 3, medium: 2, low: 1 }
+          const priorityOrder: Record<string, number> = { high: 3, medium: 2, low: 1 }
           return priorityOrder[b.priority] - priorityOrder[a.priority]
         }
         default:
@@ -272,7 +273,7 @@ export const TestQueue = () => {
                       </div>
                       {ticket.testing_ticket.feature.validations.length > 0 && (
                         <div className="ml-2 mt-1 space-y-2">
-                          {ticket.testing_ticket.feature.validations.map((validation) => (
+                          {ticket.testing_ticket.feature.validations.map((validation: any) => (
                             <div key={validation.id} className="flex items-center space-x-2">
                               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                 validation.status === 'Working' 

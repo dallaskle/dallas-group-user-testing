@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 import { testerApi } from '../api/tester.api'
 
 type User = Database['public']['Tables']['users']['Row']

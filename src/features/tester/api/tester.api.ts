@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 
 type Ticket = Database['public']['Tables']['tickets']['Row']
 type TestingTicket = Database['public']['Tables']['testing_tickets']['Row']
@@ -32,7 +32,6 @@ export const testerApi = {
    * Fetch the test queue for the current tester
    */
   getQueue: async () => {
-    console.log('Fetching queue...')
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('No user logged in')
 

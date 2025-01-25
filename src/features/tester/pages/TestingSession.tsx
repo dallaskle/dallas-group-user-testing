@@ -52,28 +52,16 @@ const TestingSession = () => {
       
       // Get current session to ensure we're authenticated
       const { data: { session } } = await supabase.auth.getSession()
-      console.log('Current session:', {
-        isAuthenticated: !!session,
-        userId: session?.user?.id,
-        role: session?.user?.role
-      })
 
       if (!session) {
         throw new Error('No active session')
       }
       
-      console.log('Recording blob:', {
-        size: videoBlob.size,
-        type: videoBlob.type,
-        lastModified: new Date().toISOString()
-      })
-      
       // Create a unique filename using UUID v4
       const filename = `${currentTest?.id}-${Date.now()}.webm`
-      console.log('Uploading with filename:', filename)
       
       // Upload to Supabase Storage with explicit content type
-      const { error: storageError, data } = await supabase.storage
+      const { error: storageError } = await supabase.storage
         .from('test-recordings')
         .upload(filename, videoBlob, {
           cacheControl: '3600',
@@ -82,26 +70,15 @@ const TestingSession = () => {
         })
 
       if (storageError) {
-        console.error('Storage error details:', {
-          message: storageError.message,
-          name: storageError.name,
-          error: storageError
-        })
         throw new Error(storageError.message || 'Failed to upload recording. Please try again.')
       }
-
-      console.log('Upload successful:', data)
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('test-recordings')
         .getPublicUrl(filename)
 
-      console.log('Generated public URL:', publicUrl)
       setVideoUrl(publicUrl)
-
-      // Log the state after setting
-      console.log('Video URL state set to:', publicUrl)
       
       toast({
         title: 'Success',
@@ -141,14 +118,6 @@ const TestingSession = () => {
       })
       return
     }
-
-    console.log('Submitting validation with:', {
-      ticketId: currentTest.id,
-      featureId: currentTest.testing_ticket.feature.id,
-      status,
-      videoUrl,
-      notes,
-    })
 
     try {
       const result = await submitValidation({
@@ -255,7 +224,7 @@ const TestingSession = () => {
             
             {currentTest.testing_ticket.feature.validations.length > 0 ? (
               <div className="space-y-4">
-                {currentTest.testing_ticket.feature.validations.map((validation) => (
+                {currentTest.testing_ticket.feature.validations.map((validation: any) => (
                   <div key={validation.id} className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
