@@ -60,10 +60,11 @@ export const createHandler = (handler: HandlerFunction) => {
       // Execute the handler with authenticated context
       return await handler(req, supabaseClient, user)
 
-    } catch (error) {
-      console.log('Error occurred:', error.message)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      console.log('Error occurred:', errorMessage)
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: errorMessage }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
