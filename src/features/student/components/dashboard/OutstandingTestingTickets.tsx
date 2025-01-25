@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Clock, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/auth.store'
-import { studentDashboardApi } from '../../api/studentDashboard.api'
+import { useProjectsStore } from '../../store/projects.store'
 
 interface OutstandingTestingTicket {
   id: string
@@ -46,26 +46,13 @@ const validationStatusColors: Record<string, string> = {
 export function OutstandingTestingTickets() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const [isLoading, setIsLoading] = useState(true)
-  const [tickets, setTickets] = useState<OutstandingTestingTicket[]>([])
+  const { outstandingTestingTickets: tickets, isLoadingTickets: isLoading, fetchOutstandingTestingTickets } = useProjectsStore()
 
   useEffect(() => {
-    const loadTickets = async () => {
-      if (!user?.id) return
-      
-      try {
-        setIsLoading(true)
-        const data = await studentDashboardApi.getOutstandingTestingTickets(user.id)
-        setTickets(data)
-      } catch (error) {
-        console.error('Failed to load testing tickets:', error)
-      } finally {
-        setIsLoading(false)
-      }
+    if (user?.id) {
+      fetchOutstandingTestingTickets()
     }
-
-    loadTickets()
-  }, [user?.id])
+  }, [user?.id, fetchOutstandingTestingTickets])
 
   const formatDeadline = (dateString: string) => {
     const deadline = new Date(dateString)

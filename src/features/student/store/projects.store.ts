@@ -1,11 +1,38 @@
 import { create } from 'zustand'
 import { Database } from '@/shared/types/database.types'
 import { projectsApi } from '../api/projects.api'
+import { studentDashboardApi } from '../api/studentDashboard.api'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
 type Project = Database['public']['Tables']['projects']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
 type Registry = Database['public']['Tables']['project_registry']['Row']
+
+interface OutstandingTestingTicket {
+  id: string
+  deadline: string
+  feature: {
+    name: string
+    project: {
+      name: string
+    }
+    current_validations: number
+    required_validations: number
+  }
+  ticket: {
+    title: string
+    status: string
+    priority: string
+    assignedTo?: {
+      name: string
+    }
+  }
+  validation?: {
+    status: string
+    notes?: string
+  }
+}
+
 type ProjectWithRegistry = Project & {
   registry: Registry
   features: Feature[]
@@ -15,7 +42,9 @@ type ProjectWithRegistry = Project & {
 
 interface ProjectsState {
   projects: ProjectWithRegistry[]
+  outstandingTestingTickets: OutstandingTestingTicket[]
   isLoading: boolean
+  isLoadingTickets: boolean
   error: Error | null
   
   // State setters
@@ -33,6 +62,9 @@ interface ProjectsState {
   updateFeature: (projectId: string, featureId: string, data: Partial<Feature>) => void
   removeFeature: (projectId: string, featureId: string) => void
   
+  // Testing tickets actions
+  fetchOutstandingTestingTickets: () => Promise<void>
+  
   // Async actions
   fetchProjects: () => Promise<void>
   createProject: (data: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
@@ -41,7 +73,9 @@ interface ProjectsState {
 
 export const useProjectsStore = create<ProjectsState>((set) => ({
   projects: [],
+  outstandingTestingTickets: [],
   isLoading: false,
+  isLoadingTickets: false,
   error: null,
 
   // State setters
@@ -123,6 +157,26 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
         )
       }
     }),
+
+  // Testing tickets actions
+  fetchOutstandingTestingTickets: async () => {
+    const user = useAuthStore.getState().user
+    if (!user) {
+      set({ error: new Error('No active user session') })
+      return
+    }
+
+    set({ isLoadingTickets: true, error: null })
+    try {
+      const tickets = await studentDashboardApi.getOutstandingTestingTickets(user.id)
+      set({ outstandingTestingTickets: tickets, isLoadingTickets: false })
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error : new Error('Failed to fetch outstanding testing tickets'),
+        isLoadingTickets: false 
+      })
+    }
+  },
 
   // Async actions
   fetchProjects: async () => {
