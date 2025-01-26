@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Database } from '@/database.types'
 import { validationsApi } from '../api/validations.api'
+import { useProjectsStore } from './projects.store'
 
 type Validation = Database['public']['Tables']['validations']['Row'] & {
   validator: {
@@ -27,7 +28,25 @@ export const useValidationsStore = create<ValidationsState>((set, get) => ({
   loadValidations: async (projectId: string) => {
     try {
       set({ isLoading: true })
-      const data = await validationsApi.getProjectValidations(projectId, get().sortBy === 'oldest')
+      
+      // Get project features from projects store
+      const project = useProjectsStore.getState().projects.find(p => p.id === projectId)
+      console.log(project)
+      if (!project?.features) return
+
+      // Create a map of feature IDs to names
+      const featureNames = Object.fromEntries(
+        project.features.map(f => [f.id, f.name])
+      )
+
+      console.log(featureNames)
+
+      const data = await validationsApi.getValidationsByFeatureIds(
+        project.features.map(f => f.id),
+        featureNames,
+        get().sortBy === 'oldest'
+      )
+
       set((state) => ({
         validationsByProject: {
           ...state.validationsByProject,

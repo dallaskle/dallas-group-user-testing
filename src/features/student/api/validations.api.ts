@@ -26,25 +26,28 @@ interface CreateValidationParams {
 }
 
 export const validationsApi = {
-  async getProjectValidations(projectId: string, ascending: boolean = false): Promise<ValidationWithFeature[]> {
+  async getValidationsByFeatureIds(featureIds: string[], featureNames: Record<string, string>, ascending: boolean = false): Promise<ValidationWithFeature[]> {
+    if (!featureIds.length) return []
+
     const { data, error } = await supabase
       .from('validations')
       .select(`
         *,
-        validator:validated_by(name),
-        feature:feature_id!inner(
-          name,
-          project_id
-        )
+        validator:validated_by(name)
       `)
-      .eq('feature_id.project_id', projectId)
+      .in('feature_id', featureIds)
       .order('created_at', { ascending })
 
     if (error) {
       throw new Error(error.message)
     }
 
-    return data || []
+    return (data || []).map(validation => ({
+      ...validation,
+      feature: {
+        name: featureNames[validation.feature_id] || 'Unknown Feature'
+      }
+    }))
   },
 
   async getFeatureValidationsWithValidator(featureId: string): Promise<ValidationWithValidator[]> {

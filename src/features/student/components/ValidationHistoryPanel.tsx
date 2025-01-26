@@ -18,6 +18,7 @@ import { Database } from '@/database.types'
 import { format } from 'date-fns'
 import { Download, Play } from 'lucide-react'
 import { useValidationsStore } from '../store/validations.store'
+import { useProjectsStore } from '../store/projects.store'
 
 type Validation = Database['public']['Tables']['validations']['Row'] & {
   validator: {
@@ -34,6 +35,7 @@ interface ValidationHistoryPanelProps {
 
 export const ValidationHistoryPanel = ({ projectId }: ValidationHistoryPanelProps) => {
   const { validationsByProject, isLoading, sortBy, setSortBy, loadValidations } = useValidationsStore()
+  const { projects, fetchProjects } = useProjectsStore()
   const [filter, setFilter] = useState<'all' | 'Working' | 'Needs Fixing'>('all')
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
   const [selectedTester, setSelectedTester] = useState<string>('all')
@@ -43,10 +45,16 @@ export const ValidationHistoryPanel = ({ projectId }: ValidationHistoryPanelProp
   // Get unique testers from validations
   const testers = [...new Set(validations.map(v => v.validator.name))].sort()
 
-  // Load validations when component mounts or sort changes
+  // Load projects and validations when component mounts or sort changes
   useEffect(() => {
-    loadValidations(projectId)
-  }, [sortBy, projectId])
+    const loadData = async () => {
+      if (projects.length === 0) {
+        await fetchProjects()
+      }
+      await loadValidations(projectId)
+    }
+    loadData()
+  }, [sortBy, projectId, projects.length, fetchProjects, loadValidations])
 
   const filteredValidations = validations.filter(validation => 
     (filter === 'all' || validation.status === filter) &&
