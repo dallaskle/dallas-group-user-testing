@@ -16,6 +16,8 @@ import { AddValidation } from './AddValidation'
 import { AddTesterDialog } from './AddTesterDialog'
 import { supabase } from '@/lib/supabase'
 import { Comments } from './Comments'
+import { validationsApi } from '../api/validations.api'
+import { ticketsApi } from '@/features/tickets/api/tickets.api'
 
 type Feature = Database['public']['Tables']['features']['Row']
 type Validation = Database['public']['Tables']['validations']['Row'] & {
@@ -23,7 +25,11 @@ type Validation = Database['public']['Tables']['validations']['Row'] & {
     name: string
   } | null
 }
-type TestingTicket = Database['public']['Tables']['testing_tickets']['Row'] & {
+type TestingTicket = {
+  id: string
+  feature_id: string
+  deadline: string
+  created_at: string
   tickets: {
     assigned_to: string
     title: string
@@ -68,18 +74,7 @@ export const FeatureDetailsPanel = ({
     
     try {
       setIsLoading(true)
-      const { data, error } = await supabase
-        .from('validations')
-        .select(`
-          *,
-          validator:users!validations_validated_by_fkey (
-            name
-          )
-        `)
-        .eq('feature_id', feature.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
+      const data = await validationsApi.getFeatureValidationsWithValidator(feature.id)
       console.log('Loaded validations:', data)
       setValidations(data)
     } catch (error) {
@@ -93,24 +88,7 @@ export const FeatureDetailsPanel = ({
     if (!feature) return
 
     try {
-      const { data, error } = await supabase
-        .from('testing_tickets')
-        .select(`
-          *,
-          tickets (
-            assigned_to,
-            title,
-            status,
-            assigned_to_user:users!tickets_assigned_to_fkey (
-              name,
-              email
-            )
-          )
-        `)
-        .eq('feature_id', feature.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
+      const data = await ticketsApi.getFeatureTestingTickets(feature.id)
       setTestingTickets(data || [])
     } catch (error) {
       console.error('Failed to load testing tickets:', error)

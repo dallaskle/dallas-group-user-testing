@@ -3,6 +3,12 @@ import { Database } from '@/database.types'
 
 type Validation = Database['public']['Tables']['validations']['Row']
 
+type ValidationWithValidator = Database['public']['Tables']['validations']['Row'] & {
+  validator: {
+    name: string
+  } | null
+}
+
 interface CreateValidationParams {
   featureId: string
   status: 'Working' | 'Needs Fixing'
@@ -11,6 +17,25 @@ interface CreateValidationParams {
 }
 
 export const validationsApi = {
+  async getFeatureValidationsWithValidator(featureId: string): Promise<ValidationWithValidator[]> {
+    const { data, error } = await supabase
+      .from('validations')
+      .select(`
+        *,
+        validator:users!validations_validated_by_fkey (
+          name
+        )
+      `)
+      .eq('feature_id', featureId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    return data
+  },
+
   async getFeatureValidations(featureId: string): Promise<Validation[]> {
     const { data, error } = await supabase
       .from('validations')

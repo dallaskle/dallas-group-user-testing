@@ -8,9 +8,50 @@ import {
   TicketAuditLogResponse,
 } from './types'
 
+type TestingTicket = {
+  id: string
+  feature_id: string
+  deadline: string
+  created_at: string
+  tickets: {
+    assigned_to: string
+    title: string
+    status: string
+    assigned_to_user: {
+      name: string
+      email: string
+    } | null
+  }
+}
+
 const FUNCTION_PREFIX = import.meta.env.VITE_SUPABASE_FUNCTION_PREFIX || ''
 
 export const ticketsApi = {
+  async getFeatureTestingTickets(featureId: string): Promise<TestingTicket[]> {
+    const { data, error } = await supabase
+      .from('testing_tickets')
+      .select(`
+        *,
+        tickets (
+          assigned_to,
+          title,
+          status,
+          assigned_to_user:users!tickets_assigned_to_fkey (
+            name,
+            email
+          )
+        )
+      `)
+      .eq('feature_id', featureId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    return data || []
+  },
+
   create: async (request: CreateTicketRequest): Promise<TicketResponse> => {
     const session = await supabase.auth.getSession()
     if (!session.data.session?.access_token) {
