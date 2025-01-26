@@ -65,7 +65,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Subscribe to auth changes
         const { data: { subscription } } = authService.subscribeToAuthChanges(
           async (event, session) => {
-            console.log('Auth event:', event, 'Session:', session)
             
             if (!mounted) return
 

@@ -8,6 +8,7 @@ import { register } from '../api/register'
 import type { RegisterResponse } from '../api/register'
 import { resendVerification } from '../api/verify'
 import type { ResendVerificationResponse } from '../api/verify'
+import { getUser } from '../api/user'
 
 interface LoginData {
   email: string
@@ -22,12 +23,16 @@ interface RegisterData {
 
 class AuthService {
   async getUserData(userId: string) {
-    const response = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    return response
+    const store = useAuthStore.getState()
+    if (!store.session?.access_token) {
+      throw new Error('No active session')
+    }
+
+    const response = await getUser(store.session.access_token)
+    if (response.error) {
+      throw new Error(response.error)
+    }
+    return { data: response.data, error: null }
   }
 
   // @ts-expect-error Method is used internally
