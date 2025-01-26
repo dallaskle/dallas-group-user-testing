@@ -10,7 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 import { cn } from '@/lib/utils'
 import { AddValidation } from './AddValidation'
 import { AddTesterDialog } from './AddTesterDialog'

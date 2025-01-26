@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 import { useToast } from '@/components/ui/use-toast'
 import { validationsApi } from '../api/validations.api'
 

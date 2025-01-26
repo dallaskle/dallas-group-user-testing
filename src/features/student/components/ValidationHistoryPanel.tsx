@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 import { supabase } from '@/lib/supabase'
 import { format } from 'date-fns'
 import { Download, Play } from 'lucide-react'

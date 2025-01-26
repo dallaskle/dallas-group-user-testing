@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/use-toast'
 import { commentsApi } from '../api/comments.api'
 import { useAuthStore } from '@/features/auth/store/auth.store'
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 import { cn } from '@/lib/utils'
 
 type Comment = Database['public']['Tables']['comments']['Row'] & {

@@ -4,7 +4,7 @@ import { projectsApi } from '../api/projects.api'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import type { Database } from '@/shared/types/database.types'
+import type { Database } from '@/database.types'
 
 type Project = Database['public']['Tables']['projects']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
