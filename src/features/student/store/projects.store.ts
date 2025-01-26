@@ -149,8 +149,6 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   // Feature actions
   addFeature: (projectId, feature) =>
     set((state) => {
-      console.log('Adding feature to store:', { projectId, feature })
-      console.log('Current projects:', state.projects)
       const updatedProjects = state.projects.map((p) =>
         p.id === projectId
           ? {
@@ -161,7 +159,6 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
             }
           : p
       )
-      console.log('Updated projects:', updatedProjects)
       return { projects: updatedProjects }
     }),
 
@@ -181,37 +178,31 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   },
 
   updateFeature: (projectId, featureId, data) =>
-    set((state) => {
-      console.log('Updating feature in store:', { projectId, featureId, data })
-      return {
-        projects: state.projects.map((p) =>
-          p.id === projectId
-            ? {
-                ...p,
-                features: (p.features || []).map((f) =>
-                  f.id === featureId ? { ...f, ...data } : f
-                )
-              }
-            : p
-        )
-      }
-    }),
+    set((state) => ({
+      projects: state.projects.map((p) =>
+        p.id === projectId
+          ? {
+              ...p,
+              features: (p.features || []).map((f) =>
+                f.id === featureId ? { ...f, ...data } : f
+              )
+            }
+          : p
+      )
+    })),
 
   removeFeature: (projectId, featureId) =>
-    set((state) => {
-      console.log('Removing feature from store:', { projectId, featureId })
-      return {
-        projects: state.projects.map((p) =>
-          p.id === projectId
-            ? {
-                ...p,
-                features: (p.features || []).filter((f) => f.id !== featureId),
-                feature_count: Math.max(0, (p.feature_count || 0) - 1)
-              }
-            : p
-        )
-      }
-    }),
+    set((state) => ({
+      projects: state.projects.map((p) =>
+        p.id === projectId
+          ? {
+              ...p,
+              features: (p.features || []).filter((f) => f.id !== featureId),
+              feature_count: Math.max(0, (p.feature_count || 0) - 1)
+            }
+          : p
+      )
+    })),
 
   // Testing tickets actions
   fetchOutstandingTestingTickets: async () => {
@@ -285,11 +276,11 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     }
   },
 
-  // New methods
+  // Registry methods
   fetchProjectRegistries: async () => {
     set({ isLoading: true, error: null })
     try {
-      const registries = await projectsApi.getProjectRegistries()
+      const registries = await projectsApi.fetchProjectRegistries()
       set({ registries, isLoading: false })
     } catch (error) {
       set({ 
@@ -302,7 +293,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   fetchFeaturesByRegistry: async (registryId: string) => {
     set({ isLoading: true, error: null })
     try {
-      const features = await projectsApi.getFeaturesByRegistry(registryId)
+      const features = await projectsApi.fetchFeaturesByRegistry(registryId)
       set({ features, isLoading: false })
     } catch (error) {
       set({ 

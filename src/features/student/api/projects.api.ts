@@ -259,28 +259,6 @@ export const projectsApi = {
     return data
   },
 
-  async getProjectRegistries() {
-    const { data, error } = await supabase
-      .from('project_registry')
-      .select('*')
-      .order('name', { ascending: true })
-
-    if (error) throw error
-    return data
-  },
-
-  async getFeaturesByRegistry(registryId: string) {
-    const { data, error } = await supabase
-      .from('feature_registry')
-      .select('*')
-      .eq('project_registry_id', registryId)
-      .order('is_required', { ascending: false })
-      .order('name')
-
-    if (error) throw error
-    return data
-  },
-
   async createProjectWithFeatures(
     name: string,
     registryId: string,
@@ -379,5 +357,5 @@ export const projectsApi = {
 
     if (error) throw error
     return data
-  }
+  },
 } 
