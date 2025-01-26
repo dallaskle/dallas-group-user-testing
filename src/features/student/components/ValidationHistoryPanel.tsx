@@ -15,9 +15,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Database } from '@/database.types'
-import { supabase } from '@/lib/supabase'
 import { format } from 'date-fns'
 import { Download, Play } from 'lucide-react'
+import { useValidationsStore } from '../store/validations.store'
 
 type Validation = Database['public']['Tables']['validations']['Row'] & {
   validator: {
@@ -33,51 +33,19 @@ interface ValidationHistoryPanelProps {
 }
 
 export const ValidationHistoryPanel = ({ projectId }: ValidationHistoryPanelProps) => {
-  const [validations, setValidations] = useState<Validation[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const { validationsByProject, isLoading, sortBy, setSortBy, loadValidations } = useValidationsStore()
   const [filter, setFilter] = useState<'all' | 'Working' | 'Needs Fixing'>('all')
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
   const [selectedTester, setSelectedTester] = useState<string>('all')
 
+  const validations = validationsByProject[projectId] || []
+  
   // Get unique testers from validations
   const testers = [...new Set(validations.map(v => v.validator.name))].sort()
 
-  const loadValidations = async () => {
-    try {
-      setIsLoading(true)
-      const { data: features } = await supabase
-        .from('features')
-        .select('id')
-        .eq('project_id', projectId)
-
-      if (!features) return
-
-      const featureIds = features.map(f => f.id)
-
-      const { data, error } = await supabase
-        .from('validations')
-        .select(`
-          *,
-          validator:validated_by(name),
-          feature:feature_id(name)
-        `)
-        .in('feature_id', featureIds)
-        .order('created_at', { ascending: sortBy === 'oldest' })
-
-      if (error) throw error
-
-      setValidations(data)
-    } catch (error) {
-      console.error('Failed to load validations:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   // Load validations when component mounts or sort changes
   useEffect(() => {
-    loadValidations()
+    loadValidations(projectId)
   }, [sortBy, projectId])
 
   const filteredValidations = validations.filter(validation => 
@@ -114,9 +82,7 @@ export const ValidationHistoryPanel = ({ projectId }: ValidationHistoryPanelProp
             </SelectContent>
           </Select>
 
-          <Select value={sortBy} onValueChange={(value: typeof sortBy) => {
-            setSortBy(value)
-          }}>
+          <Select value={sortBy} onValueChange={(value: 'newest' | 'oldest') => setSortBy(value)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>

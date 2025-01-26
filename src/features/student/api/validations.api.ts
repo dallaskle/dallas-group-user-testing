@@ -9,6 +9,15 @@ type ValidationWithValidator = Database['public']['Tables']['validations']['Row'
   } | null
 }
 
+type ValidationWithFeature = Validation & {
+  validator: {
+    name: string
+  }
+  feature: {
+    name: string
+  }
+}
+
 interface CreateValidationParams {
   featureId: string
   status: 'Working' | 'Needs Fixing'
@@ -17,6 +26,33 @@ interface CreateValidationParams {
 }
 
 export const validationsApi = {
+  async getProjectValidations(projectId: string, ascending: boolean = false): Promise<ValidationWithFeature[]> {
+    // First get the feature IDs
+    const { data: features } = await supabase
+      .from('features')
+      .select('id')
+      .eq('project_id', projectId)
+
+    if (!features?.length) return []
+
+    // Then get the validations for those features
+    const { data, error } = await supabase
+      .from('validations')
+      .select(`
+        *,
+        validator:validated_by(name),
+        feature:feature_id(name)
+      `)
+      .in('feature_id', features.map(f => f.id))
+      .order('created_at', { ascending })
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    return data || []
+  },
+
   async getFeatureValidationsWithValidator(featureId: string): Promise<ValidationWithValidator[]> {
     const { data, error } = await supabase
       .from('validations')
