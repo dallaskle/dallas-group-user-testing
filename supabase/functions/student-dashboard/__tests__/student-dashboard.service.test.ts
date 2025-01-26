@@ -40,9 +40,20 @@ const mockProject = {
   updated_at: new Date().toISOString()
 }
 
+const mockFeature = {
+  id: 'test-feature-1',
+  name: 'Test Feature 1',
+  current_validations: 1,
+  required_validations: 2,
+  project: {
+    name: 'Test Project',
+    student_id: mockUser.id
+  }
+}
+
 const mockTestingTicket = {
   id: 'test-ticket-id',
-  feature_id: mockProject.features[0].id,
+  feature_id: mockFeature.id,
   deadline: new Date().toISOString(),
   validation_id: null,
   validation: [],
@@ -98,58 +109,129 @@ const mockComment = {
 Deno.test('StudentDashboardService.getOutstandingTestingTickets', async () => {
   // Mock Supabase client
   const mockSupabaseClient = {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          in: () => ({
-            eq: () => ({
-              order: () => Promise.resolve({
-                data: [mockTestingTicket],
-                error: null
-              })
-            })
-          })
-        })
-      })
-    })
+    from: (table: string) => {
+      return {
+        select: (query?: string) => {
+          return {
+            eq: (field: string, value: string) => {
+              if (table === 'features') {
+                return Promise.resolve({
+                  data: [mockFeature],
+                  error: null
+                })
+              }
+              return {
+                in: (field: string, values: string[]) => {
+                  return {
+                    eq: (field: string, value: string) => {
+                      return {
+                        order: () => {
+                          return Promise.resolve({
+                            data: [mockTestingTicket],
+                            error: null
+                          })
+                        }
+                      }
+                    }
+                  }
+                },
+                order: () => {
+                  return Promise.resolve({
+                    data: [mockTestingTicket],
+                    error: null
+                  })
+                }
+              }
+            },
+            in: (field: string, values: string[]) => {
+              return {
+                eq: (field: string, value: string) => {
+                  return {
+                    order: () => {
+                      return Promise.resolve({
+                        data: [mockTestingTicket],
+                        error: null
+                      })
+                    }
+                  }
+                },
+                order: () => {
+                  return Promise.resolve({
+                    data: [mockTestingTicket],
+                    error: null
+                  })
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   const service = new StudentDashboardService(mockSupabaseClient as any)
   const result = await service.getOutstandingTestingTickets(mockUser.id)
 
-  // Assert the result matches our expected structure
-  assertEquals(result[0].id, mockTestingTicket.id)
-  assertEquals(result[0].ticket.status, 'open')
+  // Assert we got results
+  assertEquals(result.length, 1)
+  
+  // Now we can safely check the first result
+  const firstResult = result[0]
+  assertEquals(firstResult?.id, mockTestingTicket.id)
+  assertEquals(firstResult?.ticket?.status, 'open')
 })
 
 Deno.test('StudentDashboardService.getDashboardData', async () => {
   // Mock Supabase client
   const mockSupabaseClient = {
-    from: (table: string) => ({
-      select: () => ({
-        eq: () => ({
-          order: () => ({
-            limit: () => Promise.resolve({
-              data: table === 'projects' ? [mockProject] :
-                    table === 'validations' ? [mockValidation] :
-                    table === 'testing_tickets' ? [mockTestingTicketWithFeature] :
-                    table === 'comments' ? [mockComment] : [],
-              error: null
-            })
-          }),
-          gt: () => ({
-            order: () => ({
-              limit: () => Promise.resolve({
-                data: table === 'validations' ? [mockValidation] :
-                      table === 'testing_tickets' ? [mockTestingTicketWithFeature] :
-                      table === 'comments' ? [mockComment] : [],
+    from: (table: string) => {
+      return {
+        select: (query?: string) => {
+          return {
+            eq: (field: string, value: string) => {
+              return {
+                order: () => {
+                  return Promise.resolve({
+                    data: [mockProject],
+                    error: null
+                  })
+                },
+                gt: (field: string, value: string) => {
+                  return {
+                    order: () => ({
+                      limit: () => Promise.resolve({
+                        data: table === 'validations' ? [mockValidation] :
+                              table === 'testing_tickets' ? [mockTestingTicketWithFeature] :
+                              table === 'comments' ? [mockComment] : [],
+                        error: null
+                      })
+                    })
+                  }
+                }
+              }
+            },
+            gt: (field: string, value: string) => {
+              return {
+                order: () => ({
+                  limit: () => Promise.resolve({
+                    data: table === 'validations' ? [mockValidation] :
+                          table === 'testing_tickets' ? [mockTestingTicketWithFeature] :
+                          table === 'comments' ? [mockComment] : [],
+                    error: null
+                  })
+                })
+              }
+            },
+            order: () => {
+              return Promise.resolve({
+                data: [mockProject],
                 error: null
               })
-            })
-          })
-        })
-      })
-    })
+            }
+          }
+        }
+      }
+    }
   }
 
   const service = new StudentDashboardService(mockSupabaseClient as any)

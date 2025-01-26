@@ -23,12 +23,17 @@ export class StudentDashboardService {
 
     if (featuresError) throw featuresError
 
+    console.log('Features response:', JSON.stringify(features, null, 2))
+
     if (!features || features.length === 0) {
+      console.log('No features found for student')
       return []
     }
 
     // Get testing tickets for these features
     const featureIds = features.map(f => f.id)
+    console.log('Looking for tickets with feature IDs:', featureIds)
+
     const { data: testingTickets, error: ticketsError } = await this.supabaseClient
       .from('testing_tickets')
       .select(`
@@ -59,13 +64,19 @@ export class StudentDashboardService {
 
     if (ticketsError) throw ticketsError
 
-    console.log('Found testing tickets:', testingTickets)
+    console.log('Testing tickets response:', JSON.stringify(testingTickets, null, 2))
+
+    if (!testingTickets || testingTickets.length === 0) {
+      console.log('No testing tickets found')
+      return []
+    }
 
     // Map the data to include feature and project information
-    return (testingTickets || []).map(testingTicket => {
+    const mappedTickets = testingTickets.map(testingTicket => {
       const feature = features.find(f => f.id === testingTicket.feature_id)
       if (!feature || !feature.project || !testingTicket.ticket) {
-        throw new Error('Invalid data structure in testing ticket response')
+        console.warn('Invalid data structure in testing ticket:', testingTicket)
+        return null
       }
 
       return {
@@ -92,7 +103,10 @@ export class StudentDashboardService {
           notes: testingTicket.validation[0].notes || undefined
         } : undefined
       }
-    })
+    }).filter(Boolean)
+
+    console.log('Mapped tickets:', JSON.stringify(mappedTickets, null, 2))
+    return mappedTickets
   }
 
   async getDashboardData(studentId: string) {
@@ -112,6 +126,27 @@ export class StudentDashboardService {
       .order('created_at', { ascending: false })
 
     if (projectsError) throw projectsError
+
+    if (!projects) {
+      console.log('No projects found')
+      return {
+        projects: [],
+        stats: {
+          total_projects: 0,
+          total_features: 0,
+          total_validations: 0,
+          required_validations: 0,
+          validation_completion: 0,
+          projects_by_status: {
+            not_started: 0,
+            in_progress: 0,
+            successful: 0,
+            failed: 0
+          }
+        },
+        recentActivity: []
+      }
+    }
 
     // Calculate dashboard stats
     const stats = {
@@ -140,7 +175,8 @@ export class StudentDashboardService {
 
       // Count features by status
       features.forEach((feature: any) => {
-        switch (feature.status) {
+        const status = feature.status || 'Not Started'
+        switch (status) {
           case 'Not Started':
             stats.projects_by_status.not_started++
             break
@@ -175,7 +211,7 @@ export class StudentDashboardService {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
     // Get recent validations
-    const { data: recentValidations, error: validationsError } = await this.supabaseClient
+    const { data: validations, error: validationsError } = await this.supabaseClient
       .from('validations')
       .select(`
         id,
@@ -195,7 +231,7 @@ export class StudentDashboardService {
     if (validationsError) throw validationsError
 
     // Get recent testing tickets
-    const { data: recentTestingTickets, error: testingTicketsError } = await this.supabaseClient
+    const { data: testingTickets, error: testingTicketsError } = await this.supabaseClient
       .from('testing_tickets')
       .select(`
         id,
@@ -218,7 +254,7 @@ export class StudentDashboardService {
     if (testingTicketsError) throw testingTicketsError
 
     // Get recent comments
-    const { data: recentComments, error: commentsError } = await this.supabaseClient
+    const { data: comments, error: commentsError } = await this.supabaseClient
       .from('comments')
       .select(`
         id,
@@ -238,42 +274,48 @@ export class StudentDashboardService {
 
     if (commentsError) throw commentsError
 
+    const recentValidations = validations || []
+    const recentTestingTickets = testingTickets || []
+    const recentComments = comments || []
+
     console.log('Found dashboard data:', {
       projectsCount: dashboardProjects.length,
       stats,
-      recentActivityCount: recentValidations?.length || 0 + recentTestingTickets?.length || 0 + recentComments?.length || 0
+      recentActivityCount: recentValidations.length + recentTestingTickets.length + recentComments.length
     })
 
     // Combine and sort recent activity
     const recentActivity = [
-      ...((recentValidations || []).map(v => ({
+      ...recentValidations.map(v => ({
         type: 'validation' as const,
         id: v.id,
         created_at: v.created_at,
-        project_name: v.feature.project.name,
-        feature_name: v.feature.name,
+        project_name: v.feature?.project?.name || 'Unknown Project',
+        feature_name: v.feature?.name || 'Unknown Feature',
         details: { status: v.status }
-      }))),
-      ...((recentTestingTickets || []).map(t => ({
+      })),
+      ...recentTestingTickets.map(t => ({
         type: 'ticket' as const,
         id: t.id,
-        created_at: t.ticket.created_at,
-        project_name: t.feature.project.name,
-        feature_name: t.feature.name,
+        created_at: t.ticket?.created_at,
+        project_name: t.feature?.project?.name || 'Unknown Project',
+        feature_name: t.feature?.name || 'Unknown Feature',
         details: { 
-          title: t.ticket.title,
-          status: t.ticket.status
+          title: t.ticket?.title || 'Unknown Title',
+          status: t.ticket?.status || 'Unknown Status'
         }
-      }))),
-      ...((recentComments || []).map(c => ({
+      })),
+      ...recentComments.map(c => ({
         type: 'comment' as const,
         id: c.id,
         created_at: c.created_at,
-        project_name: c.feature.project.name,
-        feature_name: c.feature.name,
+        project_name: c.feature?.project?.name || 'Unknown Project',
+        feature_name: c.feature?.name || 'Unknown Feature',
         details: { content: c.content }
-      })))
-    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      }))
+    ]
+      .filter(activity => activity.created_at) // Filter out any activities with missing dates
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 10)
 
     return {
