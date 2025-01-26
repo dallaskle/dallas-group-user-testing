@@ -9,16 +9,9 @@ type Comment = Database['public']['Tables']['comments']['Row'] & {
 
 export const commentsApi = {
   getFeatureComments: async (featureId: string): Promise<Comment[]> => {
-    const { data, error } = await supabase
-      .from('comments')
-      .select(`
-        *,
-        author:users!comments_author_id_fkey (
-          name
-        )
-      `)
-      .eq('feature_id', featureId)
-      .order('created_at', { ascending: true })
+    const { data, error } = await supabase.functions.invoke('comments-list', {
+      body: { featureId }
+    })
 
     if (error) throw error
     return data || []
@@ -29,43 +22,29 @@ export const commentsApi = {
     content: string
     author_id: string
   }) => {
-    const { data, error } = await supabase
-      .from('comments')
-      .insert([comment])
-      .select(`
-        *,
-        author:users!comments_author_id_fkey (
-          name
-        )
-      `)
-      .single()
+    const { data, error } = await supabase.functions.invoke('comments-create', {
+      body: comment
+    })
 
     if (error) throw error
     return data
   },
 
   updateComment: async (id: string, content: string) => {
-    const { data, error } = await supabase
-      .from('comments')
-      .update({ content, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select(`
-        *,
-        author:users!comments_author_id_fkey (
-          name
-        )
-      `)
-      .single()
+    const { data, error } = await supabase.functions.invoke('comments-update', {
+      method: 'PUT',
+      body: { id, content }
+    })
 
     if (error) throw error
     return data
   },
 
   deleteComment: async (id: string) => {
-    const { error } = await supabase
-      .from('comments')
-      .delete()
-      .eq('id', id)
+    const { error } = await supabase.functions.invoke('comments-delete', {
+      method: 'DELETE',
+      body: { id }
+    })
 
     if (error) throw error
   }
