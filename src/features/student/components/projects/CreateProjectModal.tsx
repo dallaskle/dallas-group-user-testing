@@ -1,14 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Database } from '@/shared/types/database.types'
-import { supabase } from '@/lib/supabase'
-import { useEffect } from 'react'
+import { Database } from '@/database.types'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { useProjectsStore } from '../../store/projects.store'
 
 type ProjectRegistry = Database['public']['Tables']['project_registry']['Row']
 type FeatureRegistry = Database['public']['Tables']['feature_registry']['Row']
@@ -20,56 +19,23 @@ interface CreateProjectModalProps {
 
 export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps) => {
   const navigate = useNavigate()
+  const { fetchProjectRegistries, fetchFeaturesByRegistry, createProjectWithFeatures, registries, features: registryFeatures, isLoading } = useProjectsStore()
+
   const [name, setName] = useState('')
   const [selectedRegistry, setSelectedRegistry] = useState<ProjectRegistry | null>(null)
-  const [registries, setRegistries] = useState<ProjectRegistry[]>([])
-  const [features, setFeatures] = useState<FeatureRegistry[]>([])
   const [selectedOptionalFeatures, setSelectedOptionalFeatures] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(false)
 
-  // Fetch project registries
   useEffect(() => {
-    const fetchRegistries = async () => {
-      const { data, error } = await supabase
-        .from('project_registry')
-        .select('*')
-        .order('name')
-
-      if (error) {
-        toast.error('Failed to load project registries')
-        return
-      }
-
-      setRegistries(data)
-    }
-
     if (isOpen) {
-      fetchRegistries()
+      fetchProjectRegistries()
     }
-  }, [isOpen])
+  }, [isOpen, fetchProjectRegistries])
 
-  // Fetch features when registry is selected
   useEffect(() => {
-    const fetchFeatures = async () => {
-      if (!selectedRegistry) return
-
-      const { data, error } = await supabase
-        .from('feature_registry')
-        .select('*')
-        .eq('project_registry_id', selectedRegistry.id)
-        .order('is_required', { ascending: false })
-        .order('name')
-
-      if (error) {
-        toast.error('Failed to load features')
-        return
-      }
-
-      setFeatures(data)
+    if (selectedRegistry) {
+      fetchFeaturesByRegistry(selectedRegistry.id)
     }
-
-    fetchFeatures()
-  }, [selectedRegistry])
+  }, [selectedRegistry, fetchFeaturesByRegistry])
 
   const handleSubmit = async () => {
     if (!selectedRegistry || !name.trim()) {
@@ -77,34 +43,13 @@ export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps)
       return
     }
 
-    setIsLoading(true)
-
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/student-create-project`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          project_registry_id: selectedRegistry.id,
-          optional_feature_ids: selectedOptionalFeatures
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create project')
-      }
-
-      const project = await response.json()
+      const project = await createProjectWithFeatures(name, selectedRegistry.id, selectedOptionalFeatures)
       toast.success('Project created successfully')
       onClose()
       navigate(`/student/projects/${project.id}`)
     } catch (error) {
       toast.error('Failed to create project')
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -146,11 +91,11 @@ export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps)
             </div>
           </div>
 
-          {selectedRegistry && features.length > 0 && (
+          {selectedRegistry && registryFeatures.length > 0 && (
             <div className="space-y-2">
               <Label>Features</Label>
               <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto">
-                {features.map((feature) => (
+                {registryFeatures.map((feature: FeatureRegistry) => (
                   <div key={feature.id} className="flex items-start space-x-3">
                     {!feature.is_required && (
                       <Checkbox

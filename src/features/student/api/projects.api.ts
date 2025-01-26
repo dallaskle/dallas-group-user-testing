@@ -1,10 +1,12 @@
 import { supabase } from '@/lib/supabase'
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 
 type Project = Database['public']['Tables']['projects']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
+type ProjectRegistry = Database['public']['Tables']['project_registry']['Row']
+type FeatureRegistry = Database['public']['Tables']['feature_registry']['Row']
 type ProjectWithRegistry = Project & {
-  registry: Database['public']['Tables']['project_registry']['Row']
+  registry: ProjectRegistry
   features: Feature[]
   feature_count: number
   validation_count: number
@@ -233,5 +235,114 @@ export const projectsApi = {
       .eq('id', id)
 
     if (error) throw error
+  },
+
+  async fetchProjectRegistries(): Promise<ProjectRegistry[]> {
+    const { data, error } = await supabase
+      .from('project_registry')
+      .select('*')
+      .order('name')
+
+    if (error) throw error
+    return data
+  },
+
+  async fetchFeaturesByRegistry(registryId: string): Promise<FeatureRegistry[]> {
+    const { data, error } = await supabase
+      .from('feature_registry')
+      .select('*')
+      .eq('project_registry_id', registryId)
+      .order('is_required', { ascending: false })
+      .order('name')
+
+    if (error) throw error
+    return data
+  },
+
+  async getProjectRegistries() {
+    const { data, error } = await supabase
+      .from('project_registry')
+      .select('*')
+      .order('name', { ascending: true })
+
+    if (error) throw error
+    return data
+  },
+
+  async getFeaturesByRegistry(registryId: string) {
+    const { data, error } = await supabase
+      .from('feature_registry')
+      .select('*')
+      .eq('project_registry_id', registryId)
+      .order('is_required', { ascending: false })
+      .order('name')
+
+    if (error) throw error
+    return data
+  },
+
+  async createProjectWithFeatures(
+    name: string,
+    registryId: string,
+    optionalFeatureIds: string[]
+  ) {
+    const { data: { user }, error: sessionError } = await supabase.auth.getUser()
+    if (sessionError || !user) throw new Error('No active session')
+
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .insert([{ 
+        name, 
+        project_registry_id: registryId,
+        student_id: user.id
+      }])
+      .select()
+      .single()
+
+    if (projectError) throw projectError
+
+    // Get all required features for this registry
+    const { data: requiredFeatures, error: requiredFeaturesError } = await supabase
+      .from('feature_registry')
+      .select('*')
+      .eq('project_registry_id', registryId)
+      .eq('is_required', true)
+      .order('name')
+
+    if (requiredFeaturesError) throw requiredFeaturesError
+
+    // Get selected optional features
+    const { data: optionalFeatures, error: optionalFeaturesError } = await supabase
+      .from('feature_registry')
+      .select('*')
+      .eq('project_registry_id', registryId)
+      .eq('is_required', false)
+      .in('id', optionalFeatureIds)
+      .order('name')
+
+    if (optionalFeaturesError) throw optionalFeaturesError
+
+    // Combine required and optional features
+    const allFeatures = [...(requiredFeatures || []), ...(optionalFeatures || [])]
+
+    // Create features for the project
+    if (allFeatures.length > 0) {
+      const { error: featuresError } = await supabase
+        .from('features')
+        .insert(
+          allFeatures.map(f => ({
+            project_id: project.id,
+            name: f.name,
+            description: f.description,
+            status: 'Not Started' as const,
+            required_validations: 2, // Default to 2 validations required
+            current_validations: 0
+          }))
+        )
+
+      if (featuresError) throw featuresError
+    }
+
+    return project
   }
 } 

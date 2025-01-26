@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 
 type Comment = Database['public']['Tables']['comments']['Row'] & {
   author: {

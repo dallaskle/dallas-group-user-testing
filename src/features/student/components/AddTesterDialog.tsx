@@ -5,7 +5,7 @@ import * as z from 'zod'
 import { format, addDays } from 'date-fns'
 import { useTicketsStore } from '@/features/tickets/store/tickets.store'
 import { supabase } from '@/lib/supabase'
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 import { useToast } from '@/components/ui/use-toast'
 import {
   Form,

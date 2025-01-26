@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 import { projectsApi } from '../api/projects.api'
 import { studentDashboardApi } from '../api/studentDashboard.api'
 import { useAuthStore } from '@/features/auth/store/auth.store'
@@ -7,6 +7,8 @@ import { useAuthStore } from '@/features/auth/store/auth.store'
 type Project = Database['public']['Tables']['projects']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
 type Registry = Database['public']['Tables']['project_registry']['Row']
+type FeatureRegistry = Database['public']['Tables']['feature_registry']['Row']
+
 
 interface OutstandingTestingTicket {
   id: string
@@ -46,6 +48,8 @@ interface ProjectsState {
   isLoading: boolean
   isLoadingTickets: boolean
   error: Error | null
+  registries: Registry[]
+  features: FeatureRegistry[]
   
   // State setters
   setProjects: (projects: ProjectWithRegistry[]) => void
@@ -69,6 +73,11 @@ interface ProjectsState {
   fetchProjects: () => Promise<void>
   createProject: (data: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
   deleteProject: (id: string) => Promise<void>
+  
+  // New methods
+  fetchProjectRegistries: () => Promise<void>
+  fetchFeaturesByRegistry: (registryId: string) => Promise<void>
+  createProjectWithFeatures: (name: string, registryId: string, optionalFeatureIds: string[]) => Promise<Project>
 }
 
 export const useProjectsStore = create<ProjectsState>((set) => ({
@@ -77,6 +86,8 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
   isLoading: false,
   isLoadingTickets: false,
   error: null,
+  registries: [],
+  features: [],
 
   // State setters
   setProjects: (projects) => set({ projects }),
@@ -229,4 +240,60 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
       })
     }
   },
+
+  // New methods
+  fetchProjectRegistries: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const registries = await projectsApi.getProjectRegistries()
+      set({ registries, isLoading: false })
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error : new Error('Failed to fetch project registries'),
+        isLoading: false 
+      })
+    }
+  },
+
+  fetchFeaturesByRegistry: async (registryId: string) => {
+    set({ isLoading: true, error: null })
+    try {
+      const features = await projectsApi.getFeaturesByRegistry(registryId)
+      set({ features, isLoading: false })
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error : new Error('Failed to fetch registry features'),
+        isLoading: false 
+      })
+    }
+  },
+
+  createProjectWithFeatures: async (name: string, registryId: string, optionalFeatureIds: string[]) => {
+    set({ isLoading: true, error: null })
+    try {
+      const project = await projectsApi.createProjectWithFeatures(name, registryId, optionalFeatureIds)
+      set((state) => ({
+        projects: [...state.projects, {
+          ...project,
+          features: [],
+          feature_count: 0,
+          validation_count: 0,
+          registry: state.registries.find((r: Registry) => r.id === registryId) || {
+            id: registryId,
+            name: '',
+            description: '',
+            created_at: new Date().toISOString()
+          }
+        } as ProjectWithRegistry],
+        isLoading: false
+      }))
+      return project
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error : new Error('Failed to create project with features'),
+        isLoading: false 
+      })
+      throw error
+    }
+  }
 })) 

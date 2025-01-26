@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Database } from '@/shared/types/database.types'
+import { Database } from '@/database.types'
 import { Progress } from '@/components/ui/progress'
 
 type Project = Database['public']['Tables']['projects']['Row']
