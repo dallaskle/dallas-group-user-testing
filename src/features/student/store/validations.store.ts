@@ -31,7 +31,6 @@ export const useValidationsStore = create<ValidationsState>((set, get) => ({
       
       // Get project features from projects store
       const project = useProjectsStore.getState().projects.find(p => p.id === projectId)
-      console.log(project)
       if (!project?.features) return
 
       // Create a map of feature IDs to names

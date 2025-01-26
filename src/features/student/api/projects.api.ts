@@ -363,5 +363,21 @@ export const projectsApi = {
       feature_count: data.features?.length || 0,
       validation_count: data.features?.reduce((sum: number, f: Feature) => sum + (f.current_validations || 0), 0) || 0
     }
+  },
+
+  async getFeatureById(id: string): Promise<Feature & { project: { id: string } }> {
+    const { data, error } = await supabase
+      .from('features')
+      .select(`
+        *,
+        project:projects!features_project_id_fkey (
+          id
+        )
+      `)
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    return data
   }
 } 

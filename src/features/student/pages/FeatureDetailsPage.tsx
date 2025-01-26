@@ -14,7 +14,10 @@ import { Database } from '@/database.types'
 import { cn } from '@/lib/utils'
 import { AddValidation } from '../components/AddValidation'
 import { AddTesterDialog } from '../components/AddTesterDialog'
-import { supabase } from '@/lib/supabase'
+import { useProjectsStore } from '../store/projects.store'
+import { useValidationsStore } from '../store/validations.store'
+import { validationsApi } from '../api/validations.api'
+import { ticketsApi } from '@/features/tickets/api/tickets.api'
 import { Comments } from '../components/Comments'
 
 type Feature = Database['public']['Tables']['features']['Row'] & {
@@ -27,7 +30,12 @@ type Validation = Database['public']['Tables']['validations']['Row'] & {
     name: string
   } | null
 }
-type TestingTicket = Database['public']['Tables']['testing_tickets']['Row'] & {
+
+type TestingTicket = {
+  id: string
+  feature_id: string
+  deadline: string
+  created_at: string
   tickets: {
     assigned_to: string
     title: string
@@ -51,6 +59,9 @@ const FeatureDetailsPage = () => {
   const [isValidationsOpen, setIsValidationsOpen] = useState(true)
   const [isTestersOpen, setIsTestersOpen] = useState(true)
 
+  const { fetchFeatureById } = useProjectsStore()
+  const { loadValidations } = useValidationsStore()
+
   useEffect(() => {
     if (featureId) {
       loadFeature()
@@ -59,25 +70,15 @@ const FeatureDetailsPage = () => {
 
   useEffect(() => {
     if (feature) {
-      loadValidations()
+      loadValidationsData()
       loadTestingTickets()
     }
   }, [feature])
 
   const loadFeature = async () => {
     try {
-      const { data, error } = await supabase
-        .from('features')
-        .select(`
-          *,
-          project:projects!features_project_id_fkey (
-            id
-          )
-        `)
-        .eq('id', featureId)
-        .single()
-
-      if (error) throw error
+      if (!featureId) return
+      const data = await fetchFeatureById(featureId)
       setFeature(data)
     } catch (error) {
       console.error('Failed to load feature:', error)
@@ -85,24 +86,14 @@ const FeatureDetailsPage = () => {
     }
   }
 
-  const loadValidations = async () => {
+  const loadValidationsData = async () => {
     if (!feature) return
     
     try {
       setIsLoading(true)
-      const { data, error } = await supabase
-        .from('validations')
-        .select(`
-          *,
-          validator:users!validations_validated_by_fkey (
-            name
-          )
-        `)
-        .eq('feature_id', feature.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setValidations(data)
+      await loadValidations(feature.id)
+      const validationsData = await validationsApi.getFeatureValidationsWithValidator(feature.id)
+      setValidations(validationsData)
     } catch (error) {
       console.error('Failed to load validations:', error)
     } finally {
@@ -114,25 +105,8 @@ const FeatureDetailsPage = () => {
     if (!feature) return
 
     try {
-      const { data, error } = await supabase
-        .from('testing_tickets')
-        .select(`
-          *,
-          tickets (
-            assigned_to,
-            title,
-            status,
-            assigned_to_user:users!tickets_assigned_to_fkey (
-              name,
-              email
-            )
-          )
-        `)
-        .eq('feature_id', feature.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setTestingTickets(data || [])
+      const tickets = await ticketsApi.getFeatureTestingTickets(feature.id)
+      setTestingTickets(tickets)
     } catch (error) {
       console.error('Failed to load testing tickets:', error)
     }
@@ -140,7 +114,7 @@ const FeatureDetailsPage = () => {
 
   const handleValidationAdded = () => {
     setIsAddValidationOpen(false)
-    loadValidations()
+    loadValidationsData()
   }
 
   const handleTesterAdded = () => {
@@ -321,7 +295,7 @@ const FeatureDetailsPage = () => {
                         <UserCircle className="h-5 w-5 text-gray-500" />
                         <div>
                           <p className="text-sm font-medium">
-                            {ticket.tickets.assigned_to_user?.name || 'Unknown'}
+                            {ticket.tickets.assigned_to_user?.name || 'Unassigned'}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             Due: {new Date(ticket.deadline).toLocaleDateString()}

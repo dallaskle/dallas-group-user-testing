@@ -66,6 +66,7 @@ interface ProjectsState {
   addFeature: (projectId: string, feature: Feature) => void
   updateFeature: (projectId: string, featureId: string, data: Partial<Feature>) => void
   removeFeature: (projectId: string, featureId: string) => void
+  fetchFeatureById: (id: string) => Promise<Feature & { project: { id: string } }>
   
   // Testing tickets actions
   fetchOutstandingTestingTickets: () => Promise<void>
@@ -163,6 +164,21 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       console.log('Updated projects:', updatedProjects)
       return { projects: updatedProjects }
     }),
+
+  fetchFeatureById: async (id: string) => {
+    try {
+      set({ isLoading: true, error: null })
+      const feature = await projectsApi.getFeatureById(id)
+      set({ isLoading: false })
+      return feature
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error : new Error('Failed to fetch feature'),
+        isLoading: false 
+      })
+      throw error
+    }
+  },
 
   updateFeature: (projectId, featureId, data) =>
     set((state) => {
