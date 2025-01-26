@@ -1,4 +1,3 @@
-import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
 interface CreateProjectRegistryParams {
@@ -42,20 +41,29 @@ export const createProjectRegistry = async ({
 }
 
 export const getProjectRegistries = async () => {
-  const { data: sessionData } = await supabase.auth.getSession()
+  const session = useAuthStore.getState().session
   
-  if (!sessionData.session?.access_token) {
-    throw new Error('Unauthorized')
+  if (!session?.access_token) {
+    throw new Error('No active session found. Please log in again.')
   }
 
-  const { data, error } = await supabase
-    .from('project_registry')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/project-registry-list`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({}),
+    }
+  )
 
-  if (error) {
-    throw new Error(error.message)
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to fetch project registries')
   }
 
-  return data
+  const result = await response.json()
+  return result.data
 } 
