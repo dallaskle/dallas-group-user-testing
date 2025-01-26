@@ -168,5 +168,22 @@ export const testerApi = {
       .getPublicUrl(filename)
 
     return publicUrl
+  },
+
+  /**
+   * Get all available testers
+   */
+  getTesters: async () => {
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
+
+    const { data, error } = await supabase.functions.invoke('tester-get', {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    })
+
+    if (error) throw error
+    return data as User[]
   }
 } 

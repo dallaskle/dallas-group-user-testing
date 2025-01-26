@@ -4,9 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { format, addDays } from 'date-fns'
 import { useTicketsStore } from '@/features/tickets/store/tickets.store'
-import { supabase } from '@/lib/supabase'
 import { Database } from '@/database.types'
 import { useToast } from '@/components/ui/use-toast'
+import { testerApi } from '@/features/tester/api/tester.api'
 import {
   Form,
   FormControl,
@@ -58,14 +58,8 @@ export const AddTesterDialog = ({ feature, onSuccess, onCancel }: AddTesterDialo
   useEffect(() => {
     const loadTesters = async () => {
       try {
-        const { data: testers, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('is_tester', true)
-          .order('name')
-
-        if (error) throw error
-        setTesters(testers || [])
+        const testers = await testerApi.getTesters()
+        setTesters(testers)
       } catch (error) {
         console.error('Failed to load testers:', error)
         toast({
