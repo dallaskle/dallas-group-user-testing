@@ -1,45 +1,13 @@
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/database.types'
+import type { 
+  DashboardProject, 
+  DashboardStats, 
+  RecentActivity, 
+  OutstandingTestingTicket 
+} from '../store/dashboard.store'
 
-type Project = Database['public']['Tables']['projects']['Row']
 type Feature = Database['public']['Tables']['features']['Row']
-
-interface DashboardProject extends Project {
-  registry: {
-    name: string
-  }
-  features: Feature[]
-  feature_count: number
-  validation_count: number
-  required_validation_count: number
-}
-
-interface DashboardStats {
-  total_projects: number
-  total_features: number
-  total_validations: number
-  required_validations: number
-  validation_completion: number
-  projects_by_status: {
-    not_started: number
-    in_progress: number
-    successful: number
-    failed: number
-  }
-}
-
-interface RecentActivity {
-  type: 'validation' | 'comment' | 'ticket'
-  id: string
-  created_at: string
-  project_name: string
-  feature_name: string
-  details: {
-    status?: string
-    content?: string
-    title?: string
-  }
-}
 
 interface ValidationWithFeature {
   id: string
@@ -77,31 +45,6 @@ interface CommentWithFeature {
     project: {
       name: string
     }
-  }
-}
-
-interface OutstandingTestingTicket {
-  id: string
-  deadline: string
-  feature: {
-    name: string
-    project: {
-      name: string
-    }
-    current_validations: number
-    required_validations: number
-  }
-  ticket: {
-    title: string
-    status: string
-    priority: string
-    assignedTo?: {
-      name: string
-    }
-  }
-  validation?: {
-    status: string
-    notes?: string
   }
 }
 

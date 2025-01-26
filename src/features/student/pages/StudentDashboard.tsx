@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Plus, ArrowRight } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/auth.store'
-import { studentDashboardApi } from '../api/studentDashboard.api'
+import { useDashboardStore } from '../store/dashboard.store'
 import { DashboardStats } from '../components/dashboard/DashboardStats'
 import { RecentActivity } from '../components/dashboard/RecentActivity'
 import { OutstandingTestingTickets } from '../components/dashboard/OutstandingTestingTickets'
@@ -12,73 +12,17 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { CreateProjectModal } from '../components/projects/CreateProjectModal'
 
-interface DashboardData {
-  projects: Array<{
-    id: string
-    name: string
-    registry: {
-      name: string
-    }
-    feature_count: number
-    validation_count: number
-    required_validation_count: number
-    features: Array<{
-      id: string
-      name: string
-      status: 'Not Started' | 'In Progress' | 'Successful Test' | 'Failed Test'
-    }>
-  }>
-  stats: {
-    total_projects: number
-    total_features: number
-    total_validations: number
-    required_validations: number
-    validation_completion: number
-    projects_by_status: {
-      not_started: number
-      in_progress: number
-      successful: number
-      failed: number
-    }
-  }
-  recentActivity: Array<{
-    type: 'validation' | 'comment' | 'ticket'
-    id: string
-    created_at: string
-    project_name: string
-    feature_name: string
-    details: {
-      status?: string
-      content?: string
-      title?: string
-    }
-  }>
-}
-
 export const StudentDashboard = () => {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const [isLoading, setIsLoading] = useState(true)
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
+  const { isLoading, error, data, loadDashboardData } = useDashboardStore()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      if (!user?.id) return
-      
-      try {
-        setIsLoading(true)
-        const data = await studentDashboardApi.getDashboardData(user.id)
-        setDashboardData(data)
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error)
-      } finally {
-        setIsLoading(false)
-      }
+    if (user?.id) {
+      loadDashboardData(user.id)
     }
-
-    loadDashboardData()
-  }, [user?.id])
+  }, [user?.id, loadDashboardData])
 
   if (isLoading) {
     return (
@@ -88,7 +32,7 @@ export const StudentDashboard = () => {
     )
   }
 
-  if (!dashboardData) {
+  if (error || !data) {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">
@@ -126,13 +70,13 @@ export const StudentDashboard = () => {
         onClose={() => setIsCreateModalOpen(false)}
       />
 
-      <DashboardStats stats={dashboardData.stats} />
+      <DashboardStats stats={data.stats} />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-4 space-y-4">
           <h2 className="text-2xl font-bold">My Projects</h2>
           <div className="space-y-4">
-            {dashboardData.projects.map((project) => (
+            {data.projects.map((project) => (
               <Card 
                 key={project.id} 
                 className="bg-muted/50 hover:border-primary/50 transition-colors group cursor-pointer"
@@ -223,7 +167,7 @@ export const StudentDashboard = () => {
         </div>
 
         <div className="lg:col-span-4">
-          <RecentActivity activities={dashboardData.recentActivity} />
+          <RecentActivity activities={data.recentActivity} />
         </div>
       </div>
     </div>
