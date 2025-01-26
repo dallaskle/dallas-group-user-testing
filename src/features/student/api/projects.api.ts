@@ -158,22 +158,31 @@ export const projectsApi = {
   },
 
   async fetchProjectRegistries(): Promise<ProjectRegistry[]> {
-    const { data, error } = await supabase
-      .from('project_registry')
-      .select('*')
-      .order('name')
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
+
+    const { data, error } = await supabase.functions.invoke('project-registry-list', {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    })
 
     if (error) throw error
     return data
   },
 
   async fetchFeaturesByRegistry(registryId: string): Promise<FeatureRegistry[]> {
-    const { data, error } = await supabase
-      .from('feature_registry')
-      .select('*')
-      .eq('project_registry_id', registryId)
-      .order('is_required', { ascending: false })
-      .order('name')
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
+
+    const { data, error } = await supabase.functions.invoke('project-registry-list', {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      },
+      body: {
+        registryId
+      }
+    })
 
     if (error) throw error
     return data
