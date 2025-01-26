@@ -16,7 +16,7 @@ import { BinderTabs, BinderTabsList, BinderTabsTrigger, BinderTabsContent } from
 import { ProjectTicketList } from '@/features/tickets/components/TicketList/ProjectTicketList'
 import { TicketFilters } from '@/features/tickets/components/TicketFilters/TicketFilters'
 import { useTicketsStore } from '@/features/tickets/store/tickets.store'
-import { supabase } from '@/lib/supabase'
+import { useProjectsStore } from '../store/projects.store'
 
 type Feature = Database['public']['Tables']['features']['Row']
 type ProjectRegistry = {
@@ -42,7 +42,8 @@ type ViewType = 'grid' | 'single' | 'highlight'
 export const ProjectDetailsPage = () => {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const { projects, isLoading: isProjectsLoading } = useProjects()
+  const { projects } = useProjects()
+  const { fetchProjectById } = useProjectsStore()
   const [isAddFeatureOpen, setIsAddFeatureOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null)
@@ -64,36 +65,24 @@ export const ProjectDetailsPage = () => {
         return
       }
 
-      // If not found in state, try to fetch from database
-      try {
-        const { data, error } = await supabase
-          .from('projects')
-          .select(`
-            *,
-            features (
-              *
-            ),
-            project_registry (
-              name
-            )
-          `)
-          .eq('id', id)
-          .single()
-
-        if (error) throw error
-        setProject(data)
-      } catch (error) {
-        console.error('Failed to load project:', error)
-        navigate('/student')
-      } finally {
-        setIsLoading(false)
+      // If not found in state, fetch from store
+      if (id) {
+        try {
+          const fetchedProject = await fetchProjectById(id)
+          setProject(fetchedProject)
+        } catch (error) {
+          console.error('Failed to load project:', error)
+          navigate('/student')
+        } finally {
+          setIsLoading(false)
+        }
       }
     }
 
     if (id) {
       loadProject()
     }
-  }, [id, projects, navigate])
+  }, [id, projects, navigate, fetchProjectById])
 
   useEffect(() => {
     if (activeTab === 'features') {
@@ -109,7 +98,7 @@ export const ProjectDetailsPage = () => {
     setIsAddFeatureOpen(false)
   }
 
-  if (isLoading || isProjectsLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>

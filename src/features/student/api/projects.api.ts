@@ -344,5 +344,24 @@ export const projectsApi = {
     }
 
     return project
+  },
+
+  async getProjectById(id: string): Promise<ProjectWithRegistry> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select(`
+        *,
+        registry:project_registry(*),
+        features(*)
+      `)
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    return {
+      ...data,
+      feature_count: data.features?.length || 0,
+      validation_count: data.features?.reduce((sum: number, f: Feature) => sum + (f.current_validations || 0), 0) || 0
+    }
   }
 } 

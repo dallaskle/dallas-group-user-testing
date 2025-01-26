@@ -60,6 +60,7 @@ interface ProjectsState {
   addProject: (project: Project & { registry: Registry }) => void
   updateProject: (id: string, data: Partial<Project>) => void
   removeProject: (id: string) => void
+  fetchProjectById: (id: string) => Promise<ProjectWithRegistry>
   
   // Feature actions
   addFeature: (projectId: string, feature: Feature) => void
@@ -116,6 +117,27 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
     set((state) => ({
       projects: state.projects.filter((p) => p.id !== id)
     })),
+
+  fetchProjectById: async (id: string) => {
+    set({ isLoading: true, error: null })
+    try {
+      const project = await projectsApi.getProjectById(id)
+      // Update the project in the store if it exists
+      set((state) => ({
+        projects: state.projects.map((p) => 
+          p.id === id ? project : p
+        ),
+        isLoading: false
+      }))
+      return project
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error : new Error('Failed to fetch project'),
+        isLoading: false 
+      })
+      throw error
+    }
+  },
 
   // Feature actions
   addFeature: (projectId, feature) =>
