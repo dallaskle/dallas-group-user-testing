@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/database.types'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 
 type Validation = Database['public']['Tables']['validations']['Row']
 
@@ -27,59 +28,56 @@ interface CreateValidationParams {
 
 export const validationsApi = {
   async getValidationsByFeatureIds(featureIds: string[], featureNames: Record<string, string>, ascending: boolean = false): Promise<ValidationWithFeature[]> {
-    if (!featureIds.length) return []
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
 
-    const { data, error } = await supabase
-      .from('validations')
-      .select(`
-        *,
-        validator:validated_by(name)
-      `)
-      .in('feature_id', featureIds)
-      .order('created_at', { ascending })
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return (data || []).map(validation => ({
-      ...validation,
-      feature: {
-        name: featureNames[validation.feature_id] || 'Unknown Feature'
+    const { data, error } = await supabase.functions.invoke('validations-list', {
+      body: {
+        featureIds,
+        featureNames,
+        ascending
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
       }
-    }))
+    })
+
+    if (error) throw error
+    return data
   },
 
   async getFeatureValidationsWithValidator(featureId: string): Promise<ValidationWithValidator[]> {
-    const { data, error } = await supabase
-      .from('validations')
-      .select(`
-        *,
-        validator:users!validations_validated_by_fkey (
-          name
-        )
-      `)
-      .eq('feature_id', featureId)
-      .order('created_at', { ascending: false })
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
 
-    if (error) {
-      throw new Error(error.message)
-    }
+    const { data, error } = await supabase.functions.invoke('validations-list', {
+      body: {
+        featureId,
+        withValidator: true
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    })
 
+    if (error) throw error
     return data
   },
 
   async getFeatureValidations(featureId: string): Promise<Validation[]> {
-    const { data, error } = await supabase
-      .from('validations')
-      .select('*')
-      .eq('feature_id', featureId)
-      .order('created_at', { ascending: false })
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
 
-    if (error) {
-      throw new Error(error.message)
-    }
+    const { data, error } = await supabase.functions.invoke('validations-list', {
+      body: {
+        featureId
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    })
 
+    if (error) throw error
     return data
   },
 
@@ -89,94 +87,23 @@ export const validationsApi = {
     notes,
     videoUrl,
   }: CreateValidationParams): Promise<Validation> {
-    const user = await supabase.auth.getUser()
-    const userId = user.data.user?.id
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) throw new Error('No active session')
 
-    if (!userId) {
-      throw new Error('User not authenticated')
-    }
-
-    // First get current validation count
-    const { data: feature, error: featureError } = await supabase
-      .from('features')
-      .select('current_validations')
-      .eq('id', featureId)
-      .single()
-
-    if (featureError) {
-      throw new Error(featureError.message)
-    }
-
-    // Start a transaction
-    const { data: validation, error: validationError } = await supabase
-      .from('validations')
-      .insert([
-        {
-          feature_id: featureId,
-          status,
-          notes,
-          video_url: videoUrl,
-          validated_by: userId,
-        },
-      ])
-      .select()
-      .single()
-
-    if (validationError) {
-      throw new Error(validationError.message)
-    }
-
-    // Update feature validation count and status if status is 'Working'
-    if (status === 'Working') {
-      const { error: updateError } = await supabase
-        .from('features')
-      .update({
-        current_validations: (feature?.current_validations || 0) + 1
-      })
-        .eq('id', featureId)
-
-      if (updateError) {
-        throw new Error(updateError.message)
+    const { data, error } = await supabase.functions.invoke('validations-create', {
+      body: {
+        featureId,
+        status,
+        notes,
+        videoUrl,
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
       }
-    }
+    })
 
-    // Create a testing ticket for self-testing
-    const { data: testingTicket, error: testingError } = await supabase
-      .from('tickets')
-      .insert([
-        {
-          type: 'testing',
-          title: `Validate feature: ${featureId}`,
-          description: 'Self-assigned testing ticket for feature validation',
-          priority: 'medium',
-          status: 'open',
-          created_by: userId,
-          assigned_to: userId
-        }
-      ])
-      .select()
-      .single()
-
-    if (testingError) {
-      throw new Error(testingError.message)
-    }
-
-    // Create testing ticket details
-    const { error: testingDetailsError } = await supabase
-      .from('testing_tickets')
-      .insert([
-        {
-          id: testingTicket.id,
-          feature_id: featureId,
-          deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 1 week deadline
-        }
-      ])
-
-    if (testingDetailsError) {
-      throw new Error(testingDetailsError.message)
-    }
-
-    return validation
+    if (error) throw error
+    return data
   },
 
   async uploadVideo(file: File): Promise<string> {
