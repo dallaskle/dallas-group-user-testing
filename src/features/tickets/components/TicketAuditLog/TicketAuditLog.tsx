@@ -12,28 +12,15 @@ export const TicketAuditLog = ({ ticketId, className = '' }: TicketAuditLogProps
   const { logs, isLoading, error, fetchLogs, clearLogs } = useAuditLogStore()
 
   useEffect(() => {
-    console.log('🔄 [TicketAuditLog] Effect triggered:', { 
-      ticketId,
-      isLoading,
-      logsCount: logs.length 
-    })
 
     // Initial fetch
     fetchLogs(ticketId)
 
     // Cleanup on unmount or ticketId change
     return () => {
-      console.log('🧹 [TicketAuditLog] Cleanup triggered:', { ticketId })
       clearLogs()
     }
   }, [ticketId]) // Only depend on ticketId changes
-
-  console.log('🎨 [TicketAuditLog] Rendering:', { 
-    ticketId,
-    isLoading,
-    hasError: !!error,
-    logsCount: logs.length 
-  })
 
   if (isLoading) {
     return (

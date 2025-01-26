@@ -12,11 +12,9 @@ export const TicketDetailsAuditLog = ({ ticketId, className = '' }: TicketDetail
   const { logs, isLoading, error, fetchLogs, clearLogs } = useAuditLogStore()
 
   useEffect(() => {
-    console.log('🔄 [TicketDetailsAuditLog] Effect triggered:', { ticketId })
     fetchLogs(ticketId)
 
     return () => {
-      console.log('🧹 [TicketDetailsAuditLog] Cleanup triggered:', { ticketId })
       clearLogs()
     }
   }, [ticketId])

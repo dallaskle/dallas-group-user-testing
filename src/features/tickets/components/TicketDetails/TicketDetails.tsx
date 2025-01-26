@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useTicketsStore } from '../../store/tickets.store'
 import type { TicketStatus } from '../../api/types'
-import { supabase } from '@/lib/supabase'
 import { TicketDetailsAuditLog } from './TicketDetailsAuditLog'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 
 const statusColors: Record<TicketStatus, string> = {
   open: 'bg-blue-100 text-blue-800',
@@ -33,8 +33,8 @@ export interface TicketDetailsProps {
 }
 
 export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const { user } = useAuthStore()
+  const isAdmin = user?.is_admin ?? false
   
   const {
     selectedTicket,
@@ -48,23 +48,6 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
   useEffect(() => {
     fetchTicketById(ticketId)
   }, [ticketId, fetchTicketById])
-
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setCurrentUser(user)
-        // Get user data including is_admin
-        const { data: userData } = await supabase
-          .from('users')
-          .select('is_admin')
-          .eq('id', user.id)
-          .single()
-        setIsAdmin(userData?.is_admin ?? false)
-      }
-    }
-    getCurrentUser()
-  }, [])
 
   if (isLoading) {
     return (
@@ -97,7 +80,6 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
 
   const handleAssign = async (userId: string | null) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         throw new Error('No authenticated user found')
       }
@@ -110,7 +92,7 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
     }
   }
 
-  const isAssignedToCurrentUser = currentUser && assignedToUser?.id === currentUser.id
+  const isAssignedToCurrentUser = user && assignedToUser?.id === user.id
 
   return (
     <div className="flex flex-col gap-6">
@@ -223,7 +205,7 @@ export function TicketDetails({ ticketId, className }: TicketDetailsProps) {
                     {(!assignedToUser || (isAdmin && !isAssignedToCurrentUser)) && (
                       <Button
                         variant="outline"
-                        onClick={() => handleAssign(currentUser?.id ?? null)}
+                        onClick={() => handleAssign(user?.id ?? null)}
                       >
                         {assignedToUser ? 'Reassign to me' : 'Assign to me'}
                       </Button>
