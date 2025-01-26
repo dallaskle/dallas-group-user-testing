@@ -1,26 +1,13 @@
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import type { CreateProjectRegistryParams, CreateFeatureRegistryParams } from '../store/registries.store'
+import { getProjectRegistries as fetchProjectRegistriesList } from '../api/createProjectRegistry'
+import { getFeatureRegistries as fetchFeatureRegistriesList } from '../api/createFeatureRegistry'
 
 export const registryService = {
   // Project Registry Methods
   async fetchProjectRegistries() {
-    const { data: sessionData } = await supabase.auth.getSession()
-    
-    if (!sessionData.session?.access_token) {
-      throw new Error('Unauthorized')
-    }
-
-    const { data, error } = await supabase
-      .from('project_registry')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return data
+    return fetchProjectRegistriesList()
   },
 
   async createProjectRegistry(params: CreateProjectRegistryParams) {
@@ -77,23 +64,8 @@ export const registryService = {
   },
 
   // Feature Registry Methods
-  async fetchFeatureRegistries() {
-    const { data: sessionData } = await supabase.auth.getSession()
-    
-    if (!sessionData.session?.access_token) {
-      throw new Error('Unauthorized')
-    }
-
-    const { data, error } = await supabase
-      .from('feature_registry')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return data
+  async fetchFeatureRegistries(projectRegistryId: string) {
+    return fetchFeatureRegistriesList(projectRegistryId)
   },
 
   async createFeatureRegistry(params: CreateFeatureRegistryParams) {

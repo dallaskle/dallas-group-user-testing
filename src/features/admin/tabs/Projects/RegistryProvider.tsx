@@ -10,6 +10,7 @@ interface RegistryProviderProps {
 
 type ProjectRegistryPayload = RealtimePostgresChangesPayload<Tables<'project_registry'>>
 type FeatureRegistryPayload = RealtimePostgresChangesPayload<Tables<'feature_registry'>>
+type ProjectRegistry = Tables<'project_registry'>
 
 export const RegistryProvider = ({ children }: RegistryProviderProps) => {
   const {
@@ -32,16 +33,23 @@ export const RegistryProvider = ({ children }: RegistryProviderProps) => {
       try {
         setLoading(true)
         
-        // Fetch initial data
-        const [projectRegistries, featureRegistries] = await Promise.all([
-          registryService.fetchProjectRegistries(),
-          registryService.fetchFeatureRegistries(),
-        ])
+        // Fetch project registries first
+        const projectRegistries = await registryService.fetchProjectRegistries()
+        
+        if (!mounted) return
+        setProjectRegistries(projectRegistries)
+
+        // Then fetch feature registries for all projects
+        const featureRegistriesPromises = projectRegistries.map((project: ProjectRegistry) => 
+          registryService.fetchFeatureRegistries(project.id)
+        )
+        const featureRegistriesArrays = await Promise.all(featureRegistriesPromises)
+        
+        // Flatten the arrays of feature registries
+        const allFeatureRegistries = featureRegistriesArrays.flat()
 
         if (!mounted) return
-
-        setProjectRegistries(projectRegistries)
-        setFeatureRegistries(featureRegistries)
+        setFeatureRegistries(allFeatureRegistries)
 
         // Subscribe to project registry changes
         const projectSubscription = registryService.subscribeToProjectRegistries(
