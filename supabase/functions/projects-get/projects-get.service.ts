@@ -1,5 +1,17 @@
 import { SupabaseClient } from '../_shared/deps.ts'
 
+interface Feature {
+  id: string
+  project_id: string
+  name: string
+  description: string
+  status: 'Not Started' | 'In Progress' | 'Successful Test' | 'Failed Test'
+  required_validations: number
+  current_validations: number
+  created_at: string
+  updated_at: string
+}
+
 export class ProjectsGetService {
   constructor(private supabaseClient: SupabaseClient) {}
 
@@ -19,7 +31,8 @@ export class ProjectsGetService {
     const enhancedProject = {
       ...data,
       feature_count: data.features?.length || 0,
-      validation_count: data.features?.reduce((sum, f) => sum + (f.current_validations || 0), 0) || 0
+      validation_count: data.features?.reduce((sum: number, f: Feature) => 
+        sum + (f.current_validations || 0), 0) || 0
     }
 
     console.log('Project fetched:', enhancedProject)

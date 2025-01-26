@@ -34,30 +34,20 @@ const mockFeature = {
 }
 
 Deno.test('ProjectsDeleteService.deleteProject', async () => {
-  // Mock Supabase client
+  // Mock Supabase client with proper chaining
   const mockSupabaseClient = {
     from: () => ({
       select: () => ({
         eq: () => ({
-          or: () => Promise.resolve({
-            data: [],
-            error: null
-          }),
-          in: () => Promise.resolve({
-            data: [],
+          single: () => Promise.resolve({
+            data: mockProject,
             error: null
           })
-        }),
-        in: () => Promise.resolve({
-          data: [],
-          error: null
         })
       }),
       delete: () => ({
         eq: () => Promise.resolve({
-          error: null
-        }),
-        in: () => Promise.resolve({
+          data: null,
           error: null
         })
       })
@@ -77,11 +67,12 @@ Deno.test('ProjectsDeleteService.deleteProject', async () => {
 })
 
 Deno.test('ProjectsDeleteService.deleteFeature', async () => {
-  // Mock Supabase client
+  // Mock Supabase client with proper chaining
   const mockSupabaseClient = {
     from: () => ({
       delete: () => ({
         eq: () => Promise.resolve({
+          data: null,
           error: null
         })
       })
@@ -107,6 +98,7 @@ Deno.test('ProjectsDeleteService - handles error', async () => {
     from: () => ({
       delete: () => ({
         eq: () => Promise.resolve({
+          data: null,
           error: mockError
         })
       })

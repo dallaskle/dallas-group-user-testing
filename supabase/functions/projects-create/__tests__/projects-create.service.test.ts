@@ -38,7 +38,7 @@ const mockOptionalFeatureRegistry = {
 }
 
 Deno.test('ProjectsCreateService.createProject', async () => {
-  // Mock Supabase client
+  // Mock Supabase client with proper chaining
   const mockSupabaseClient = {
     from: () => ({
       insert: () => ({
@@ -52,15 +52,11 @@ Deno.test('ProjectsCreateService.createProject', async () => {
       select: () => ({
         eq: () => ({
           eq: () => ({
-            order: () => Promise.resolve({
-              data: [mockFeatureRegistry],
-              error: null
-            })
-          }),
-          in: () => ({
-            order: () => Promise.resolve({
-              data: [mockOptionalFeatureRegistry],
-              error: null
+            in: () => ({
+              order: () => Promise.resolve({
+                data: [mockOptionalFeatureRegistry],
+                error: null
+              })
             })
           })
         })
@@ -79,7 +75,7 @@ Deno.test('ProjectsCreateService.createProject', async () => {
   assertEquals(result, mockProject)
 })
 
-Deno.test('ProjectsCreateService.createProject - handles error', async () => {
+Deno.test('ProjectsCreateService - handles error', async () => {
   // Mock Supabase client that returns an error
   const mockError = new Error('Database error')
   const mockSupabaseClient = {

@@ -176,11 +176,12 @@ export const projectsApi = {
     if (!session?.access_token) throw new Error('No active session')
 
     const { data, error } = await supabase.functions.invoke('project-registry-list', {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`
-      },
+      method: 'POST',
       body: {
         registryId
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
       }
     })
 
@@ -216,12 +217,12 @@ export const projectsApi = {
     if (!session?.access_token) throw new Error('No active session')
 
     const { data, error } = await supabase.functions.invoke('projects-get', {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`
-      },
       body: {
         id,
         type: 'project'
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
       }
     })
 
@@ -234,12 +235,12 @@ export const projectsApi = {
     if (!session?.access_token) throw new Error('No active session')
 
     const { data, error } = await supabase.functions.invoke('projects-get', {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`
-      },
       body: {
         id,
         type: 'feature'
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
       }
     })
 

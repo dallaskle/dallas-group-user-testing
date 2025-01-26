@@ -13,9 +13,13 @@ export default createHandler(async (req, supabaseClient, _user) => {
   const service = new ProjectRegistryListService(supabaseClient)
   
   try {
-    const url = new URL(req.url)
-    const registryId = url.searchParams.get('registryId')
-    const params = listFeaturesSchema.parse({ registryId })
+    let params
+    if (req.method === 'POST') {
+      const body = await req.json()
+      params = listFeaturesSchema.parse(body)
+    } else {
+      params = listFeaturesSchema.parse({})
+    }
 
     let data
     if (params.registryId) {

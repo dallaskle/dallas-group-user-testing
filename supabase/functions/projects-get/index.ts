@@ -14,11 +14,8 @@ export default createHandler(async (req, supabaseClient, _user) => {
   const service = new ProjectsGetService(supabaseClient)
   
   try {
-    const url = new URL(req.url)
-    const params = getProjectSchema.parse({
-      id: url.searchParams.get('id') || '',
-      type: url.searchParams.get('type') || 'project'
-    })
+    const body = await req.json()
+    const params = getProjectSchema.parse(body)
 
     let data
     if (params.type === 'project') {
