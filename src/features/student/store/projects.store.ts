@@ -81,7 +81,7 @@ interface ProjectsState {
   createProjectWithFeatures: (name: string, registryId: string, optionalFeatureIds: string[]) => Promise<Project>
 }
 
-export const useProjectsStore = create<ProjectsState>((set) => ({
+export const useProjectsStore = create<ProjectsState>((set, get) => ({
   projects: [],
   outstandingTestingTickets: [],
   isLoading: false,
@@ -121,12 +121,18 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
   fetchProjectById: async (id: string) => {
     set({ isLoading: true, error: null })
     try {
+      // First check if we already have the project in the store
+      const existingProject = get().projects.find(p => p.id === id)
+      if (existingProject) {
+        set({ isLoading: false })
+        return existingProject
+      }
+
+      // If not in store, fetch from API
       const project = await projectsApi.getProjectById(id)
-      // Update the project in the store if it exists
+      // Update the project in the store
       set((state) => ({
-        projects: state.projects.map((p) => 
-          p.id === id ? project : p
-        ),
+        projects: [...state.projects, project],
         isLoading: false
       }))
       return project
