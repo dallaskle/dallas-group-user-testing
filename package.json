@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:edge": "deno test supabase/functions/**/__tests__/*.ts"
+    "test:edge": "npx deno test supabase/functions/**/__tests__/*.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
