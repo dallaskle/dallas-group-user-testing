@@ -15,7 +15,7 @@ export default createHandler(async (req, supabaseClient, _user) => {
   try {
     let params
     if (req.method === 'POST') {
-      const body = await req.json()
+      const body = await req.json().catch(() => ({}))
       params = listFeaturesSchema.parse(body)
     } else {
       params = listFeaturesSchema.parse({})
@@ -28,22 +28,29 @@ export default createHandler(async (req, supabaseClient, _user) => {
       data = await service.getProjectRegistries()
     }
 
+    if (!data) {
+      data = []
+    }
+
     console.log('Data fetched:', data)
     
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify({ data, success: true }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
   } catch (error) {
-    console.error('Error fetching registry data:', error)
+    console.error('Error in project-registry-list:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'An unexpected error occurred',
+        success: false 
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: error.status || 500,
       }
     )
   }

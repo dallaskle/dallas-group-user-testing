@@ -9,10 +9,13 @@ export class ProjectRegistryListService {
       .select('*')
       .order('name')
 
-    if (error) throw error
+    if (error) {
+      console.error('Error fetching project registries:', error)
+      throw new Error(`Failed to fetch project registries: ${error.message}`)
+    }
 
     console.log('Project registries fetched:', data)
-    return data
+    return data || []
   }
 
   async getFeaturesByRegistry(registryId: string) {
@@ -23,9 +26,12 @@ export class ProjectRegistryListService {
       .order('is_required', { ascending: false })
       .order('name')
 
-    if (error) throw error
+    if (error) {
+      console.error('Error fetching features for registry:', error)
+      throw new Error(`Failed to fetch features for registry: ${error.message}`)
+    }
 
     console.log('Features for registry fetched:', data)
-    return data
+    return data || []
   }
 } 

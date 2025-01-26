@@ -161,32 +161,32 @@ export const projectsApi = {
     const session = useAuthStore.getState().session
     if (!session?.access_token) throw new Error('No active session')
 
-    const { data, error } = await supabase.functions.invoke('project-registry-list', {
+    const { data: response, error } = await supabase.functions.invoke('project-registry-list', {
       headers: {
         Authorization: `Bearer ${session.access_token}`
       }
     })
 
     if (error) throw error
-    return data
+    if (!response?.data) return []
+    return response.data
   },
 
   async fetchFeaturesByRegistry(registryId: string): Promise<FeatureRegistry[]> {
     const session = useAuthStore.getState().session
     if (!session?.access_token) throw new Error('No active session')
 
-    const { data, error } = await supabase.functions.invoke('project-registry-list', {
+    const { data: response, error } = await supabase.functions.invoke('project-registry-list', {
       method: 'POST',
-      body: {
-        registryId
-      },
+      body: { registryId },
       headers: {
         Authorization: `Bearer ${session.access_token}`
       }
     })
 
     if (error) throw error
-    return data
+    if (!response?.data) return []
+    return response.data
   },
 
   async createProjectWithFeatures(
