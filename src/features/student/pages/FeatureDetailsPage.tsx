@@ -15,7 +15,6 @@ import { cn } from '@/lib/utils'
 import { AddValidation } from '../components/AddValidation'
 import { AddTesterDialog } from '../components/AddTesterDialog'
 import { useProjectsStore } from '../store/projects.store'
-import { useValidationsStore } from '../store/validations.store'
 import { validationsApi } from '../api/validations.api'
 import { ticketsApi } from '@/features/tickets/api/tickets.api'
 import { Comments } from '../components/Comments'
@@ -25,6 +24,7 @@ type Feature = Database['public']['Tables']['features']['Row'] & {
     id: string
   }
 }
+
 type Validation = Database['public']['Tables']['validations']['Row'] & {
   validator: {
     name: string
@@ -47,83 +47,80 @@ type TestingTicket = {
   }
 }
 
+interface PageState {
+  feature: Feature | null
+  validations: Validation[]
+  testingTickets: TestingTicket[]
+  isLoading: boolean
+  error: Error | null
+}
+
 const FeatureDetailsPage = () => {
   const navigate = useNavigate()
   const { featureId } = useParams<{ featureId: string }>()
-  const [feature, setFeature] = useState<Feature | null>(null)
-  const [validations, setValidations] = useState<Validation[]>([])
-  const [testingTickets, setTestingTickets] = useState<TestingTicket[]>([])
+  const [pageState, setPageState] = useState<PageState>({
+    feature: null,
+    validations: [],
+    testingTickets: [],
+    isLoading: false,
+    error: null
+  })
   const [isAddValidationOpen, setIsAddValidationOpen] = useState(false)
   const [isAddTesterOpen, setIsAddTesterOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isValidationsOpen, setIsValidationsOpen] = useState(true)
   const [isTestersOpen, setIsTestersOpen] = useState(true)
 
   const { fetchFeatureById } = useProjectsStore()
-  const { loadValidations } = useValidationsStore()
 
   useEffect(() => {
     if (featureId) {
-      loadFeature()
+      loadPageData()
     }
   }, [featureId])
 
-  useEffect(() => {
-    if (feature) {
-      loadValidationsData()
-      loadTestingTickets()
-    }
-  }, [feature])
+  const loadPageData = async () => {
+    if (!featureId) return
 
-  const loadFeature = async () => {
-    try {
-      if (!featureId) return
-      const data = await fetchFeatureById(featureId)
-      setFeature(data)
-    } catch (error) {
-      console.error('Failed to load feature:', error)
-      navigate('/student')
-    }
-  }
-
-  const loadValidationsData = async () => {
-    if (!feature) return
+    setPageState(prev => ({ ...prev, isLoading: true, error: null }))
     
     try {
-      setIsLoading(true)
-      await loadValidations(feature.id)
-      const validationsData = await validationsApi.getFeatureValidationsWithValidator(feature.id)
-      setValidations(validationsData)
-    } catch (error) {
-      console.error('Failed to load validations:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+      // Fetch all data in parallel
+      const [feature, validations, testingTickets] = await Promise.all([
+        fetchFeatureById(featureId),
+        validationsApi.getFeatureValidationsWithValidator(featureId),
+        ticketsApi.getFeatureTestingTickets(featureId)
+      ])
 
-  const loadTestingTickets = async () => {
-    if (!feature) return
-
-    try {
-      const tickets = await ticketsApi.getFeatureTestingTickets(feature.id)
-      setTestingTickets(tickets)
+      setPageState({
+        feature,
+        validations,
+        testingTickets,
+        isLoading: false,
+        error: null
+      })
     } catch (error) {
-      console.error('Failed to load testing tickets:', error)
+      setPageState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error : new Error('Failed to load page data')
+      }))
+      navigate('/student')
     }
   }
 
   const handleValidationAdded = () => {
     setIsAddValidationOpen(false)
-    loadValidationsData()
+    loadPageData()
   }
 
   const handleTesterAdded = () => {
     setIsAddTesterOpen(false)
-    loadTestingTickets()
+    loadPageData()
   }
 
-  if (!feature) return null
+  if (!pageState.feature) return null
 
+  const { feature, validations, testingTickets, isLoading } = pageState
   const validationProgress = (feature.current_validations / feature.required_validations) * 100
 
   return (
