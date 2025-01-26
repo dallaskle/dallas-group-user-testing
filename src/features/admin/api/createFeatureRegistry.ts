@@ -46,21 +46,31 @@ export const createFeatureRegistry = async ({
 }
 
 export const getFeatureRegistries = async (projectRegistryId: string) => {
-  const { data: sessionData } = await supabase.auth.getSession()
+  const session = useAuthStore.getState().session
   
-  if (!sessionData.session?.access_token) {
-    throw new Error('Unauthorized')
+  if (!session?.access_token) {
+    throw new Error('No active session found. Please log in again.')
   }
 
-  const { data, error } = await supabase
-    .from('feature_registry')
-    .select('*')
-    .eq('project_registry_id', projectRegistryId)
-    .order('created_at', { ascending: false })
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/project-registry-list`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        registryId: projectRegistryId,
+      }),
+    }
+  )
 
-  if (error) {
-    throw new Error(error.message)
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to fetch feature registries')
   }
 
-  return data
+  const result = await response.json()
+  return result.data
 }
