@@ -63,15 +63,15 @@ export const RegisterForm = () => {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6">
+    <div className="w-full max-w-sm mx-auto space-y-4">
       <Card className="w-full bg-white dark:bg-charcoal shadow-lg shadow-slate-200/50 dark:shadow-none border-none">
-        <CardContent className="p-8">
-          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-4">
+        <CardContent className="p-6">
+          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+            <div className="space-y-3">
               <div>
                 <label 
                   htmlFor="name" 
-                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1"
                 >
                   Full Name
                 </label>
@@ -83,7 +83,7 @@ export const RegisterForm = () => {
                   required
                   aria-invalid={errors.name ? "true" : "false"}
                   aria-describedby={errors.name ? "name-error" : undefined}
-                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                  className="w-full h-10 px-3 rounded-md border border-clay/20 
                            bg-pearl dark:bg-charcoal 
                            text-slate-900 dark:text-slate-100
                            placeholder:text-stone/50 dark:placeholder:text-stone-light/50
@@ -93,7 +93,7 @@ export const RegisterForm = () => {
                   disabled={isLoading}
                 />
                 {errors.name && (
-                  <p id="name-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                  <p id="name-error" className="mt-1 text-sm text-destructive" role="alert">
                     {errors.name.message}
                   </p>
                 )}
@@ -102,7 +102,7 @@ export const RegisterForm = () => {
               <div>
                 <label 
                   htmlFor="email" 
-                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1"
                 >
                   Email address
                 </label>
@@ -114,7 +114,7 @@ export const RegisterForm = () => {
                   required
                   aria-invalid={errors.email ? "true" : "false"}
                   aria-describedby={errors.email ? "email-error" : undefined}
-                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                  className="w-full h-10 px-3 rounded-md border border-clay/20 
                            bg-pearl dark:bg-charcoal 
                            text-slate-900 dark:text-slate-100
                            placeholder:text-stone/50 dark:placeholder:text-stone-light/50
@@ -124,7 +124,7 @@ export const RegisterForm = () => {
                   disabled={isLoading}
                 />
                 {errors.email && (
-                  <p id="email-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                  <p id="email-error" className="mt-1 text-sm text-destructive" role="alert">
                     {errors.email.message}
                   </p>
                 )}
@@ -133,7 +133,7 @@ export const RegisterForm = () => {
               <div>
                 <label 
                   htmlFor="password" 
-                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1"
                 >
                   Password
                 </label>
@@ -145,7 +145,7 @@ export const RegisterForm = () => {
                   required
                   aria-invalid={errors.password ? "true" : "false"}
                   aria-describedby={errors.password ? "password-error" : undefined}
-                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                  className="w-full h-10 px-3 rounded-md border border-clay/20 
                            bg-pearl dark:bg-charcoal 
                            text-slate-900 dark:text-slate-100
                            placeholder:text-stone/50 dark:placeholder:text-stone-light/50
@@ -155,7 +155,7 @@ export const RegisterForm = () => {
                   disabled={isLoading}
                 />
                 {errors.password && (
-                  <p id="password-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                  <p id="password-error" className="mt-1 text-sm text-destructive" role="alert">
                     {errors.password.message}
                   </p>
                 )}
@@ -164,7 +164,7 @@ export const RegisterForm = () => {
               <div>
                 <label 
                   htmlFor="confirmPassword" 
-                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1"
                 >
                   Confirm Password
                 </label>
@@ -176,7 +176,7 @@ export const RegisterForm = () => {
                   required
                   aria-invalid={errors.confirmPassword ? "true" : "false"}
                   aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
-                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                  className="w-full h-10 px-3 rounded-md border border-clay/20 
                            bg-pearl dark:bg-charcoal 
                            text-slate-900 dark:text-slate-100
                            placeholder:text-stone/50 dark:placeholder:text-stone-light/50
@@ -186,7 +186,7 @@ export const RegisterForm = () => {
                   disabled={isLoading}
                 />
                 {errors.confirmPassword && (
-                  <p id="confirm-password-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                  <p id="confirm-password-error" className="mt-1 text-sm text-destructive" role="alert">
                     {errors.confirmPassword.message}
                   </p>
                 )}
@@ -196,8 +196,8 @@ export const RegisterForm = () => {
             <button
               type="submit"
               disabled={isLoading}
-              aria-label={isLoading ? "Creating account..." : "Create account"}
-              className="w-full h-12 rounded-md 
+              aria-label={isLoading ? "Signing up..." : "Sign up"}
+              className="w-full h-10 rounded-md 
                        bg-forest hover:bg-forest-light dark:bg-forest-light dark:hover:bg-forest
                        text-pearl font-medium text-base
                        transition-natural focus-natural
@@ -206,14 +206,14 @@ export const RegisterForm = () => {
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2" role="status">
                   <Progress value={100} size="sm" variant="accent" className="w-4 h-4" />
-                  <span>Creating account...</span>
+                  <span>Signing up...</span>
                 </div>
               ) : (
-                'Create account'
+                'Sign up'
               )}
             </button>
 
-            <div className="flex items-center justify-center pt-1">
+            <div className="flex items-center justify-center">
               <div className="text-sm text-stone dark:text-stone-light">
                 Already have an account?{' '}
                 <Link
@@ -222,7 +222,7 @@ export const RegisterForm = () => {
                            dark:text-copper-light dark:hover:text-copper
                            transition-natural focus-natural"
                 >
-                  Sign in
+                  Login
                 </Link>
               </div>
             </div>

@@ -53,19 +53,19 @@ export const LoginForm = () => {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6">
+    <div className="w-full max-w-sm mx-auto space-y-4">
       <Card className="w-full bg-white dark:bg-charcoal shadow-lg shadow-slate-200/50 dark:shadow-none border-none">
-        <CardContent className="p-8">
+        <CardContent className="p-6">
           <form 
-            className="space-y-5" 
+            className="space-y-4" 
             onSubmit={handleSubmit(onSubmit)}
             aria-label="Login form"
           >
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
                 <label 
                   htmlFor="email" 
-                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1"
                 >
                   Email address
                 </label>
@@ -77,7 +77,7 @@ export const LoginForm = () => {
                   required
                   aria-invalid={errors.email ? "true" : "false"}
                   aria-describedby={errors.email ? "email-error" : undefined}
-                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                  className="w-full h-10 px-3 rounded-md border border-clay/20 
                            bg-pearl dark:bg-charcoal 
                            text-slate-900 dark:text-slate-100
                            placeholder:text-stone/50 dark:placeholder:text-stone-light/50
@@ -87,7 +87,7 @@ export const LoginForm = () => {
                   disabled={isLoading}
                 />
                 {errors.email && (
-                  <p id="email-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                  <p id="email-error" className="mt-1 text-sm text-destructive" role="alert">
                     {errors.email.message}
                   </p>
                 )}
@@ -96,7 +96,7 @@ export const LoginForm = () => {
               <div>
                 <label 
                   htmlFor="password" 
-                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1.5"
+                  className="block text-sm font-medium text-stone dark:text-stone-light mb-1"
                 >
                   Password
                 </label>
@@ -108,7 +108,7 @@ export const LoginForm = () => {
                   required
                   aria-invalid={errors.password ? "true" : "false"}
                   aria-describedby={errors.password ? "password-error" : undefined}
-                  className="w-full h-12 px-4 rounded-md border border-clay/20 
+                  className="w-full h-10 px-3 rounded-md border border-clay/20 
                            bg-pearl dark:bg-charcoal 
                            text-slate-900 dark:text-slate-100
                            placeholder:text-stone/50 dark:placeholder:text-stone-light/50
@@ -118,7 +118,7 @@ export const LoginForm = () => {
                   disabled={isLoading}
                 />
                 {errors.password && (
-                  <p id="password-error" className="mt-1.5 text-sm text-destructive" role="alert">
+                  <p id="password-error" className="mt-1 text-sm text-destructive" role="alert">
                     {errors.password.message}
                   </p>
                 )}
@@ -128,8 +128,8 @@ export const LoginForm = () => {
             <button
               type="submit"
               disabled={isLoading}
-              aria-label={isLoading ? "Signing in..." : "Sign in"}
-              className="w-full h-12 rounded-md 
+              aria-label={isLoading ? "Logging in..." : "Login"}
+              className="w-full h-10 rounded-md 
                        bg-forest hover:bg-forest-light dark:bg-forest-light dark:hover:bg-forest
                        text-pearl font-medium text-base
                        transition-natural focus-natural
@@ -138,14 +138,14 @@ export const LoginForm = () => {
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2" role="status">
                   <Progress value={100} size="sm" variant="accent" className="w-4 h-4" />
-                  <span>Signing in...</span>
+                  <span>Logging in...</span>
                 </div>
               ) : (
-                'Sign in'
+                'Login'
               )}
             </button>
 
-            <div className="flex items-center justify-center pt-1">
+            <div className="flex items-center justify-center">
               <div className="text-sm text-stone dark:text-stone-light">
                 Don't have an account?{' '}
                 <Link

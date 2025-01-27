@@ -40,9 +40,9 @@ const RootRedirect = () => {
     return <LoadingFallback />
   }
 
-  // If not logged in, go to register
+  // If not logged in, go to login
   if (!user) {
-    return <Navigate to="/register" replace />
+    return <Navigate to="/login" replace />
   }
 
   // Redirect based on role priority: Admin > Student > Tester
