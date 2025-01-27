@@ -46,7 +46,7 @@ export const ProjectsProvider = ({ children }: ProjectsProviderProps) => {
         setLoading(true)
         
         // Fetch initial data
-        const projects = await projectsApi.getProjects(user.id)
+        const projects = await projectsApi.getProjects()
 
         if (!mounted) return
 

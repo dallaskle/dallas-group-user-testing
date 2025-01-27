@@ -4,7 +4,6 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Clock, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react'
-import { useAuthStore } from '@/features/auth/store/auth.store'
 import { useProjectsStore } from '../../store/projects.store'
 
 const priorityColors: Record<string, string> = {
@@ -20,14 +19,11 @@ const validationStatusColors: Record<string, string> = {
 
 export function OutstandingTestingTickets() {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
   const { outstandingTestingTickets: tickets, isLoadingTickets: isLoading, fetchOutstandingTestingTickets } = useProjectsStore()
 
   useEffect(() => {
-    if (user?.id) {
-      fetchOutstandingTestingTickets()
-    }
-  }, [user?.id, fetchOutstandingTestingTickets])
+    fetchOutstandingTestingTickets()
+  }, [fetchOutstandingTestingTickets])
 
   const formatDeadline = (dateString: string) => {
     const deadline = new Date(dateString)

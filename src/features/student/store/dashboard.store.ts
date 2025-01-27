@@ -76,8 +76,8 @@ interface DashboardState {
     recentActivity: RecentActivity[]
   } | null
   outstandingTickets: OutstandingTestingTicket[]
-  loadDashboardData: (userId: string) => Promise<void>
-  loadOutstandingTickets: (userId: string) => Promise<void>
+  loadDashboardData: () => Promise<void>
+  loadOutstandingTickets: () => Promise<void>
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -86,20 +86,20 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   data: null,
   outstandingTickets: [],
 
-  loadDashboardData: async (userId: string) => {
+  loadDashboardData: async () => {
     try {
       set({ isLoading: true, error: null })
-      const data = await studentDashboardApi.getDashboardData(userId)
+      const data = await studentDashboardApi.getDashboardData()
       set({ data, isLoading: false })
     } catch (error) {
       set({ error: error as Error, isLoading: false })
     }
   },
 
-  loadOutstandingTickets: async (userId: string) => {
+  loadOutstandingTickets: async () => {
     try {
       set({ isLoading: true, error: null })
-      const tickets = await studentDashboardApi.getOutstandingTestingTickets(userId)
+      const tickets = await studentDashboardApi.getOutstandingTestingTickets()
       set({ outstandingTickets: tickets, isLoading: false })
     } catch (error) {
       set({ error: error as Error, isLoading: false })

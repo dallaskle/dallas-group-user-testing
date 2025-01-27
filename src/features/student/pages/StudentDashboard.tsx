@@ -20,7 +20,7 @@ export const StudentDashboard = () => {
 
   useEffect(() => {
     if (user?.id) {
-      loadDashboardData(user.id)
+      loadDashboardData()
     }
   }, [user?.id, loadDashboardData])
 

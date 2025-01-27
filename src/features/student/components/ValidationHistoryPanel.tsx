@@ -14,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Database } from '@/database.types'
 import { format } from 'date-fns'
 import { Download, Play } from 'lucide-react'
 import { useValidationsStore } from '../store/validations.store'

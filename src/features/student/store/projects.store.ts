@@ -214,7 +214,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
     set({ isLoadingTickets: true, error: null })
     try {
-      const tickets = await studentDashboardApi.getOutstandingTestingTickets(user.id)
+      const tickets = await studentDashboardApi.getOutstandingTestingTickets()
       set({ outstandingTestingTickets: tickets, isLoadingTickets: false })
     } catch (error) {
       set({ 
@@ -234,7 +234,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
     set({ isLoading: true, error: null })
     try {
-      const projects = await projectsApi.getProjects(user.id)
+      const projects = await projectsApi.getProjects()
       set({ projects, isLoading: false })
     } catch (error) {
       set({ 
