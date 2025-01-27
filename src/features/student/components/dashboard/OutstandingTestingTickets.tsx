@@ -7,31 +7,6 @@ import { Clock, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { useProjectsStore } from '../../store/projects.store'
 
-interface OutstandingTestingTicket {
-  id: string
-  deadline: string
-  feature: {
-    name: string
-    project: {
-      name: string
-    }
-    current_validations: number
-    required_validations: number
-  }
-  ticket: {
-    title: string
-    status: string
-    priority: string
-    assignedTo?: {
-      name: string
-    }
-  }
-  validation?: {
-    status: string
-    notes?: string
-  }
-}
-
 const priorityColors: Record<string, string> = {
   low: 'bg-gray-100 text-gray-800',
   medium: 'bg-yellow-100 text-yellow-800',

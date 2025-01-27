@@ -22,7 +22,7 @@ interface RegisterData {
 }
 
 class AuthService {
-  async getUserData(userId: string) {
+  async getUserData() {
     const store = useAuthStore.getState()
     if (!store.session?.access_token) {
       throw new Error('No active session')
@@ -38,7 +38,7 @@ class AuthService {
   // @ts-expect-error Method is used internally
   private async setUserData(session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']>) {
     try {
-      const { data: userData, error: userError } = await this.getUserData(session.user.id)
+      const { data: userData, error: userError } = await this.getUserData()
       
       if (userError) {
         console.error('❌ Error fetching user data:', userError)
@@ -95,7 +95,7 @@ class AuthService {
       })
 
       // Fetch and set user data
-      const { data: userData, error: userError } = await this.getUserData(session.user.id)
+      const { data: userData, error: userError } = await this.getUserData()
 
       if (userError) {
         throw new Error('Failed to fetch user data')
@@ -238,7 +238,7 @@ class AuthService {
         })
 
         // Then fetch and set user data
-        const { data: userData, error: userError } = await this.getUserData(session.user.id)
+        const { data: userData, error: userError } = await this.getUserData()
         
         if (userError) {
           throw userError

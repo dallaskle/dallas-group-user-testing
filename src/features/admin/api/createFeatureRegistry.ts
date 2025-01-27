@@ -1,4 +1,3 @@
-import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
 interface CreateFeatureRegistryParams {

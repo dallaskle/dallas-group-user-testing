@@ -20,15 +20,6 @@ import { Download, Play } from 'lucide-react'
 import { useValidationsStore } from '../store/validations.store'
 import { useProjectsStore } from '../store/projects.store'
 
-type Validation = Database['public']['Tables']['validations']['Row'] & {
-  validator: {
-    name: string
-  }
-  feature: {
-    name: string
-  }
-}
-
 interface ValidationHistoryPanelProps {
   projectId: string
 }

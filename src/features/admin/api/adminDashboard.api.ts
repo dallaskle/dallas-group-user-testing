@@ -2,9 +2,6 @@ import { supabase } from '@/lib/supabase'
 import type { ProjectProgress } from '../store/adminDashboard.store'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
-const FUNCTION_PREFIX = import.meta.env.VITE_SUPABASE_FUNCTION_PREFIX || ''
-const EDGE_FUNCTION_URL = import.meta.env.VITE_SUPABASE_URL + '/functions'
-
 // Recent Activity Types
 interface UserActivity {
   id: string
@@ -268,18 +265,6 @@ export const getTotalTestersCount = async () => {
   return data.totalTestersCount
 }
 
-interface ProjectProgressResponse {
-  status: 'Not Started' | 'In Progress' | 'Successful Test' | 'Failed Test'
-  project: {
-    id: string
-    name: string
-    student: {
-      id: string
-      name: string
-    } | null
-  } | null
-}
-
 export const getProjectProgress = async (): Promise<ProjectProgress[]> => {
   const session = useAuthStore.getState().session
   if (!session?.access_token) throw new Error('No active session')
@@ -345,42 +330,6 @@ export interface TestHistoryItem {
       notes: string | null
       created_at: string
     }[]
-  }
-}
-
-interface TestingTicketResponse {
-  id: string
-  feature_id: string
-  deadline: string
-  ticket: {
-    id: string
-    type: string
-    status: string
-    title: string
-    description: string
-    priority: string
-    created_at: string
-    updated_at: string
-    created_by_user: {
-      id: string
-      name: string
-    }
-    assigned_to_user: {
-      id: string
-      name: string
-    }
-  }
-  feature: {
-    id: string
-    name: string
-    project: {
-      id: string
-      name: string
-      student: {
-        id: string
-        name: string
-      }
-    }
   }
 }
 
@@ -707,65 +656,6 @@ export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[
   return activities.sort((a, b) => 
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
-}
-
-// Add these interfaces near the top with other interfaces
-interface ProjectWithDetailsResponse {
-  id: string
-  name: string
-  registry: {
-    id: string
-    name: string
-    created_by: string
-    creator: {
-      id: string
-      name: string
-    }
-  }[]
-  student: {
-    id: string
-    name: string
-  }
-}
-
-interface ProjectFeaturesResponse {
-  id: string
-  name: string
-  status: string
-  project_id: string
-  required_validations: number
-  current_validations: number
-  project: {
-    id: string
-    student: {
-      id: string
-      name: string
-    }
-  }
-}
-
-interface ProjectRegistryWithDetailsResponse {
-  id: string
-  name: string
-  description: string
-  created_at: string
-  creator: {
-    id: string
-    name: string
-  }
-  features: {
-    id: string
-    name: string
-    description: string
-    is_required: boolean
-  }[]
-  projects: {
-    id: string
-    student: {
-      id: string
-      name: string
-    }
-  }[]
 }
 
 // Update the function signatures to use these types

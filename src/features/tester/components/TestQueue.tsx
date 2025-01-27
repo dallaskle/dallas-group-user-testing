@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Database } from '@/database.types'
 
 export const TestQueue = () => {
   const navigate = useNavigate()
