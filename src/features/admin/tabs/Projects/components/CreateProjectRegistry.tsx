@@ -18,6 +18,7 @@ import {
 import { useToast } from '@/components/ui/use-toast'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card'
 import { createProjectRegistry } from '../../../api/createProjectRegistry'
+import { useNavigate } from 'react-router-dom'
 
 const projectRegistrySchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -33,6 +34,7 @@ interface CreateProjectRegistryProps {
 export const CreateProjectRegistry = ({ onSuccess }: CreateProjectRegistryProps) => {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const navigate = useNavigate()
 
   const form = useForm<ProjectRegistryForm>({
     resolver: zodResolver(projectRegistrySchema),
@@ -45,13 +47,15 @@ export const CreateProjectRegistry = ({ onSuccess }: CreateProjectRegistryProps)
   const handleSubmit = async (data: ProjectRegistryForm) => {
     try {
       setIsLoading(true)
-      await createProjectRegistry(data)
+      const newProject = await createProjectRegistry(data)
       toast({
         title: 'Success',
         description: 'Project registry created successfully',
       })
       form.reset()
       onSuccess?.()
+      // Navigate to the new project's registry view
+      navigate(`/admin/registry/${newProject.id}`)
     } catch (error) {
       toast({
         title: 'Error',

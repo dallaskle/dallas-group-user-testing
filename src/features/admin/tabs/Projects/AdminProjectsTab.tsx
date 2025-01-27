@@ -31,6 +31,12 @@ export const AdminProjectsTab = () => {
     fetchProjectRegistries()
   }, [fetchProjects, fetchProjectRegistries])
 
+  const handleCreateSuccess = async () => {
+    setIsCreateOpen(false)
+    // Refresh the project registries after creation
+    await fetchProjectRegistries()
+  }
+
   return (
     <div className="space-y-8">
       {/* Project Registry Section */}
@@ -131,7 +137,7 @@ export const AdminProjectsTab = () => {
           <DialogHeader>
             <DialogTitle>Create New Project Template</DialogTitle>
           </DialogHeader>
-          <CreateProjectRegistry onSuccess={() => setIsCreateOpen(false)} />
+          <CreateProjectRegistry onSuccess={handleCreateSuccess} />
         </DialogContent>
       </Dialog>
     </div>

@@ -103,13 +103,11 @@ const ProjectRegistryView = () => {
           Back to Dashboard
         </Button>
         <Button
-          variant="destructive"
+          onClick={() => setIsAddFeatureOpen(true)}
           className="gap-2"
-          onClick={() => setIsDeleteDialogOpen(true)}
-          disabled={isDeleting}
         >
-          <Trash2 className="h-4 w-4" />
-          Delete Project
+          <Plus className="h-4 w-4" />
+          Add Feature
         </Button>
       </div>
 
@@ -182,11 +180,13 @@ const ProjectRegistryView = () => {
 
       <div className="flex justify-end">
         <Button
-          onClick={() => setIsAddFeatureOpen(true)}
-          className="gap-2"
+          variant="ghost"
+          className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+          onClick={() => setIsDeleteDialogOpen(true)}
+          disabled={isDeleting}
         >
-          <Plus className="h-4 w-4" />
-          Add Feature
+          <Trash2 className="h-4 w-4" />
+          Delete Project
         </Button>
       </div>
 
