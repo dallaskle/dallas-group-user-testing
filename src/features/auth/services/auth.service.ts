@@ -22,6 +22,9 @@ interface RegisterData {
 }
 
 class AuthService {
+  private refreshPromise: Promise<void> | null = null
+  private readonly REFRESH_THRESHOLD = 5 * 60 // 5 minutes in seconds
+
   async getUserData() {
     const store = useAuthStore.getState()
     const session = store.session
@@ -30,11 +33,77 @@ class AuthService {
       throw new Error('No active session')
     }
 
+    // Check if token needs refresh before making the request
+    await this.checkAndRefreshSession()
+
     const response = await getUser(session.access_token)
     if (response.error) {
       throw new Error(response.error)
     }
     return { data: response.data, error: null }
+  }
+
+  private async checkAndRefreshSession() {
+    const store = useAuthStore.getState()
+    const session = store.session
+    
+    if (!session?.expires_at) return
+
+    const expiresAt = session.expires_at
+    const now = Math.floor(Date.now() / 1000) // Current time in seconds
+    const timeUntilExpiry = expiresAt - now
+
+    // If within refresh threshold, refresh the session
+    if (timeUntilExpiry < this.REFRESH_THRESHOLD) {
+      await this.refreshSession()
+    }
+  }
+
+  private async refreshSession() {
+    // If already refreshing, wait for that to complete
+    if (this.refreshPromise) {
+      await this.refreshPromise
+      return
+    }
+
+    const store = useAuthStore.getState()
+    const session = store.session
+    const refreshToken = session?.refresh_token
+
+    if (!refreshToken) return
+
+    try {
+      this.refreshPromise = (async () => {
+        const { data: { session: newSession }, error } = await supabase.auth.refreshSession({
+          refresh_token: refreshToken
+        })
+
+        if (error) throw error
+
+        if (newSession) {
+          // Update session in store
+          store.setSession({
+            access_token: newSession.access_token,
+            refresh_token: newSession.refresh_token,
+            expires_at: newSession.expires_at ?? null
+          })
+
+          // Update session in Supabase client
+          await supabase.auth.setSession({
+            access_token: newSession.access_token,
+            refresh_token: newSession.refresh_token
+          })
+        }
+      })()
+
+      await this.refreshPromise
+    } catch (error) {
+      console.error('Failed to refresh session:', error)
+      // If refresh fails, log out the user
+      await this.logout()
+    } finally {
+      this.refreshPromise = null
+    }
   }
 
   // @ts-expect-error Method is used internally
@@ -233,25 +302,61 @@ class AuthService {
       if (sessionError) throw sessionError
 
       if (session) {
-        // Set session in store first
-        store.setSession({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-          expires_at: session.expires_at ?? null
-        })
+        // Check if session needs refresh before setting
+        const now = Math.floor(Date.now() / 1000)
+        const timeUntilExpiry = (session.expires_at ?? 0) - now
 
-        // Then fetch and set user data
-        const { data: userData, error: userError } = await this.getUserData()
-        
-        if (userError) {
-          throw userError
-        }
+        if (timeUntilExpiry < this.REFRESH_THRESHOLD) {
+          const { data: { session: refreshedSession }, error: refreshError } = 
+            await supabase.auth.refreshSession({
+              refresh_token: session.refresh_token
+            })
 
-        if (userData) {
-          store.setUser({
-            ...session.user,
-            ...userData
-          } as User & Tables<'users'>)
+          if (refreshError) throw refreshError
+          
+          if (refreshedSession) {
+            // Set refreshed session in store
+            store.setSession({
+              access_token: refreshedSession.access_token,
+              refresh_token: refreshedSession.refresh_token,
+              expires_at: refreshedSession.expires_at ?? null
+            })
+
+            // Then fetch and set user data
+            const { data: userData, error: userError } = await this.getUserData()
+            
+            if (userError) {
+              throw userError
+            }
+
+            if (userData) {
+              store.setUser({
+                ...refreshedSession.user,
+                ...userData
+              } as User & Tables<'users'>)
+            }
+          }
+        } else {
+          // Set existing session in store
+          store.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+            expires_at: session.expires_at ?? null
+          })
+
+          // Then fetch and set user data
+          const { data: userData, error: userError } = await this.getUserData()
+          
+          if (userError) {
+            throw userError
+          }
+
+          if (userData) {
+            store.setUser({
+              ...session.user,
+              ...userData
+            } as User & Tables<'users'>)
+          }
         }
       }
     } catch (error) {
