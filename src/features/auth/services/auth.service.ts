@@ -24,11 +24,13 @@ interface RegisterData {
 class AuthService {
   async getUserData() {
     const store = useAuthStore.getState()
-    if (!store.session?.access_token) {
+    const session = store.session
+
+    if (!session?.access_token) {
       throw new Error('No active session')
     }
 
-    const response = await getUser(store.session.access_token)
+    const response = await getUser(session.access_token)
     if (response.error) {
       throw new Error(response.error)
     }
@@ -88,13 +90,20 @@ class AuthService {
 
       const session = result.data.session as Session
 
-      // Set the session in Supabase client
+      // First set the session in store
+      store.setSession({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        expires_at: session.expires_at ?? null
+      })
+
+      // Then set the session in Supabase client
       await supabase.auth.setSession({
         access_token: session.access_token,
         refresh_token: session.refresh_token
       })
 
-      // Fetch and set user data
+      // Now that session is set, fetch user data
       const { data: userData, error: userError } = await this.getUserData()
 
       if (userError) {
@@ -102,12 +111,6 @@ class AuthService {
       }
 
       // Set complete user data in store
-      store.setSession({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
-        expires_at: session.expires_at ?? null
-      })
-
       store.setUser({
         ...session.user,
         ...userData
