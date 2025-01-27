@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { ProjectProgress } from '../store/adminDashboard.store'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 
 const FUNCTION_PREFIX = import.meta.env.VITE_SUPABASE_FUNCTION_PREFIX || ''
 
@@ -197,55 +198,73 @@ export interface ProjectRegistryDetails {
 }
 
 export const getProjectRegistriesCount = async () => {
-  const { count, error } = await supabase
-    .from('project_registry')
-    .select('*', { count: 'exact', head: true })
-  
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
+
+  const { data, error } = await supabase.functions.invoke('admin-overview', {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    }
+  })
+
   if (error) throw error
-  return count || 0
+  return data.projectRegistriesCount
 }
 
 export const getTotalProjectsCount = async () => {
-  const { count, error } = await supabase
-    .from('projects')
-    .select('*', { count: 'exact', head: true })
-  
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
+
+  const { data, error } = await supabase.functions.invoke('admin-overview', {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    }
+  })
+
   if (error) throw error
-  return count || 0
+  return data.totalProjectsCount
 }
 
 export const getPendingValidationsCount = async () => {
-  const { data, error } = await supabase
-    .from('features')
-    .select('required_validations, current_validations')
-  
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
+
+  const { data, error } = await supabase.functions.invoke('admin-overview', {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    }
+  })
+
   if (error) throw error
-  
-  return data.reduce((acc, feature) => {
-    const pending = feature.required_validations - feature.current_validations
-    return acc + (pending > 0 ? pending : 0)
-  }, 0)
+  return data.pendingValidationsCount
 }
 
 export const getPendingTestsCount = async () => {
-  const { count, error } = await supabase
-    .from('tickets')
-    .select('*', { count: 'exact', head: true })
-    .eq('type', 'testing')
-    .in('status', ['open', 'in_progress'])
-  
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
+
+  const { data, error } = await supabase.functions.invoke('admin-overview', {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    }
+  })
+
   if (error) throw error
-  return count || 0
+  return data.pendingTestsCount
 }
 
 export const getTotalTestersCount = async () => {
-  const { count, error } = await supabase
-    .from('users')
-    .select('*', { count: 'exact', head: true })
-    .eq('is_tester', true)
-  
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
+
+  const { data, error } = await supabase.functions.invoke('admin-overview', {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    }
+  })
+
   if (error) throw error
-  return count || 0
+  return data.totalTestersCount
 }
 
 interface ProjectProgressResponse {
@@ -261,30 +280,17 @@ interface ProjectProgressResponse {
 }
 
 export const getProjectProgress = async (): Promise<ProjectProgress[]> => {
-  const { data, error } = await supabase
-    .from('features')
-    .select(`
-      status,
-      project:projects (
-        id,
-        name,
-        student:users!projects_student_id_fkey (
-          id,
-          name
-        )
-      )
-    `)
-    .returns<ProjectProgressResponse[]>()
-  
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
+
+  const { data, error } = await supabase.functions.invoke('admin-overview', {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    }
+  })
+
   if (error) throw error
-  
-  return data.map(feature => ({
-    status: feature.status,
-    project: feature.project ? { 
-      name: feature.project.name,
-      student: feature.project.student
-    } : null
-  }))
+  return data.projectProgress
 }
 
 export type TesterPerformanceData = {
@@ -378,84 +384,17 @@ interface TestingTicketResponse {
 }
 
 export const getTesterPerformance = async (): Promise<TesterPerformanceData[]> => {
-  // Get all testers
-  const { data: testers, error: testersError } = await supabase
-    .from('users')
-    .select('id, name, email')
-    .eq('is_tester', true)
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  if (testersError) throw testersError
-
-  // For each tester, get their stats
-  const testerStats = await Promise.all(testers.map(async (tester) => {
-    const [
-      pendingTickets,
-      completedTickets,
-      lastCompletedTicket,
-      validations
-    ] = await Promise.all([
-      // Get pending tickets count
-      supabase
-        .from('tickets')
-        .select('*', { count: 'exact', head: true })
-        .eq('type', 'testing')
-        .eq('assigned_to', tester.id)
-        .in('status', ['open', 'in_progress']),
-
-      // Get completed tickets count
-      supabase
-        .from('tickets')
-        .select('*', { count: 'exact', head: true })
-        .eq('type', 'testing')
-        .eq('assigned_to', tester.id)
-        .in('status', ['resolved', 'closed']),
-
-      // Get last completed ticket
-      supabase
-        .from('tickets')
-        .select('updated_at')
-        .eq('type', 'testing')
-        .eq('assigned_to', tester.id)
-        .in('status', ['resolved', 'closed'])
-        .order('updated_at', { ascending: false })
-        .limit(1),
-
-      // Get validations for accuracy rate
-      supabase
-        .from('validations')
-        .select('status, created_at')
-        .eq('validated_by', tester.id)
-    ])
-
-    // Calculate accuracy rate
-    const totalValidations = validations.data?.length || 0
-    const successfulValidations = validations.data?.filter(v => v.status === 'Working').length || 0
-    const accuracyRate = totalValidations > 0 ? (successfulValidations / totalValidations) * 100 : 0
-
-    // Calculate average response time (time between ticket creation and validation)
-    const responseTimesSum = validations.data?.reduce((sum, validation) => {
-      const validationDate = new Date(validation.created_at)
-      // TODO: Add ticket creation date to calculation when available
-      return sum + validationDate.getTime()
-    }, 0)
-
-    const avgResponseTime = responseTimesSum && validations.data 
-      ? responseTimesSum / validations.data.length 
-      : 0
-
-    return {
-      id: tester.id,
-      name: tester.name,
-      email: tester.email,
-      testsPending: pendingTickets.count || 0,
-      testsCompleted: completedTickets.count || 0,
-      lastTestCompleted: lastCompletedTicket.data?.[0]?.updated_at || null,
-      accuracyRate,
-      avgResponseTime
+  const { data, error } = await supabase.functions.invoke('admin-overview', {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
-  }))
+  })
 
-  return testerStats
+  if (error) throw error
+  return data.testerPerformance
 }
 
 export const getTestHistory = async (): Promise<TestHistoryItem[]> => {
