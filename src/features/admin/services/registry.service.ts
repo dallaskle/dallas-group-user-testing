@@ -38,29 +38,62 @@ export const registryService = {
   },
 
   async updateProjectRegistry(id: string, updates: Partial<CreateProjectRegistryParams>) {
-    const { data, error } = await supabase
-      .from('project_registry')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) {
-      throw new Error(error.message)
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) {
+      throw new Error('No active session found. Please log in again.')
     }
 
-    return data
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/registry-update`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          id,
+          type: 'project',
+          updates
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to update project registry')
+    }
+
+    return response.json()
   },
 
   async deleteProjectRegistry(id: string) {
-    const { error } = await supabase
-      .from('project_registry')
-      .delete()
-      .eq('id', id)
-
-    if (error) {
-      throw new Error(error.message)
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) {
+      throw new Error('No active session found. Please log in again.')
     }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/registry-delete`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          id,
+          type: 'project'
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to delete project registry')
+    }
+
+    return response.json()
   },
 
   // Feature Registry Methods
@@ -96,29 +129,62 @@ export const registryService = {
   },
 
   async updateFeatureRegistry(id: string, updates: Partial<CreateFeatureRegistryParams>) {
-    const { data, error } = await supabase
-      .from('feature_registry')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) {
-      throw new Error(error.message)
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) {
+      throw new Error('No active session found. Please log in again.')
     }
 
-    return data
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/registry-update`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          id,
+          type: 'feature',
+          updates
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to update feature registry')
+    }
+
+    return response.json()
   },
 
   async deleteFeatureRegistry(id: string) {
-    const { error } = await supabase
-      .from('feature_registry')
-      .delete()
-      .eq('id', id)
-
-    if (error) {
-      throw new Error(error.message)
+    const session = useAuthStore.getState().session
+    if (!session?.access_token) {
+      throw new Error('No active session found. Please log in again.')
     }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/registry-delete`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          id,
+          type: 'feature'
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to delete feature registry')
+    }
+
+    return response.json()
   },
 
   // Subscription Methods
