@@ -307,21 +307,32 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const project = await projectsApi.createProjectWithFeatures(name, registryId, optionalFeatureIds)
-      set((state) => ({
-        projects: [...state.projects, {
-          ...project,
-          features: [],
-          feature_count: 0,
-          validation_count: 0,
-          registry: state.registries.find((r: Registry) => r.id === registryId) || {
-            id: registryId,
-            name: '',
-            description: '',
-            created_at: new Date().toISOString()
-          }
-        } as ProjectWithRegistry],
+      
+      // Ensure we have the correct registry data
+      const registry = get().registries.find(r => r.id === registryId) || {
+        id: registryId,
+        name: '',
+        description: '',
+        created_at: new Date().toISOString(),
+        created_by: '',
+        updated_at: new Date().toISOString()
+      }
+
+      // Create a properly typed ProjectWithRegistry object
+      const projectWithRegistry: ProjectWithRegistry = {
+        ...project,
+        registry,
+        features: project.features || [],
+        feature_count: project.features?.length || 0,
+        validation_count: project.features?.reduce((sum, f) => sum + (f.required_validations || 0), 0) || 0
+      }
+
+      // Update the store with the new project
+      set(state => ({
+        projects: [...state.projects, projectWithRegistry],
         isLoading: false
       }))
+
       return project
     } catch (error) {
       set({ 

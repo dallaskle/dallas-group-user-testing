@@ -309,7 +309,29 @@ export const ProjectDetailsPage = () => {
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        <div className="grid grid-cols-[auto,1fr,auto] items-start gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/student')}
+            className="gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+            Back
+          </Button>
+
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-4xl font-bold">{project?.name}</h1>
@@ -327,6 +349,7 @@ export const ProjectDetailsPage = () => {
               Based on {('project_registry' in project!) ? project.project_registry.name : project.registry.name}
             </p>
           </div>
+
           <div className="flex items-center gap-4">
             <Badge variant="outline" className="text-lg py-1">
               {project?.features.length} Features

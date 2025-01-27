@@ -50,8 +50,9 @@ export class ProjectsCreateService {
     const allFeatures = [...(requiredFeatures || []), ...(optionalFeatures || [])]
 
     // Create features for the project
+    let features = []
     if (allFeatures.length > 0) {
-      const { error: featuresError } = await this.supabaseClient
+      const { data: createdFeatures, error: featuresError } = await this.supabaseClient
         .from('features')
         .insert(
           allFeatures.map(f => ({
@@ -63,11 +64,28 @@ export class ProjectsCreateService {
             current_validations: 0
           }))
         )
+        .select()
 
       if (featuresError) throw featuresError
+      features = createdFeatures || []
     }
 
-    console.log('Project created:', project)
-    return project
+    const completeProject = {
+      ...project,
+      features,
+      registry: {
+        id: registryId,
+        name: requiredFeatures?.[0]?.project_registry?.name || '',
+        description: requiredFeatures?.[0]?.project_registry?.description || '',
+        created_at: new Date().toISOString(),
+        created_by: userId,
+        updated_at: new Date().toISOString()
+      },
+      feature_count: features.length,
+      validation_count: features.reduce((sum, f) => sum + (f.required_validations || 0), 0)
+    }
+
+    console.log('Project created with features:', completeProject)
+    return completeProject
   }
 } 

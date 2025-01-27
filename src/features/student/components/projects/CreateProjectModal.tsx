@@ -47,6 +47,7 @@ export const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps)
       const project = await createProjectWithFeatures(name, selectedRegistry.id, selectedOptionalFeatures)
       toast.success('Project created successfully')
       onClose()
+      await new Promise(resolve => setTimeout(resolve, 100))
       navigate(`/student/projects/${project.id}`)
     } catch (error) {
       toast.error('Failed to create project')

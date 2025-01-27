@@ -193,7 +193,7 @@ export const projectsApi = {
     name: string,
     registryId: string,
     optionalFeatureIds: string[]
-  ) {
+  ): Promise<ProjectWithRegistry> {
     const session = useAuthStore.getState().session
     if (!session?.access_token) throw new Error('No active session')
 
@@ -209,7 +209,7 @@ export const projectsApi = {
     })
 
     if (error) throw error
-    return data
+    return data as ProjectWithRegistry
   },
 
   async getProjectById(id: string): Promise<ProjectWithRegistry> {
