@@ -199,9 +199,7 @@ export const useAdminDashboardStore = create<AdminDashboardState & AdminDashboar
   fetchTestHistory: async () => {
     set({ isLoading: true, error: null })
     try {
-      console.log('Fetching test history...')
       const testHistory = await api.getTestHistory()
-      console.log('Fetched test history:', testHistory)
       set({ testHistory, isLoading: false })
     } catch (error) {
       console.error('Error fetching test history:', error)
