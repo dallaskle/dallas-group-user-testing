@@ -920,214 +920,125 @@ export interface UpdateTicketRequest {
 
 // Add ticket-related API functions
 export const getTickets = async (request: ListTicketsRequest): Promise<ListTicketsResponse> => {
-  const session = await supabase.auth.getSession()
-  if (!session.data.session?.access_token) {
-    throw new Error('No active session')
-  }
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-list`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.data.session.access_token}`,
-      },
-      body: JSON.stringify(request),
+  const { data, error } = await supabase.functions.invoke('admin-tickets', {
+    body: { action: 'list', ...request },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
-  )
+  })
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to list tickets')
-  }
-
-  return await response.json()
+  if (error) throw error
+  return data
 }
 
 export const getTicketById = async (id: string): Promise<TicketResponse> => {
-  const session = await supabase.auth.getSession()
-  if (!session.data.session?.access_token) {
-    throw new Error('No active session')
-  }
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-get`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.data.session.access_token}`,
-      },
-      body: JSON.stringify({ id }),
+  const { data, error } = await supabase.functions.invoke('admin-tickets', {
+    body: { action: 'get', id },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
-  )
+  })
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to get ticket')
-  }
-  
-  const data = await response.json()
+  if (error) throw error
   if (!data.ticket_data) {
     throw new Error('Invalid ticket data received from server')
   }
-
   return data
 }
 
 export const createTicket = async (request: CreateTicketRequest): Promise<TicketResponse> => {
-  const session = await supabase.auth.getSession()
-  if (!session.data.session?.access_token) {
-    throw new Error('No active session')
-  }
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-create`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.data.session.access_token}`,
-      },
-      body: JSON.stringify(request),
+  const { data, error } = await supabase.functions.invoke('admin-tickets', {
+    body: { action: 'create', ...request },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
-  )
+  })
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to create ticket')
-  }
-
-  return await response.json()
+  if (error) throw error
+  return data
 }
 
 export const updateTicket = async (request: UpdateTicketRequest): Promise<TicketResponse> => {
-  const session = await supabase.auth.getSession()
-  if (!session.data.session?.access_token) {
-    throw new Error('No active session')
-  }
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-update`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.data.session.access_token}`,
-      },
-      body: JSON.stringify(request),
+  const { data, error } = await supabase.functions.invoke('admin-tickets', {
+    body: { action: 'update', ...request },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
-  )
+  })
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to update ticket')
-  }
-
-  return await response.json()
+  if (error) throw error
+  return data
 }
 
 export const assignTicket = async (id: string, assignedTo: string | null): Promise<TicketResponse> => {
-  const session = await supabase.auth.getSession()
-  if (!session.data.session?.access_token) {
-    throw new Error('No active session')
-  }
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-assign`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.data.session.access_token}`,
-      },
-      body: JSON.stringify({ id, assignedTo }),
+  const { data, error } = await supabase.functions.invoke('admin-tickets', {
+    body: { action: 'assign', id, assignedTo },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
-  )
+  })
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to assign ticket')
-  }
-
-  return await response.json()
+  if (error) throw error
+  return data
 }
 
 export const transitionTicket = async (id: string, status: TicketStatus): Promise<TicketResponse> => {
-  const session = await supabase.auth.getSession()
-  if (!session.data.session?.access_token) {
-    throw new Error('No active session')
-  }
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-transition`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.data.session.access_token}`,
-      },
-      body: JSON.stringify({ id, status }),
+  const { data, error } = await supabase.functions.invoke('admin-tickets', {
+    body: { action: 'transition', id, status },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
-  )
+  })
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to transition ticket')
-  }
-
-  return await response.json()
+  if (error) throw error
+  return data
 }
 
 export const getTicketAuditLog = async (ticketId?: string): Promise<TicketAuditLogResponse> => {
-  const session = await supabase.auth.getSession()
-  if (!session.data.session?.access_token) {
-    throw new Error('No active session')
-  }
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-audit-log`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.data.session.access_token}`,
-      },
-      body: JSON.stringify({ ticketId }),
+  const { data, error } = await supabase.functions.invoke('admin-tickets', {
+    body: { action: 'audit-log', ticketId },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
-  )
+  })
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to get ticket audit log')
-  }
-
-  return await response.json()
+  if (error) throw error
+  return data
 }
 
 export const deleteTicket = async (id: string): Promise<void> => {
-  const session = await supabase.auth.getSession()
-  if (!session.data.session?.access_token) {
-    throw new Error('No active session')
-  }
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${FUNCTION_PREFIX}tickets-delete`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.data.session.access_token}`,
-      },
-      body: JSON.stringify({ id }),
+  const { error } = await supabase.functions.invoke('admin-tickets', {
+    body: { action: 'delete', id },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
-  )
+  })
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to delete ticket')
-  }
+  if (error) throw error
 }
 
 export interface TesterUser {
