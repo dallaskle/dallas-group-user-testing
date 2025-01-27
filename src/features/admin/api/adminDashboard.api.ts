@@ -888,127 +888,34 @@ interface ProjectRegistryWithDetailsResponse {
 
 // Update the function signatures to use these types
 export const getProjectsWithDetails = async (): Promise<ProjectDetails[]> => {
-  // First get all projects with their basic info
-  const { data: projects, error } = await supabase
-    .from('projects')
-    .select(`
-      id,
-      name,
-      registry:project_registry (
-        id,
-        name,
-        created_by,
-        creator:users!project_registry_created_by_fkey (
-          id,
-          name
-        )
-      ),
-      student:users!projects_student_id_fkey (
-        id,
-        name
-      )
-    `)
-    .returns<ProjectWithDetailsResponse[]>()
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  if (error) throw error
-
-  // Then get all features for these projects
-  const { data: projectFeatures, error: featuresError } = await supabase
-    .from('features')
-    .select(`
-      id,
-      name,
-      status,
-      project_id,
-      required_validations,
-      current_validations,
-      project:projects (
-        id,
-        student:users!projects_student_id_fkey (
-          id,
-          name
-        )
-      )
-    `)
-    .in('project_id', projects.map(p => p.id))
-    .returns<ProjectFeaturesResponse[]>()
-
-  if (featuresError) throw featuresError
-
-  // Map the data together
-  return projects.map(project => {
-    const projectFeatureList = projectFeatures?.filter(f => f.project_id === project.id) || [];
-    
-    return {
-      id: project.id,
-      name: project.name,
-      registry: {
-        id: project.registry?.[0]?.id,
-        name: project.registry?.[0]?.name
-      },
-      user: {
-        id: project.student?.id,
-        name: project.student?.name
-      },
-      features: projectFeatureList,
-      features_count: projectFeatureList.length,
-      validations: {
-        completed: projectFeatureList.reduce((sum: number, f) => sum + (f.current_validations || 0), 0),
-        required: projectFeatureList.reduce((sum: number, f) => sum + (f.required_validations || 0), 0)
-      },
-      status_counts: {
-        not_started: projectFeatureList.filter(f => f.status === 'Not Started').length,
-        in_progress: projectFeatureList.filter(f => f.status === 'In Progress').length,
-        successful_test: projectFeatureList.filter(f => f.status === 'Successful Test').length,
-        failed_test: projectFeatureList.filter(f => f.status === 'Failed Test').length
-      }
+  const { data, error } = await supabase.functions.invoke('admin-projects', {
+    body: { type: 'projects' },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
   })
+
+  if (error) throw error
+  return data
 }
 
 export const getProjectRegistriesWithDetails = async (): Promise<ProjectRegistryDetails[]> => {
-  const { data, error } = await supabase
-    .from('project_registry')
-    .select(`
-      id,
-      name,
-      description,
-      created_at,
-      creator:users!project_registry_created_by_fkey (
-        id,
-        name
-      ),
-      features:feature_registry (
-        id,
-        name,
-        description,
-        is_required
-      ),
-      projects (
-        id,
-        student:users!projects_student_id_fkey (
-          id,
-          name
-        )
-      )
-    `)
-    .returns<ProjectRegistryWithDetailsResponse[]>()
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
+
+  const { data, error } = await supabase.functions.invoke('admin-projects', {
+    body: { type: 'registries' },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    }
+  })
 
   if (error) throw error
-
-  return data.map(registry => ({
-    id: registry.id,
-    name: registry.name,
-    description: registry.description,
-    created_at: registry.created_at,
-    created_by: {
-      id: registry.creator?.id,
-      name: registry.creator?.name
-    },
-    feature_count: registry.features?.length || 0,
-    projects_count: registry.projects?.length || 0,
-    features: registry.features || []
-  }))
+  // Ensure we return an array even if the response is empty
+  return Array.isArray(data) ? data : []
 }
 
 // Ticket types
