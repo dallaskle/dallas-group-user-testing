@@ -48,8 +48,6 @@ export const TestHistory = ({ testHistory, onRefresh, isLoading }: TestHistoryPr
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
 
-  console.log('TestHistory props:', { testHistory, isLoading })
-
   // Get unique projects, students, and testers from history
   const projects = Array.from(
     new Map(
@@ -118,7 +116,6 @@ export const TestHistory = ({ testHistory, onRefresh, isLoading }: TestHistoryPr
     setDebouncedSearchQuery('')
   }
 
-  console.log(testHistory)
   // Filter and sort history
   const filteredAndSortedHistory = testHistory
     .filter(ticket => {

@@ -3,6 +3,7 @@ import type { ProjectProgress } from '../store/adminDashboard.store'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
 const FUNCTION_PREFIX = import.meta.env.VITE_SUPABASE_FUNCTION_PREFIX || ''
+const EDGE_FUNCTION_URL = import.meta.env.VITE_SUPABASE_URL + '/functions'
 
 // Recent Activity Types
 interface UserActivity {
@@ -387,149 +388,30 @@ export const getTesterPerformance = async (): Promise<TesterPerformanceData[]> =
   const session = useAuthStore.getState().session
   if (!session?.access_token) throw new Error('No active session')
 
-  const { data, error } = await supabase.functions.invoke('admin-overview', {
+  const { data, error } = await supabase.functions.invoke('admin-testers', {
+    body: { type: 'performance' },
     headers: {
       Authorization: `Bearer ${session.access_token}`
     }
   })
 
   if (error) throw error
-  return data.testerPerformance
+  return Array.isArray(data) ? data : []
 }
 
 export const getTestHistory = async (): Promise<TestHistoryItem[]> => {
-  console.log('getTestHistory called')
-  // First get all testing tickets with their related data
-  const { data: testingTickets, error: ticketsError } = await supabase
-    .from('testing_tickets')
-    .select(`
-      id,
-      feature_id,
-      deadline,
-      ticket:tickets!inner(
-        id,
-        type,
-        status,
-        title,
-        description,
-        priority,
-        created_at,
-        updated_at,
-        created_by_user:users!tickets_created_by_fkey (
-          id,
-          name
-        ),
-        assigned_to_user:users!tickets_assigned_to_fkey (
-          id,
-          name
-        )
-      ),
-      feature:features!inner(
-        id,
-        name,
-        project:projects!inner(
-          id,
-          name,
-          student:users!projects_student_id_fkey (
-            id,
-            name
-          )
-        )
-      )
-    `)
-    .returns<TestingTicketResponse[]>()
-    .order('created_at', { ascending: false })
+  const session = useAuthStore.getState().session
+  if (!session?.access_token) throw new Error('No active session')
 
-  if (ticketsError) {
-    console.error('Error fetching testing tickets:', ticketsError)
-    throw ticketsError
-  }
+  const { data, error } = await supabase.functions.invoke('admin-testers', {
+    body: { type: 'history' },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    }
+  })
 
-  if (!testingTickets || testingTickets.length === 0) {
-    console.log('No testing tickets found')
-    return []
-  }
-
-  // Filter testing tickets to only include resolved or closed testing tickets
-  const filteredTestingTickets = testingTickets.filter(ticket => 
-    ticket.ticket.type === 'testing' && 
-    (ticket.ticket.status === 'resolved' || ticket.ticket.status === 'closed')
-  )
-
-  if (filteredTestingTickets.length === 0) {
-    console.log('No resolved or closed testing tickets found')
-    return []
-  }
-
-  console.log('Fetched testing tickets:', filteredTestingTickets)
-
-  // Get all validations for the features in these testing tickets
-  const featureIds = filteredTestingTickets
-    .map((ticket: TestingTicketResponse) => ticket.feature_id)
-    .filter((id: string | null): id is string => Boolean(id))
-  
-  if (featureIds.length === 0) {
-    console.log('No feature IDs found')
-    return []
-  }
-
-  const { data: validations, error: validationsError } = await supabase
-    .from('validations')
-    .select('*')
-    .in('feature_id', featureIds)
-    .order('created_at', { ascending: false })
-
-  if (validationsError) {
-    console.error('Error fetching validations:', validationsError)
-    throw validationsError
-  }
-
-  console.log('Fetched validations:', validations)
-
-  // Map the data together, filtering out any tickets with missing required data
-  return filteredTestingTickets
-    .filter((testingTicket: TestingTicketResponse) => 
-      testingTicket?.ticket?.id &&
-      testingTicket?.ticket?.created_by_user?.id &&
-      testingTicket?.ticket?.assigned_to_user?.id &&
-      testingTicket?.feature?.id
-    )
-    .map((testingTicket: TestingTicketResponse) => ({
-      id: testingTicket.ticket.id,
-      type: testingTicket.ticket.type as 'testing',
-      status: testingTicket.ticket.status as 'resolved' | 'closed',
-      title: testingTicket.ticket.title,
-      description: testingTicket.ticket.description,
-      priority: testingTicket.ticket.priority as 'low' | 'medium' | 'high',
-      created_at: testingTicket.ticket.created_at,
-      updated_at: testingTicket.ticket.updated_at,
-      created_by: {
-        id: testingTicket.ticket.created_by_user.id,
-        name: testingTicket.ticket.created_by_user.name
-      },
-      assigned_to: {
-        id: testingTicket.ticket.assigned_to_user.id,
-        name: testingTicket.ticket.assigned_to_user.name
-      },
-      testing_ticket: {
-        id: testingTicket.id,
-        feature_id: testingTicket.feature_id,
-        deadline: testingTicket.deadline,
-        feature: {
-          id: testingTicket.feature.id,
-          name: testingTicket.feature.name,
-          project: {
-            id: testingTicket.feature.project.id,
-            name: testingTicket.feature.project.name,
-            student: testingTicket.feature.project.student ? {
-              id: testingTicket.feature.project.student.id,
-              name: testingTicket.feature.project.student.name
-            } : null
-          }
-        },
-        validations: validations?.filter(v => v.feature_id === testingTicket.feature_id) || []
-      }
-    }))
+  if (error) throw error
+  return Array.isArray(data) ? data : []
 }
 
 export const getRecentActivity = async (days: number = 7): Promise<ActivityItem[]> => {
