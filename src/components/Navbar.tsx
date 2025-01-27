@@ -59,12 +59,12 @@ export const Navbar = () => {
               
               {user.is_student && (
                 <>
-                  <NavLink to="/student">Projects</NavLink>
+                  <NavLink to="/student">Student</NavLink>
                 </>
               )}
               
               {user.is_tester && (
-                <NavLink to="/testing">Testing</NavLink>
+                <NavLink to="/testing">Tester</NavLink>
               )}
             </div>
           </div>
