@@ -228,6 +228,7 @@ export const Comments = ({ featureId, className, setCommentCount }: CommentsProp
             disabled={isLoading || !newComment.trim()}
             className="flex-none"
           >
+            <span className="mr-2">Send</span>
             <Send className="h-4 w-4" />
           </Button>
         </div>
