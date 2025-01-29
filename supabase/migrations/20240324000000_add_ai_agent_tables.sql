@@ -35,32 +35,6 @@ CREATE INDEX idx_ai_docs_ticket_id ON ai_docs(ticket_id);
 CREATE INDEX idx_agent_audit_log_agent_name ON agent_audit_log(agent_name);
 CREATE INDEX idx_agent_audit_log_user_id ON agent_audit_log(user_id);
 
--- Add RLS policies
-ALTER TABLE ai_docs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE agent_audit_log ENABLE ROW LEVEL SECURITY;
-
--- AI docs policies
-CREATE POLICY "Allow read access to ai_docs for authenticated users"
-ON ai_docs FOR SELECT
-TO authenticated
-USING (true);
-
-CREATE POLICY "Allow insert to ai_docs for authenticated users"
-ON ai_docs FOR INSERT
-TO authenticated
-WITH CHECK (true);
-
--- Agent audit log policies
-CREATE POLICY "Allow read access to agent_audit_log for own records"
-ON agent_audit_log FOR SELECT
-TO authenticated
-USING (user_id = auth.uid());
-
-CREATE POLICY "Allow insert to agent_audit_log for authenticated users"
-ON agent_audit_log FOR INSERT
-TO authenticated
-WITH CHECK (user_id = auth.uid());
-
 -- Add updated_at trigger for ai_docs
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
