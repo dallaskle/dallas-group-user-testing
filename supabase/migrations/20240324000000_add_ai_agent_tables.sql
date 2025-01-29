@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS agent_audit_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     agent_name TEXT NOT NULL,
     user_input TEXT NOT NULL,
-    agent_response TEXT NOT NULL,
+    agent_response TEXT,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     additional_metadata JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
