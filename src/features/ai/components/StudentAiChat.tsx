@@ -44,7 +44,7 @@ export function StudentAiChat() {
     <div className="flex flex-col h-full p-4">
       <Card className="flex-1 overflow-hidden">
         <ScrollArea className="h-full px-4">
-          <div className="space-y-4 py-4">
+          <div className="space-y-2 py-0">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -53,7 +53,7 @@ export function StudentAiChat() {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`max-w-[80%] rounded-lg py-1 px-2 ${
                     message.type === 'user'
                       ? 'bg-primary text-primary-foreground'
                       : message.isQuickResponse
