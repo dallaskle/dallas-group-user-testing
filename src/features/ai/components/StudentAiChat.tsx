@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -11,8 +11,17 @@ import { Message } from './ToolResponseCards/Message'
 export function StudentAiChat() {
   const [input, setInput] = useState('')
   const { toast } = useToast()
+  const messagesEndRef = useRef<HTMLDivElement>(null)
   
   const { messages, isLoading, error, sendMessage } = useAiChatStore()
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,10 +40,10 @@ export function StudentAiChat() {
   }
 
   return (
-    <div className="flex flex-col h-full space-y-4">
-      <Card className="flex-1 p-4">
-        <ScrollArea className="h-full pr-4">
-          <div className="space-y-4">
+    <div className="flex flex-col h-full p-4">
+      <Card className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full px-4">
+          <div className="space-y-4 py-4">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -102,11 +111,12 @@ export function StudentAiChat() {
                 </div>
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
       </Card>
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-2 pt-4">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}

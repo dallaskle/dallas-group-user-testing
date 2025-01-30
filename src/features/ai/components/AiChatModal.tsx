@@ -9,8 +9,10 @@ interface AiChatModalProps {
 export function AiChatModal({ isOpen, onClose }: AiChatModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[80vh]">
-        <StudentAiChat />
+      <DialogContent className="max-w-4xl h-[80vh] p-0 gap-0">
+        <div className="flex flex-col h-full overflow-hidden">
+          <StudentAiChat />
+        </div>
       </DialogContent>
     </Dialog>
   )
