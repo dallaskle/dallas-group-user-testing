@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { useToast } from '@/components/ui/use-toast'
 import { useAiChatStore } from '../store/ai-chat.store'
 import { ToolResponseRouter } from './ToolResponseCards/ToolResponseRouter'
+import { Message } from './ToolResponseCards/Message'
 
 export function StudentAiChat() {
   const [input, setInput] = useState('')
@@ -49,7 +50,7 @@ export function StudentAiChat() {
                   }`}
                 >
                   {message.type === 'user' ? (
-                    <p className="text-sm">{message.content}</p>
+                    <Message>{message.content}</Message>
                   ) : (
                     <>
                       {message.metadata?.tool_used === 'create_feature' ? (
@@ -64,9 +65,9 @@ export function StudentAiChat() {
                           timestamp={message.timestamp}
                         />
                       ) : (
-                        <p className="text-sm">
+                        <Message>
                           {message.metadata?.message || message.content}
-                        </p>
+                        </Message>
                       )}
                       {message.metadata?.tool_result?.error && (
                         <p className="text-destructive text-xs mt-2">
@@ -82,8 +83,10 @@ export function StudentAiChat() {
                           key={index}
                           className="bg-background rounded p-2 text-xs"
                         >
-                          <p className="font-medium">Action: {step.action}</p>
-                          <p className="mt-1">Result: {step.observation}</p>
+                          <Message>
+                            <p className="font-medium">Action: {step.action}</p>
+                            <p className="mt-1">Result: {step.observation}</p>
+                          </Message>
                         </div>
                       ))}
                     </div>
