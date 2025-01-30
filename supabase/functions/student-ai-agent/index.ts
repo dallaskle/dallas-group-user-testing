@@ -108,7 +108,7 @@ export default createHandler(async (req, supabaseClient, user) => {
         console.error('Tool execution failed:', result.tool_result)
       }
 
-      // 3. Update audit log with response
+      // Update audit log with response
       const { error: updateError } = await supabaseClient
         .from('agent_audit_log')
         .update({ 
@@ -126,31 +126,6 @@ export default createHandler(async (req, supabaseClient, user) => {
       if (updateError) {
         console.error('Error updating audit log:', updateError)
         // Continue anyway as the main operation succeeded
-      }
-
-      // 4. If the response indicates a tool was used, store that in ai_docs
-      if (result.metadata?.tool_used) {
-        const { error: docError } = await supabaseClient
-          .from('ai_docs')
-          .insert({
-            content: result.response,
-            doc_type: 'tool_execution',
-            project_id: metadata?.project_id,
-            feature_id: metadata?.feature_id,
-            metadata: {
-              tool_name: result.metadata.tool_used,
-              tool_result: result.metadata.tool_result,
-              execution_success: !toolExecutionFailed,
-              error_details: toolExecutionFailed ? result.tool_result?.error : undefined,
-              user_id: user.id,
-              timestamp: new Date().toISOString()
-            }
-          })
-
-        if (docError) {
-          console.error('Error storing tool execution in ai_docs:', docError)
-          // Continue anyway as this is not critical
-        }
       }
 
       // Determine appropriate status code based on tool execution result
