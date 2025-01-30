@@ -2,7 +2,11 @@ import { useAuthStore } from '@/features/auth/store/auth.store'
 
 export interface AgentRequest {
   content: string
-  metadata?: Record<string, unknown>
+  metadata?: {
+    project_id?: string
+    feature_id?: string
+    conversation_id?: string
+  }
 }
 
 // Base response type for all agent responses
@@ -24,6 +28,7 @@ export interface ChatAgentResponse extends BaseAgentResponse {
       success: boolean
       error?: string
     }
+    conversation_id?: string
   }
 }
 

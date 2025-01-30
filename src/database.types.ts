@@ -361,6 +361,7 @@ export interface Database {
           user_id: string
           additional_metadata: Json | null
           created_at: string
+          conversation_id: string | null
         }
         Insert: {
           id?: string
@@ -370,6 +371,7 @@ export interface Database {
           user_id: string
           additional_metadata?: Json | null
           created_at?: string
+          conversation_id?: string | null
         }
         Update: {
           id?: string
@@ -379,6 +381,7 @@ export interface Database {
           user_id?: string
           additional_metadata?: Json | null
           created_at?: string
+          conversation_id?: string | null
         }
       }
     }

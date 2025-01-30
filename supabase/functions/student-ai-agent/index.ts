@@ -7,6 +7,7 @@ interface AiAgentRequest {
     project_id?: string
     feature_id?: string
     ticket_id?: string
+    conversation_id?: string
   }
 }
 
@@ -33,6 +34,22 @@ export default createHandler(async (req, supabaseClient, user) => {
     const authToken = req.headers.get('Authorization')?.split('Bearer ')[1] || ''
     console.log('Additional authToken:', authToken)
 
+    // Get conversation history if conversation_id is provided
+    let conversationHistory = []
+    if (metadata?.conversation_id) {
+      const { data: previousMessages, error: historyError } = await supabaseClient
+        .from('agent_audit_log')
+        .select('*')
+        .eq('conversation_id', metadata.conversation_id)
+        .order('created_at', { ascending: true })
+
+      if (historyError) {
+        console.error('Error fetching conversation history:', historyError)
+      } else {
+        conversationHistory = previousMessages
+      }
+    }
+
     // 1. Create initial audit log entry
     const { data: logEntry, error: logError } = await supabaseClient
       .from('agent_audit_log')
@@ -41,6 +58,7 @@ export default createHandler(async (req, supabaseClient, user) => {
         user_input: content,
         user_id: user.id,
         agent_response: null, // Explicitly set to null initially
+        conversation_id: metadata?.conversation_id || null,
         additional_metadata: {
           ...metadata,
           request_timestamp: new Date().toISOString(),
@@ -55,10 +73,26 @@ export default createHandler(async (req, supabaseClient, user) => {
       throw new Error(`Failed to create audit log: ${logError.message}`)
     }
 
+    // If this is the first message in a conversation, use its ID as the conversation_id
+    if (!metadata?.conversation_id) {
+      const { error: updateError } = await supabaseClient
+        .from('agent_audit_log')
+        .update({ conversation_id: logEntry.id })
+        .eq('id', logEntry.id)
+
+      if (updateError) {
+        console.error('Error updating conversation_id:', updateError)
+      } else {
+        logEntry.conversation_id = logEntry.id
+      }
+    }
+
     console.log('Created audit log entry:', logEntry)
 
     // 2. Forward request to Python service
-    const pythonServiceUrl = Deno.env.get('PYTHON_SERVICE_URL')
+    const environment = "local"
+    const pythonServiceUrl = environment === "local" ?
+      "https://6cd8-2603-7000-2800-1584-9081-d31a-fc4a-2a02.ngrok-free.app" : Deno.env.get('PYTHON_SERVICE_URL')
     const pythonServiceApiKey = Deno.env.get('PYTHON_SERVICE_API_KEY')
 
     if (!pythonServiceUrl || !pythonServiceApiKey) {
@@ -72,6 +106,8 @@ export default createHandler(async (req, supabaseClient, user) => {
         user_id: user.id,
         project_id: metadata?.project_id,
         feature_id: metadata?.feature_id,
+        conversation_id: logEntry.conversation_id,
+        conversation_history: conversationHistory,
         authToken
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
@@ -137,6 +173,7 @@ export default createHandler(async (req, supabaseClient, user) => {
           response: result.response,
           metadata: {
             ...result.metadata,
+            conversation_id: logEntry.conversation_id,
             tool_used: result.metadata?.tool_used,
             tool_result: {
               success: !toolExecutionFailed,
