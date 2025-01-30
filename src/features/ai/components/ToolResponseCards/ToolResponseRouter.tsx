@@ -10,14 +10,15 @@ interface ToolResponseRouterProps {
     message?: string
   }
   timestamp: Date
+  isCompact?: boolean
 }
 
-export function ToolResponseRouter({ toolName, toolResult, timestamp }: ToolResponseRouterProps) {
+export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact = false }: ToolResponseRouterProps) {
   if (toolName === 'create_feature' && toolResult.success && toolResult.feature) {
     return (
       <>
-        <CreateFeatureResponseCard feature={toolResult.feature} />
-        <Message>
+        <CreateFeatureResponseCard feature={toolResult.feature} isCompact={isCompact} />
+        <Message isCompact={isCompact}>
           {toolResult.message || "Got it created! Let me know if you want to update it, create more features, or if I made a mistake. You can also click on the feature to view it on the feature page."}
         </Message>
       </>

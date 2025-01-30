@@ -9,7 +9,11 @@ import { ToolResponseRouter } from './ToolResponseCards/ToolResponseRouter'
 import { Message } from './ToolResponseCards/Message'
 import { TypingIndicator } from './TypingIndicator'
 
-export function StudentAiChat() {
+interface StudentAiChatProps {
+  isCompact?: boolean
+}
+
+export function StudentAiChat({ isCompact = false }: StudentAiChatProps) {
   const [input, setInput] = useState('')
   const { toast } = useToast()
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -43,7 +47,7 @@ export function StudentAiChat() {
   return (
     <div className="flex flex-col h-full p-4">
       <Card className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full px-4">
+        <ScrollArea className={`h-full px-4 ${isCompact ? 'max-h-[250px]' : ''}`}>
           <div className="space-y-2 py-0">
             {messages.map((message) => (
               <div
@@ -53,7 +57,7 @@ export function StudentAiChat() {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg py-1 px-2 ${
+                  className={`${isCompact ? 'max-w-[90%]' : 'max-w-[80%]'} rounded-lg py-1 px-2 ${
                     message.type === 'user'
                       ? 'bg-primary text-primary-foreground'
                       : message.isQuickResponse
@@ -62,7 +66,7 @@ export function StudentAiChat() {
                   }`}
                 >
                   {message.type === 'user' ? (
-                    <Message>{message.content}</Message>
+                    <Message isCompact={isCompact}>{message.content}</Message>
                   ) : (
                     <>
                       {message.metadata?.tool_used === 'create_feature' ? (
@@ -75,9 +79,10 @@ export function StudentAiChat() {
                             message: message.metadata.message
                           }}
                           timestamp={message.timestamp}
+                          isCompact={isCompact}
                         />
                       ) : (
-                        <Message>
+                        <Message isCompact={isCompact}>
                           {message.metadata?.message || message.content}
                         </Message>
                       )}
@@ -88,14 +93,14 @@ export function StudentAiChat() {
                       )}
                     </>
                   )}
-                  {message.metadata?.intermediateSteps && (
+                  {message.metadata?.intermediateSteps && !isCompact && (
                     <div className="mt-2 space-y-2">
                       {message.metadata.intermediateSteps.map((step, index) => (
                         <div
                           key={index}
                           className="bg-background rounded p-2 text-xs"
                         >
-                          <Message>
+                          <Message isCompact={isCompact}>
                             <p className="font-medium">Action: {step.action}</p>
                             <p className="mt-1">Result: {step.observation}</p>
                           </Message>
@@ -130,11 +135,11 @@ export function StudentAiChat() {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask me anything..."
+          placeholder={isCompact ? "Type a message..." : "Ask me anything..."}
           disabled={isLoading}
           className="flex-1"
         />
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading} size={isCompact ? "sm" : "default"}>
           {isLoading ? 'Thinking...' : 'Send'}
         </Button>
       </form>
