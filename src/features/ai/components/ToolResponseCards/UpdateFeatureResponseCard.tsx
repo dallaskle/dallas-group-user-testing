@@ -42,11 +42,6 @@ export function UpdateFeatureResponseCard({ feature, updates_applied = {}, isCom
     loadProjectData()
   }, [feature.project_id, projects, fetchProjects])
 
-  const updatedFields = updates_applied as Record<string, any>;
-  const updatedFieldsString = Object.keys(updatedFields).join(', ');
-  console.log(updatedFieldsString);
-  console.log(updates_applied);
-  console.log(updatedFields);
   return (
     <Link to={`/student/features/${feature.id}`} className="block">
       <Card className={`p-4 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors ${
@@ -90,7 +85,7 @@ export function UpdateFeatureResponseCard({ feature, updates_applied = {}, isCom
               </span>
             </div>
             <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-              Updated: {Object.keys(updates_applied).length > 0 ? Object.keys(updates_applied).join(', ') : 'No updates applied'}
+              Updated fields: {Object.keys(updates_applied).length > 0 ? Object.keys(updates_applied).join(', ') : 'No updates applied'}
             </div>
           </div>
         </div>

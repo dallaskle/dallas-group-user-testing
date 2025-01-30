@@ -77,7 +77,8 @@ export function StudentAiChat({ isCompact = false }: StudentAiChatProps) {
                             success: message.metadata.tool_result?.success || false,
                             error: message.metadata.tool_result?.error,
                             feature: message.metadata.tool_result?.feature,
-                            message: message.metadata.message
+                            message: message.metadata.message,
+                            updates_applied: message.metadata.tool_result?.updates_applied
                           }}
                           timestamp={message.timestamp}
                           isCompact={isCompact}

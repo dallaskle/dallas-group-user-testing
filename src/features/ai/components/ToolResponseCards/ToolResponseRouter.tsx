@@ -26,7 +26,7 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
       </>
     )
   }
-  console.log(typeof toolResult.updates_applied)
+
   if (toolName === 'update_feature' && toolResult.success && toolResult.feature) {
     return (
       <>
