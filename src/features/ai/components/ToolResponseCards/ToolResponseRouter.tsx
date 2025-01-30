@@ -1,6 +1,7 @@
 import { CreateFeatureResponseCard } from './CreateFeatureResponseCard'
 import { UpdateFeatureResponseCard } from './UpdateFeatureResponseCard'
 import { DeleteFeatureResponseCard } from './DeleteFeatureResponseCard'
+import { GetFeatureInfoCard } from './GetFeatureInfoCard'
 import { Message } from './Message'
 
 interface ToolResponseRouterProps {
@@ -54,6 +55,20 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
         />
         <Message isCompact={isCompact}>
           {toolResult.message || "The feature has been deleted. This action cannot be undone. Let me know if you need anything else."}
+        </Message>
+      </>
+    )
+  }
+
+  if (toolName === 'get_feature_info' && toolResult.success && toolResult.feature) {
+    return (
+      <>
+        <GetFeatureInfoCard 
+          feature={toolResult.feature}
+          isCompact={isCompact}
+        />
+        <Message isCompact={isCompact}>
+          {toolResult.message || "Here are the feature details. Click the card to view the full feature page. Let me know if you need any specific information or would like to make changes."}
         </Message>
       </>
     )

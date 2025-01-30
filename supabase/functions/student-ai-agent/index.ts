@@ -190,7 +190,7 @@ export default createHandler(async (req, supabaseClient, user) => {
             tool_result: {
               success: !toolExecutionFailed,
               error: toolExecutionFailed ? result.tool_result?.error : undefined,
-              ...((['create_feature', 'update_feature', 'delete_feature'].includes(result.metadata?.tool_used || '') && 
+              ...((['create_feature', 'update_feature', 'delete_feature', 'get_feature_info'].includes(result.metadata?.tool_used || '') && 
                   result.metadata?.tool_result?.feature) && {
                 feature: result.metadata.tool_result.feature,
                 ...(result.metadata?.tool_used === 'update_feature' && {
