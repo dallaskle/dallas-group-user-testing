@@ -13,7 +13,8 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp }: ToolResp
       <>
         <CreateFeatureResponseCard feature={toolResult.feature} />
         <Message>
-          Got it created! Let me know if you want to update it, create more features, or if I made a mistake
+          Got it created! Let me know if you want to update it, create more features, or if I made a mistake.
+          You can also click on the feature to view it on the feature page.
         </Message>
       </>
     )
