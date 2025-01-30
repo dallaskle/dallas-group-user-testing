@@ -9,6 +9,7 @@ import { ToolResponseRouter } from './ToolResponseCards/ToolResponseRouter'
 import { Message } from './ToolResponseCards/Message'
 import { TypingIndicator } from './TypingIndicator'
 import { toolList } from '../utils/toolList'
+import { cn } from '@/lib/utils'
 
 interface StudentAiChatProps {
   isCompact?: boolean
@@ -48,8 +49,11 @@ export function StudentAiChat({ isCompact = false }: StudentAiChatProps) {
   return (
     <div className="flex flex-col h-full p-4">
       <Card className="flex-1 overflow-hidden" hover={false}>
-        <ScrollArea className={`h-full px-4 ${isCompact ? 'max-h-[250px]' : ''}`}>
-          <div className="space-y-2 py-0">
+        <ScrollArea className={cn(
+          "h-full px-4",
+          isCompact ? "max-h-[250px]" : "h-[calc(90vh-10rem)]"
+        )}>
+          <div className="space-y-2 py-2">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -133,7 +137,7 @@ export function StudentAiChat({ isCompact = false }: StudentAiChatProps) {
         </ScrollArea>
       </Card>
 
-      <form onSubmit={handleSubmit} className="flex gap-2 pt-4">
+      <form onSubmit={handleSubmit} className="flex gap-2 pt-4 shrink-0">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}

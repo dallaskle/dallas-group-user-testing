@@ -68,32 +68,30 @@ export function AiChatModal({ isOpen, onClose }: AiChatModalProps) {
           if (!open) onClose()
         }}
       >
-        <DialogContent className="max-w-4xl h-[80vh] p-0 gap-0">
-          <div className="flex flex-col h-full">
-            <div className="flex justify-between items-center p-2 border-b">
-              <span className="text-sm font-medium px-2">AI Assistant</span>
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleMinimize}
-                  className="h-8 w-8"
-                >
-                  <Minimize2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="h-8 w-8"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+        <DialogContent className="max-w-4xl h-[90vh] p-0 gap-0 flex flex-col">
+          <div className="flex justify-between items-center p-2 border-b shrink-0">
+            <span className="text-sm font-medium px-2">AI Assistant</span>
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleMinimize}
+                className="h-8 w-8"
+              >
+                <Minimize2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="h-8 w-8"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="flex-1 overflow-hidden">
-              <StudentAiChat isCompact={false} />
-            </div>
+          </div>
+          <div className="flex-1 min-h-0">
+            <StudentAiChat isCompact={false} />
           </div>
         </DialogContent>
       </Dialog>
