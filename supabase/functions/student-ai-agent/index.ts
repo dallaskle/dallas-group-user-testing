@@ -46,7 +46,10 @@ export default createHandler(async (req, supabaseClient, user) => {
       if (historyError) {
         console.error('Error fetching conversation history:', historyError)
       } else {
-        conversationHistory = previousMessages
+        // Filter out any messages with null agent_response (incomplete messages)
+        conversationHistory = previousMessages.filter(msg => msg.agent_response !== null)
+        console.log('Raw conversation history from DB:', JSON.stringify(conversationHistory, null, 2))
+        console.log('Number of previous messages:', conversationHistory.length)
       }
     }
 
@@ -110,6 +113,15 @@ export default createHandler(async (req, supabaseClient, user) => {
         conversation_history: conversationHistory,
         authToken
       };
+      console.log('Conversation history structure being sent to Python:', {
+        historyLength: conversationHistory.length,
+        sampleMessage: conversationHistory[0] || 'No history',
+        messageTypes: conversationHistory.map(msg => ({
+          hasUserInput: !!msg.user_input,
+          hasAgentResponse: !!msg.agent_response,
+          agent_name: msg.agent_name
+        }))
+      });
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
 
       const pythonResponse = await fetch(`${pythonServiceUrl}/chat`, {

@@ -85,7 +85,8 @@ export const useAiChatStore = create<AiChatState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const result = await studentAiApi.processRequest(content, {
-        ...options
+        ...options,
+        conversation_id: get().currentConversationId || undefined
       })
 
       // If this is the first message, set the conversation ID

@@ -68,6 +68,7 @@ export const studentAiApi = {
   async processRequest(content: string, options?: {
     project_id?: string
     feature_id?: string
+    conversation_id?: string
   }): Promise<ChatAgentResponse> {
     const { session } = useAuthStore.getState()
     if (!session?.access_token) {
