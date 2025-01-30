@@ -3,13 +3,16 @@ import { useAuthStore } from '../features/auth/store/auth.store'
 import { supabase } from '../lib/supabase'
 import { toast } from 'sonner'
 import logo from '../assets/image.jpg'
-import { Menu } from 'lucide-react'
+import { Menu, MessageSquareMore } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
+import { Button } from './ui/button'
+import { AiChatModal } from '@/features/ai/components/AiChatModal'
+import { useState } from 'react'
 
 const NavItem = ({ to, children }: { to: string; children: React.ReactNode }) => {
   const navigate = useNavigate()
@@ -33,6 +36,7 @@ const NavItem = ({ to, children }: { to: string; children: React.ReactNode }) =>
 export const Navbar = () => {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
+  const [isAiChatOpen, setIsAiChatOpen] = useState(false)
   
   if (!user) return null
 
@@ -82,8 +86,16 @@ export const Navbar = () => {
             </Link>
           </div>
           
-          <div className="flex items-center">
-            <div className="flex flex-col items-end mr-4">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline"
+              onClick={() => setIsAiChatOpen(true)} 
+              className="gap-2"
+            >
+              <MessageSquareMore className="h-4 w-4" />
+              AI Assistant
+            </Button>
+            <div className="flex flex-col items-end">
               <span className="text-sm font-medium text-gray-900">
                 {user.name}
               </span>
@@ -100,6 +112,11 @@ export const Navbar = () => {
           </div>
         </div>
       </div>
+
+      <AiChatModal
+        isOpen={isAiChatOpen}
+        onClose={() => setIsAiChatOpen(false)}
+      />
     </nav>
   )
 } 

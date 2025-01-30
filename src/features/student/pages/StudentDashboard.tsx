@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Plus, ArrowRight, MessageSquareMore } from 'lucide-react'
+import { Plus, ArrowRight } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { useDashboardStore } from '../store/dashboard.store'
 import { DashboardStats } from '../components/dashboard/DashboardStats'
@@ -11,14 +11,12 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { CreateProjectModal } from '../components/projects/CreateProjectModal'
-import { AiChatModal } from '@/features/ai/components/AiChatModal'
 
 export const StudentDashboard = () => {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { isLoading, error, data, loadDashboardData } = useDashboardStore()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [isAiChatOpen, setIsAiChatOpen] = useState(false)
 
   useEffect(() => {
     if (user?.id) {
@@ -60,14 +58,6 @@ export const StudentDashboard = () => {
         </div>
         <div className="flex gap-2">
           <Button 
-            variant="outline"
-            onClick={() => setIsAiChatOpen(true)} 
-            className="gap-2"
-          >
-            <MessageSquareMore className="h-4 w-4" />
-            AI Assistant
-          </Button>
-          <Button 
             onClick={() => setIsCreateModalOpen(true)} 
             className="gap-2"
           >
@@ -80,11 +70,6 @@ export const StudentDashboard = () => {
       <CreateProjectModal 
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-      />
-
-      <AiChatModal
-        isOpen={isAiChatOpen}
-        onClose={() => setIsAiChatOpen(false)}
       />
 
       <DashboardStats stats={data.stats} />
