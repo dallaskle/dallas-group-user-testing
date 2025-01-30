@@ -1,5 +1,6 @@
 import { CreateFeatureResponseCard } from './CreateFeatureResponseCard'
 import { UpdateFeatureResponseCard } from './UpdateFeatureResponseCard'
+import { DeleteFeatureResponseCard } from './DeleteFeatureResponseCard'
 import { Message } from './Message'
 
 interface ToolResponseRouterProps {
@@ -9,6 +10,7 @@ interface ToolResponseRouterProps {
     error?: string
     feature?: any
     message?: string
+    feature_id?: string
     updates_applied?: Record<string, any>
   }
   timestamp: Date
@@ -37,6 +39,21 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
         />
         <Message isCompact={isCompact}>
           {toolResult.message || `Successfully updated the feature's ${Object.keys(toolResult.updates_applied || {}).join(', ')}. Let me know if you want to make any other changes.`}
+        </Message>
+      </>
+    )
+  }
+
+  if (toolName === 'delete_feature' && toolResult.success && toolResult.feature) {
+    return (
+      <>
+        <DeleteFeatureResponseCard 
+          feature={toolResult.feature}
+          message={toolResult.message || "Feature has been successfully deleted."}
+          isCompact={isCompact}
+        />
+        <Message isCompact={isCompact}>
+          {toolResult.message || "The feature has been deleted. This action cannot be undone. Let me know if you need anything else."}
         </Message>
       </>
     )
