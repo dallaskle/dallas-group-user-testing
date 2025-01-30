@@ -46,7 +46,7 @@ export function StudentAiChat({ isCompact = false }: StudentAiChatProps) {
 
   return (
     <div className="flex flex-col h-full p-4">
-      <Card className="flex-1 overflow-hidden">
+      <Card className="flex-1 overflow-hidden" hover={false}>
         <ScrollArea className={`h-full px-4 ${isCompact ? 'max-h-[250px]' : ''}`}>
           <div className="space-y-2 py-0">
             {messages.map((message) => (
