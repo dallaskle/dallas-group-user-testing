@@ -8,6 +8,7 @@ import { useAiChatStore } from '../store/ai-chat.store'
 import { ToolResponseRouter } from './ToolResponseCards/ToolResponseRouter'
 import { Message } from './ToolResponseCards/Message'
 import { TypingIndicator } from './TypingIndicator'
+import { toolList } from '../utils/toolList'
 
 interface StudentAiChatProps {
   isCompact?: boolean
@@ -69,9 +70,9 @@ export function StudentAiChat({ isCompact = false }: StudentAiChatProps) {
                     <Message isCompact={isCompact}>{message.content}</Message>
                   ) : (
                     <>
-                      {message.metadata?.tool_used === 'create_feature' ? (
+                      {(message.metadata && toolList.includes(message.metadata?.tool_used || '')) ? (
                         <ToolResponseRouter 
-                          toolName={message.metadata.tool_used}
+                          toolName={message.metadata.tool_used || ''}
                           toolResult={{
                             success: message.metadata.tool_result?.success || false,
                             error: message.metadata.tool_result?.error,

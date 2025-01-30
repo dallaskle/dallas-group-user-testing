@@ -26,18 +26,17 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
       </>
     )
   }
-
+  console.log(typeof toolResult.updates_applied)
   if (toolName === 'update_feature' && toolResult.success && toolResult.feature) {
-    const updatedFields = Object.keys(toolResult.updates_applied || {})
     return (
       <>
         <UpdateFeatureResponseCard 
           feature={toolResult.feature} 
-          updatedFields={updatedFields}
+          updates_applied={toolResult.updates_applied}
           isCompact={isCompact} 
         />
         <Message isCompact={isCompact}>
-          {toolResult.message || `Successfully updated the feature's ${updatedFields.join(', ')}. Let me know if you want to make any other changes.`}
+          {toolResult.message || `Successfully updated the feature's ${Object.keys(toolResult.updates_applied || {}).join(', ')}. Let me know if you want to make any other changes.`}
         </Message>
       </>
     )

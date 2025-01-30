@@ -46,6 +46,7 @@ export interface Message {
       success: boolean
       error?: string
       feature?: any
+      updates_applied?: Record<string, any>
     }
     error?: string
     message?: string
