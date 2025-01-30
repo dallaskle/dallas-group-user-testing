@@ -1,80 +1,31 @@
 import { useState } from 'react'
-import { studentAiApi } from '../api/student-ai.api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useToast } from '@/components/ui/use-toast'
-
-interface Message {
-  id: string
-  type: 'user' | 'agent'
-  content: string
-  timestamp: Date
-  metadata?: {
-    intermediateSteps?: Array<{
-      action: string
-      observation: string
-    }>
-    error?: string
-  }
-}
+import { useAiChatStore } from '../store/ai-chat.store'
+import { ToolResponseRouter } from './ToolResponseCards/ToolResponseRouter'
 
 export function StudentAiChat() {
-  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  
+  const { messages, isLoading, error, sendMessage } = useAiChatStore()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || isLoading) return
 
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      type: 'user',
-      content: input.trim(),
-      timestamp: new Date(),
-    }
-
-    setMessages(prev => [...prev, userMessage])
-    setInput('')
-    setIsLoading(true)
-
     try {
-      const result = await studentAiApi.processRequest(input)
-
-      const agentMessage: Message = {
-        id: crypto.randomUUID(),
-        type: 'agent',
-        content: result.data?.output || result.message,
-        timestamp: new Date(),
-        metadata: {
-          intermediateSteps: result.data?.intermediateSteps,
-        },
-      }
-
-      setMessages(prev => [...prev, agentMessage])
+      await sendMessage(input)
+      setInput('')
     } catch (error) {
-      const errorMessage: Message = {
-        id: crypto.randomUUID(),
-        type: 'agent',
-        content: 'I encountered an error while processing your request.',
-        timestamp: new Date(),
-        metadata: {
-          error: error instanceof Error ? error.message : 'Unknown error occurred',
-        },
-      }
-
-      setMessages(prev => [...prev, errorMessage])
-      
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive',
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -97,7 +48,23 @@ export function StudentAiChat() {
                       : 'bg-muted'
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  {(!message.metadata?.tool_used || message.metadata.tool_used !== 'create_feature') && (
+                    <p className="text-sm">{message.content}</p>
+                  )}
+                  {message.metadata?.tool_used && (
+                    <>
+                      <ToolResponseRouter 
+                        toolName={message.metadata.tool_used}
+                        toolResult={message.metadata.tool_result}
+                        timestamp={message.timestamp}
+                      />
+                      {message.metadata.tool_result?.error && (
+                        <p className="text-destructive text-xs mt-2">
+                          Tool Error: {message.metadata.tool_result.error}
+                        </p>
+                      )}
+                    </>
+                  )}
                   {message.metadata?.intermediateSteps && (
                     <div className="mt-2 space-y-2">
                       {message.metadata.intermediateSteps.map((step, index) => (

@@ -160,8 +160,17 @@ export default createHandler(async (req, supabaseClient, user) => {
         JSON.stringify({
           success: !toolExecutionFailed,
           response: result.response,
-          metadata: result.metadata,
-          error: toolExecutionFailed ? result.tool_result?.error : undefined
+          metadata: {
+            ...result.metadata,
+            tool_used: result.metadata?.tool_used,
+            tool_result: {
+              success: !toolExecutionFailed,
+              error: toolExecutionFailed ? result.tool_result?.error : undefined,
+              ...(result.metadata?.tool_used === 'create_feature' && result.metadata?.tool_result?.feature && {
+                feature: result.metadata.tool_result.feature
+              })
+            }
+          }
         } as AiAgentResponse),
         { 
           status: statusCode, 
@@ -174,7 +183,7 @@ export default createHandler(async (req, supabaseClient, user) => {
       return new Response(
         JSON.stringify({
           success: false,
-          response: '',
+          response: error instanceof Error ? error.message : 'An unknown error occurred',
           error: error instanceof Error ? error.message : 'An unknown error occurred'
         } as AiAgentResponse),
         { 
@@ -189,7 +198,7 @@ export default createHandler(async (req, supabaseClient, user) => {
     return new Response(
       JSON.stringify({
         success: false,
-        response: '',
+        response: error instanceof Error ? error.message : 'An unknown error occurred',
         error: error instanceof Error ? error.message : 'An unknown error occurred'
       } as AiAgentResponse),
       { 

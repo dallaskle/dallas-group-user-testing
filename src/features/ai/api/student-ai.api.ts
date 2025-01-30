@@ -5,17 +5,38 @@ export interface AgentRequest {
   metadata?: Record<string, unknown>
 }
 
-export interface AgentResponse {
+// Base response type for all agent responses
+interface BaseAgentResponse {
   success: boolean
-  message: string
-  data?: {
-    output: string
+  error?: string
+}
+
+// Specific response type for chat
+export interface ChatAgentResponse extends BaseAgentResponse {
+  response: string
+  metadata?: {
     intermediateSteps?: Array<{
       action: string
       observation: string
     }>
+    tool_used?: string
+    tool_result?: {
+      success: boolean
+      error?: string
+    }
   }
-  error?: string
+}
+
+// Specific response type for search
+export interface SearchAgentResponse extends BaseAgentResponse {
+  data: {
+    results: SearchResult[]
+  }
+}
+
+// Specific response type for store
+export interface StoreAgentResponse extends BaseAgentResponse {
+  data: StoreResult
 }
 
 export interface SearchResult {
@@ -37,7 +58,7 @@ export const studentAiApi = {
   async processRequest(content: string, options?: {
     project_id?: string
     feature_id?: string
-  }): Promise<AgentResponse> {
+  }): Promise<ChatAgentResponse> {
     const { session } = useAuthStore.getState()
     if (!session?.access_token) {
       throw new Error('No active session')
@@ -63,7 +84,8 @@ export const studentAiApi = {
       throw new Error(error.error || 'Failed to process request')
     }
 
-    const result = await response.json() as AgentResponse
+    const result = await response.json() as ChatAgentResponse
+    console.log('processRequest response:', result)
     if (!result.success) {
       throw new Error(result.error || 'Request failed')
     }
@@ -104,12 +126,13 @@ export const studentAiApi = {
       throw new Error(error.error || 'Failed to search documents')
     }
 
-    const result = await response.json() as AgentResponse
+    const result = await response.json() as SearchAgentResponse
+    console.log('search response:', result)
     if (!result.success) {
       throw new Error(result.error || 'Search failed')
     }
 
-    return (result.data as { results: SearchResult[] }).results
+    return result.data.results
   },
 
   async store(content: string, options: {
@@ -145,11 +168,12 @@ export const studentAiApi = {
       throw new Error(error.error || 'Failed to store document')
     }
 
-    const result = await response.json() as AgentResponse
+    const result = await response.json() as StoreAgentResponse
+    console.log('store response:', result)
     if (!result.success) {
       throw new Error(result.error || 'Store operation failed')
     }
 
-    return result.data as StoreResult
+    return result.data
   },
 } 
