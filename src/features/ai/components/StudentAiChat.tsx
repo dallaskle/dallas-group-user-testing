@@ -7,13 +7,14 @@ import { useToast } from '@/components/ui/use-toast'
 import { useAiChatStore } from '../store/ai-chat.store'
 import { ToolResponseRouter } from './ToolResponseCards/ToolResponseRouter'
 import { Message } from './ToolResponseCards/Message'
+import { TypingIndicator } from './TypingIndicator'
 
 export function StudentAiChat() {
   const [input, setInput] = useState('')
   const { toast } = useToast()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
-  const { messages, isLoading, error, sendMessage } = useAiChatStore()
+  const { messages, isLoading, isTyping, error, sendMessage } = useAiChatStore()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -21,7 +22,7 @@ export function StudentAiChat() {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, isTyping])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,6 +56,8 @@ export function StudentAiChat() {
                   className={`max-w-[80%] rounded-lg p-3 ${
                     message.type === 'user'
                       ? 'bg-primary text-primary-foreground'
+                      : message.isQuickResponse
+                      ? 'bg-muted/50'
                       : 'bg-muted'
                   }`}
                 >
@@ -111,6 +114,13 @@ export function StudentAiChat() {
                 </div>
               </div>
             ))}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="max-w-[80%] rounded-lg p-3 bg-muted/50">
+                  <TypingIndicator />
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
