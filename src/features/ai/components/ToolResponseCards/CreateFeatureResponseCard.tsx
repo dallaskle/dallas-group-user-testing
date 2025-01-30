@@ -20,15 +20,24 @@ interface CreateFeatureResponseCardProps {
 }
 
 export function CreateFeatureResponseCard({ feature }: CreateFeatureResponseCardProps) {
-  const { projects } = useProjectsStore()
+  const { projects, fetchProjects } = useProjectsStore()
   const [projectName, setProjectName] = useState<string>('')
 
   useEffect(() => {
-    const project = projects.find(p => p.id === feature.project_id)
-    if (project) {
-      setProjectName(project.name)
+    const loadProjectData = async () => {
+      // Fetch projects if they're not already loaded
+      if (projects.length === 0) {
+        await fetchProjects()
+      }
+      
+      const project = projects.find(p => p.id === feature.project_id)
+      if (project) {
+        setProjectName(project.name)
+      }
     }
-  }, [feature.project_id, projects])
+
+    loadProjectData()
+  }, [feature.project_id, projects, fetchProjects])
 
   return (
     <Link to={`/student/features/${feature.id}`} className="block">
@@ -38,7 +47,7 @@ export function CreateFeatureResponseCard({ feature }: CreateFeatureResponseCard
             Feature Created Successfully!
           </h3>
           <div className="space-y-1">
-            <p className="text-sm font-medium">Project: {projectName}</p>
+            <p className="text-sm font-medium">Project: {projectName || 'Loading...'}</p>
             <p className="text-sm font-medium">Feature: {feature.name}</p>
             <p className="text-sm text-muted-foreground">{feature.description}</p>
             <div className="flex gap-2 text-xs text-muted-foreground">
