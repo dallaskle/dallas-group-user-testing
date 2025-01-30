@@ -48,17 +48,27 @@ export function StudentAiChat() {
                       : 'bg-muted'
                   }`}
                 >
-                  {(!message.metadata?.tool_used || message.metadata.tool_used !== 'create_feature') && (
+                  {message.type === 'user' ? (
                     <p className="text-sm">{message.content}</p>
-                  )}
-                  {message.metadata?.tool_used && (
+                  ) : (
                     <>
-                      <ToolResponseRouter 
-                        toolName={message.metadata.tool_used}
-                        toolResult={message.metadata.tool_result}
-                        timestamp={message.timestamp}
-                      />
-                      {message.metadata.tool_result?.error && (
+                      {message.metadata?.tool_used === 'create_feature' ? (
+                        <ToolResponseRouter 
+                          toolName={message.metadata.tool_used}
+                          toolResult={{
+                            success: message.metadata.tool_result?.success || false,
+                            error: message.metadata.tool_result?.error,
+                            feature: message.metadata.tool_result?.feature,
+                            message: message.metadata.message
+                          }}
+                          timestamp={message.timestamp}
+                        />
+                      ) : (
+                        <p className="text-sm">
+                          {message.metadata?.message || message.content}
+                        </p>
+                      )}
+                      {message.metadata?.tool_result?.error && (
                         <p className="text-destructive text-xs mt-2">
                           Tool Error: {message.metadata.tool_result.error}
                         </p>

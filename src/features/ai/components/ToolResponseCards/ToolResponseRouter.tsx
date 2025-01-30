@@ -3,7 +3,12 @@ import { Message } from './Message'
 
 interface ToolResponseRouterProps {
   toolName: string
-  toolResult: any // We'll type this more specifically as we add more tools
+  toolResult: {
+    success: boolean
+    error?: string
+    feature?: any
+    message?: string
+  }
   timestamp: Date
 }
 
@@ -13,8 +18,7 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp }: ToolResp
       <>
         <CreateFeatureResponseCard feature={toolResult.feature} />
         <Message>
-          Got it created! Let me know if you want to update it, create more features, or if I made a mistake.
-          You can also click on the feature to view it on the feature page.
+          {toolResult.message || "Got it created! Let me know if you want to update it, create more features, or if I made a mistake. You can also click on the feature to view it on the feature page."}
         </Message>
       </>
     )

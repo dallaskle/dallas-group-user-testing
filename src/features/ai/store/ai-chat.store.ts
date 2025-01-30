@@ -17,8 +17,10 @@ export interface Message {
     tool_result?: {
       success: boolean
       error?: string
+      feature?: any
     }
     error?: string
+    message?: string
   }
 }
 
@@ -75,7 +77,7 @@ export const useAiChatStore = create<AiChatState>((set, get) => ({
       type: 'user',
       content: content.trim(),
       timestamp: new Date(),
-      conversation_id: get().currentConversationId
+      conversation_id: get().currentConversationId || undefined
     }
     get().addMessage(userMessage)
 
@@ -83,8 +85,7 @@ export const useAiChatStore = create<AiChatState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const result = await studentAiApi.processRequest(content, {
-        ...options,
-        conversation_id: get().currentConversationId
+        ...options
       })
 
       // If this is the first message, set the conversation ID
@@ -97,11 +98,12 @@ export const useAiChatStore = create<AiChatState>((set, get) => ({
         type: 'agent',
         content: result.response,
         timestamp: new Date(),
-        conversation_id: result.metadata?.conversation_id || get().currentConversationId,
+        conversation_id: result.metadata?.conversation_id || get().currentConversationId || undefined,
         metadata: {
           intermediateSteps: result.metadata?.intermediateSteps,
           tool_used: result.metadata?.tool_used,
           tool_result: result.metadata?.tool_result,
+          message: result.metadata?.message,
         },
       }
 
@@ -112,7 +114,7 @@ export const useAiChatStore = create<AiChatState>((set, get) => ({
         type: 'agent',
         content: 'I encountered an error while processing your request.',
         timestamp: new Date(),
-        conversation_id: get().currentConversationId,
+        conversation_id: get().currentConversationId || undefined,
         metadata: {
           error: error instanceof Error ? error.message : 'Unknown error occurred',
         },

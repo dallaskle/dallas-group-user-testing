@@ -27,8 +27,13 @@ export interface ChatAgentResponse extends BaseAgentResponse {
     tool_result?: {
       success: boolean
       error?: string
+      feature?: any
+      message?: string
     }
     conversation_id?: string
+    message?: string
+    project_id?: string | null
+    feature_id?: string | null
   }
 }
 
