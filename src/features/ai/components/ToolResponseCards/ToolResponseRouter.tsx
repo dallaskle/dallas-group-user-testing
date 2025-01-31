@@ -76,6 +76,7 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
         <GetFeatureInfoCard 
           feature={toolResult.feature}
           isCompact={isCompact}
+          onNavigate={onNavigate}
         />
         <Message isCompact={isCompact}>
           {toolResult.message || "Here are the feature details. Click the card to view the full feature page. Let me know if you need any specific information or would like to make changes."}

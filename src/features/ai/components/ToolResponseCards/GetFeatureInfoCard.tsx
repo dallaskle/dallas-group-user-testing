@@ -52,13 +52,22 @@ interface Feature {
 interface GetFeatureInfoCardProps {
   feature: Feature
   isCompact?: boolean
+  onNavigate?: () => void
 }
 
-export function GetFeatureInfoCard({ feature, isCompact = false }: GetFeatureInfoCardProps) {
+export function GetFeatureInfoCard({ feature, isCompact = false, onNavigate }: GetFeatureInfoCardProps) {
   const validationProgress = (feature.current_validations / feature.required_validations) * 100
 
+  const handleNavigate = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!isCompact) {
+      onNavigate?.()
+    }
+    window.location.href = `/student/features/${feature.id}`
+  }
+
   return (
-    <Link to={`/student/features/${feature.id}`} className="block">
+    <div className="block cursor-pointer" onClick={handleNavigate}>
       <Card className={`p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors ${
         isCompact ? 'p-2' : ''
       }`}>
@@ -170,6 +179,6 @@ export function GetFeatureInfoCard({ feature, isCompact = false }: GetFeatureInf
           </div>
         </div>
       </Card>
-    </Link>
+    </div>
   )
 } 
