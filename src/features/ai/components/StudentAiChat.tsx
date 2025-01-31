@@ -16,6 +16,19 @@ interface StudentAiChatProps {
   onNavigate?: () => void
 }
 
+interface ToolResult {
+  success: boolean
+  error?: string
+  feature?: any
+  message?: string
+  updates_applied?: Record<string, any>
+  project?: any
+  validations?: any[]
+  project_id?: string
+  feature_id?: string
+  feature_count?: number
+}
+
 export function StudentAiChat({ isCompact = false, onNavigate }: StudentAiChatProps) {
   const [input, setInput] = useState('')
   const { toast } = useToast()
@@ -80,13 +93,9 @@ export function StudentAiChat({ isCompact = false, onNavigate }: StudentAiChatPr
                       {(message.metadata && toolList.includes(message.metadata?.tool_used || '')) ? (
                         <ToolResponseRouter 
                           toolName={message.metadata.tool_used || ''}
-                          toolResult={{
-                            success: message.metadata.tool_result?.success || false,
-                            error: message.metadata.tool_result?.error,
-                            feature: message.metadata.tool_result?.feature,
-                            message: message.metadata.message,
-                            updates_applied: message.metadata.tool_result?.updates_applied,
-                            project: message.metadata.tool_result?.project
+                          toolResult={message.metadata.tool_result || {
+                            success: false,
+                            error: 'No tool result available'
                           }}
                           timestamp={message.timestamp}
                           isCompact={isCompact}

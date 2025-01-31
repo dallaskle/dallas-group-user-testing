@@ -150,10 +150,10 @@ export default createHandler(async (req, supabaseClient, user) => {
       const result = await pythonResponse.json()
       console.log('Received response from Python service:', result)
 
-      // Check if the tool execution failed
-      const toolExecutionFailed = result.tool_used && result.tool_result?.success === false
+      // Check if the tool execution failed - look at the actual tool_result.success
+      const toolExecutionFailed = result.metadata?.tool_used && result.metadata?.tool_result?.success === false
       if (toolExecutionFailed) {
-        console.error('Tool execution failed:', result.tool_result)
+        console.error('Tool execution failed:', result.metadata?.tool_result)
       }
 
       // Update audit log with response
@@ -165,7 +165,7 @@ export default createHandler(async (req, supabaseClient, user) => {
             ...metadata,
             python_service_metadata: result.metadata,
             tool_execution_failed: toolExecutionFailed,
-            tool_error: toolExecutionFailed ? result.tool_result?.error : undefined,
+            tool_error: toolExecutionFailed ? result.metadata?.tool_result?.error : undefined,
             response_timestamp: new Date().toISOString()
           }
         })
@@ -181,15 +181,15 @@ export default createHandler(async (req, supabaseClient, user) => {
 
       return new Response(
         JSON.stringify({
-          success: !toolExecutionFailed,
+          success: result.metadata?.tool_used ? result.metadata?.tool_result?.success : true,
           response: result.response,
           metadata: {
             ...result.metadata,
             conversation_id: logEntry.conversation_id,
             tool_used: result.metadata?.tool_used,
             tool_result: {
-              success: !toolExecutionFailed,
-              error: toolExecutionFailed ? result.tool_result?.error : undefined,
+              success: result.metadata?.tool_used ? result.metadata?.tool_result?.success : true,
+              error: result.metadata?.tool_result?.error,
               ...((['create_feature', 'update_feature', 'delete_feature', 'get_feature_info'].includes(result.metadata?.tool_used || '') && 
                   result.metadata?.tool_result?.feature) && {
                 feature: result.metadata.tool_result.feature,
@@ -199,6 +199,12 @@ export default createHandler(async (req, supabaseClient, user) => {
               }),
               ...(result.metadata?.tool_used === 'get_project_info' && result.metadata?.tool_result?.project && {
                 project: result.metadata.tool_result.project
+              }),
+              ...(result.metadata?.tool_used === 'get_validations' && result.metadata?.tool_result?.validations && {
+                validations: result.metadata.tool_result.validations,
+                project_id: result.metadata.tool_result.project_id,
+                feature_id: result.metadata.tool_result.feature_id,
+                feature_count: result.metadata.tool_result.feature_count
               })
             }
           }

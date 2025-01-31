@@ -3,6 +3,7 @@ import { UpdateFeatureResponseCard } from './UpdateFeatureResponseCard'
 import { DeleteFeatureResponseCard } from './DeleteFeatureResponseCard'
 import { GetFeatureInfoCard } from './GetFeatureInfoCard'
 import { GetProjectInfoCard } from './GetProjectInfoCard'
+import { GetValidationsCard } from './GetValidationsCard'
 import { Message } from './Message'
 
 interface ToolResponseRouterProps {
@@ -12,8 +13,11 @@ interface ToolResponseRouterProps {
     error?: string
     feature?: any
     project?: any
-    message?: string
+    validations?: any[]
+    project_id?: string
     feature_id?: string
+    feature_count?: number
+    message?: string
     updates_applied?: Record<string, any>
   }
   timestamp: Date
@@ -87,6 +91,23 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
         />
         <Message isCompact={isCompact}>
           {toolResult.message || "Here are the project details. Click the card to view the full project page. Let me know if you need any specific information or would like to make changes."}
+        </Message>
+      </>
+    )
+  }
+
+  if (toolName === 'get_validations' && toolResult.success && toolResult.validations) {
+    return (
+      <>
+        <GetValidationsCard 
+          validations={toolResult.validations}
+          project_id={toolResult.project_id}
+          feature_id={toolResult.feature_id}
+          feature_count={toolResult.feature_count}
+          isCompact={isCompact}
+        />
+        <Message isCompact={isCompact}>
+          {toolResult.message || `Here are the validation details for ${toolResult.project_id ? 'the project' : 'the feature'}. Click on any validation to view the associated feature.`}
         </Message>
       </>
     )

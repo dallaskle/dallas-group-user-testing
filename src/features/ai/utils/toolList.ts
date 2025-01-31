@@ -4,4 +4,5 @@ export const toolList = [
   'delete_feature',
   'get_feature_info',
   'get_project_info',
+  'get_validations',
 ]
