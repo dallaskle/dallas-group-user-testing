@@ -205,6 +205,10 @@ export default createHandler(async (req, supabaseClient, user) => {
                 project_id: result.metadata.tool_result.project_id,
                 feature_id: result.metadata.tool_result.feature_id,
                 feature_count: result.metadata.tool_result.feature_count
+              }),
+              ...(result.metadata?.tool_used === 'get_outstanding_tests' && result.metadata?.tool_result?.tests && {
+                tests: result.metadata.tool_result.tests,
+                total: result.metadata.tool_result.total
               })
             }
           }

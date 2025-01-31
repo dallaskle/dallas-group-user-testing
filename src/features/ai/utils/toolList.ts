@@ -5,4 +5,5 @@ export const toolList = [
   'get_feature_info',
   'get_project_info',
   'get_validations',
+  'get_outstanding_tests',
 ]

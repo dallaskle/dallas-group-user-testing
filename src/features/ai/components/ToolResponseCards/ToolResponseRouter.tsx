@@ -4,6 +4,7 @@ import { DeleteFeatureResponseCard } from './DeleteFeatureResponseCard'
 import { GetFeatureInfoCard } from './GetFeatureInfoCard'
 import { GetProjectInfoCard } from './GetProjectInfoCard'
 import { GetValidationsCard } from './GetValidationsCard'
+import { GetOutstandingTestsCard } from './GetOutstandingTestsCard'
 import { Message } from './Message'
 
 interface ToolResponseRouterProps {
@@ -14,6 +15,8 @@ interface ToolResponseRouterProps {
     feature?: any
     project?: any
     validations?: any[]
+    tests?: any[]
+    total?: number
     project_id?: string
     feature_id?: string
     feature_count?: number
@@ -109,6 +112,22 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
         />
         <Message isCompact={isCompact}>
           {toolResult.message || `Here are the validation details for ${toolResult.project_id ? 'the project' : 'the feature'}. Click on any validation to view the associated feature.`}
+        </Message>
+      </>
+    )
+  }
+
+  if (toolName === 'get_outstanding_tests' && toolResult.success && toolResult.tests) {
+    return (
+      <>
+        <GetOutstandingTestsCard 
+          tests={toolResult.tests}
+          total={toolResult.total || 0}
+          isCompact={isCompact}
+          onNavigate={onNavigate}
+        />
+        <Message isCompact={isCompact}>
+          {toolResult.message || "Here are your outstanding tests. Click on any test to view the associated feature."}
         </Message>
       </>
     )
