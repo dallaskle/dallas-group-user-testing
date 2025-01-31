@@ -46,6 +46,8 @@ export function StudentAiChat({ isCompact = false }: StudentAiChatProps) {
     }
   }
 
+  console.log(messages)
+
   return (
     <div className="flex flex-col h-full p-4">
       <Card className="flex-1 overflow-hidden" hover={false}>
@@ -82,7 +84,8 @@ export function StudentAiChat({ isCompact = false }: StudentAiChatProps) {
                             error: message.metadata.tool_result?.error,
                             feature: message.metadata.tool_result?.feature,
                             message: message.metadata.message,
-                            updates_applied: message.metadata.tool_result?.updates_applied
+                            updates_applied: message.metadata.tool_result?.updates_applied,
+                            project: message.metadata.tool_result?.project
                           }}
                           timestamp={message.timestamp}
                           isCompact={isCompact}
