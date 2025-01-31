@@ -2,6 +2,7 @@ import { CreateFeatureResponseCard } from './CreateFeatureResponseCard'
 import { UpdateFeatureResponseCard } from './UpdateFeatureResponseCard'
 import { DeleteFeatureResponseCard } from './DeleteFeatureResponseCard'
 import { GetFeatureInfoCard } from './GetFeatureInfoCard'
+import { GetProjectInfoCard } from './GetProjectInfoCard'
 import { Message } from './Message'
 
 interface ToolResponseRouterProps {
@@ -10,6 +11,7 @@ interface ToolResponseRouterProps {
     success: boolean
     error?: string
     feature?: any
+    project?: any
     message?: string
     feature_id?: string
     updates_applied?: Record<string, any>
@@ -69,6 +71,20 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
         />
         <Message isCompact={isCompact}>
           {toolResult.message || "Here are the feature details. Click the card to view the full feature page. Let me know if you need any specific information or would like to make changes."}
+        </Message>
+      </>
+    )
+  }
+
+  if (toolName === 'get_project_info' && toolResult.success && toolResult.project) {
+    return (
+      <>
+        <GetProjectInfoCard 
+          project={toolResult.project}
+          isCompact={isCompact}
+        />
+        <Message isCompact={isCompact}>
+          {toolResult.message || "Here are the project details. Click the card to view the full project page. Let me know if you need any specific information or would like to make changes."}
         </Message>
       </>
     )

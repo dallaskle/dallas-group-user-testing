@@ -196,6 +196,9 @@ export default createHandler(async (req, supabaseClient, user) => {
                 ...(result.metadata?.tool_used === 'update_feature' && {
                   updates_applied: result.metadata.tool_result.updates_applied
                 })
+              }),
+              ...(result.metadata?.tool_used === 'get_project_info' && result.metadata?.tool_result?.project && {
+                project: result.metadata.tool_result.project
               })
             }
           }
