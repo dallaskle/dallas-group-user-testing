@@ -72,7 +72,7 @@ export function GetProjectInfoCard({ project, isCompact = false, onNavigate }: G
               className="gap-2 text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200"
               onClick={handleViewProject}
             >
-              View Full Project
+              {isCompact ? '' : 'View Full Project'}
               <ExternalLink className="h-4 w-4" />
             </Button>
           </div>
