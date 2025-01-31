@@ -105,6 +105,7 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
           feature_id={toolResult.feature_id}
           feature_count={toolResult.feature_count}
           isCompact={isCompact}
+          onNavigate={onNavigate}
         />
         <Message isCompact={isCompact}>
           {toolResult.message || `Here are the validation details for ${toolResult.project_id ? 'the project' : 'the feature'}. Click on any validation to view the associated feature.`}

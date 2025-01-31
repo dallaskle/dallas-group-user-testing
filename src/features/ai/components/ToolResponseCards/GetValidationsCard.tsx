@@ -1,7 +1,9 @@
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
+import { Button } from '@/components/ui/button'
+import { ExternalLink } from 'lucide-react'
 
 interface Feature {
   id: string
@@ -21,7 +23,6 @@ interface Validation {
     name: string
   }
   feature?: Feature
-  video_url?: string
 }
 
 interface GetValidationsCardProps {
@@ -30,9 +31,30 @@ interface GetValidationsCardProps {
   feature_id?: string
   feature_count?: number
   isCompact?: boolean
+  onNavigate?: () => void
 }
 
-export function GetValidationsCard({ validations, project_id, feature_id, feature_count, isCompact = false }: GetValidationsCardProps) {
+export function GetValidationsCard({ validations, project_id, feature_id, feature_count, isCompact = false, onNavigate }: GetValidationsCardProps) {
+  const navigate = useNavigate()
+
+  const handleViewValidations = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!isCompact) {
+      onNavigate?.()
+    }
+    if (project_id) {
+      navigate(`/student/projects/${project_id}`)
+    } else if (feature_id) {
+      navigate(`/student/features/${feature_id}`)
+    }
+  }
+
+  const handleValidationClick = (e: React.MouseEvent, featureId: string) => {
+    e.preventDefault()
+    onNavigate?.()
+    navigate(`/student/features/${featureId}`)
+  }
+
   const validationsByFeature = validations.reduce((acc, validation) => {
     const featureId = validation.feature_id
     if (!acc[featureId]) {
@@ -50,11 +72,22 @@ export function GetValidationsCard({ validations, project_id, feature_id, featur
       isCompact ? 'p-2' : ''
     }`}>
       <div className="space-y-2">
-        <h3 className={`font-semibold text-purple-700 dark:text-purple-300 ${
-          isCompact ? 'text-sm' : 'text-lg'
-        }`}>
-          {project_id ? 'Project Validations' : 'Feature Validations'}
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className={`font-semibold text-purple-700 dark:text-purple-300 ${
+            isCompact ? 'text-sm' : 'text-lg'
+          }`}>
+            {project_id ? 'Project Validations' : 'Feature Validations'}
+          </h3>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="gap-2 text-purple-700 dark:text-purple-300 hover:text-purple-800 dark:hover:text-purple-200"
+            onClick={handleViewValidations}
+          >
+            {isCompact ? '' : 'View Full Details'}
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+        </div>
 
         {project_id && feature_count !== undefined && (
           <p className={`text-muted-foreground ${isCompact ? 'text-xs' : 'text-sm'}`}>
@@ -77,6 +110,7 @@ export function GetValidationsCard({ validations, project_id, feature_id, featur
                     key={validation.id}
                     to={`/student/features/${validation.feature_id}`}
                     className="block"
+                    onClick={(e) => handleValidationClick(e, validation.feature_id)}
                   >
                     <div className="p-2 rounded-md bg-background/50 hover:bg-background/80 transition-colors">
                       <div className="flex items-center justify-between">
@@ -94,19 +128,10 @@ export function GetValidationsCard({ validations, project_id, feature_id, featur
                           {format(new Date(validation.created_at), 'MMM d, yyyy')}
                         </span>
                       </div>
-                      {!isCompact && (
-                        <div className="mt-1 space-y-1">
-                          {validation.notes && (
-                            <p className="text-sm text-muted-foreground">
-                              {validation.notes}
-                            </p>
-                          )}
-                          {validation.video_url && (
-                            <p className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-                              View Validation Video
-                            </p>
-                          )}
-                        </div>
+                      {!isCompact && validation.notes && (
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {validation.notes}
+                        </p>
                       )}
                     </div>
                   </Link>

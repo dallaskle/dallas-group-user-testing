@@ -56,7 +56,7 @@ export function AiChatModal({ isOpen, onClose }: AiChatModalProps) {
             </div>
           </div>
           <div className="flex-1 overflow-hidden">
-            <StudentAiChat isCompact={true} />
+            <StudentAiChat isCompact={true} onNavigate={onClose} />
           </div>
         </div>
       </div>

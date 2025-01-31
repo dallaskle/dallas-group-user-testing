@@ -50,7 +50,9 @@ export function GetProjectInfoCard({ project, isCompact = false, onNavigate }: G
 
   const handleViewProject = (e: React.MouseEvent) => {
     e.preventDefault()
-    onNavigate?.()
+    if (!isCompact) {
+      onNavigate?.()
+    }
     navigate(`/student/projects/${project.id}`)
   }
 
