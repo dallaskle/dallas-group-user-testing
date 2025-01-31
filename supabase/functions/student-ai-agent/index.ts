@@ -93,9 +93,7 @@ export default createHandler(async (req, supabaseClient, user) => {
     console.log('Created audit log entry:', logEntry)
 
     // 2. Forward request to Python service
-    const environment = "local"
-    const pythonServiceUrl = environment === "local" ?
-      "https://6cd8-2603-7000-2800-1584-9081-d31a-fc4a-2a02.ngrok-free.app" : Deno.env.get('PYTHON_SERVICE_URL')
+    const pythonServiceUrl = Deno.env.get('PYTHON_SERVICE_URL')
     const pythonServiceApiKey = Deno.env.get('PYTHON_SERVICE_API_KEY')
 
     if (!pythonServiceUrl || !pythonServiceApiKey) {
