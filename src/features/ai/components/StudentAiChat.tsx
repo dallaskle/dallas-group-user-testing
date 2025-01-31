@@ -16,25 +16,12 @@ interface StudentAiChatProps {
   onNavigate?: () => void
 }
 
-interface ToolResult {
-  success: boolean
-  error?: string
-  feature?: any
-  message?: string
-  updates_applied?: Record<string, any>
-  project?: any
-  validations?: any[]
-  project_id?: string
-  feature_id?: string
-  feature_count?: number
-}
-
 export function StudentAiChat({ isCompact = false, onNavigate }: StudentAiChatProps) {
   const [input, setInput] = useState('')
   const { toast } = useToast()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
-  const { messages, isLoading, isTyping, error, sendMessage } = useAiChatStore()
+  const { messages, isLoading, isTyping, sendMessage } = useAiChatStore()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -97,7 +84,6 @@ export function StudentAiChat({ isCompact = false, onNavigate }: StudentAiChatPr
                             success: false,
                             error: 'No tool result available'
                           }}
-                          timestamp={message.timestamp}
                           isCompact={isCompact}
                           onNavigate={onNavigate}
                         />

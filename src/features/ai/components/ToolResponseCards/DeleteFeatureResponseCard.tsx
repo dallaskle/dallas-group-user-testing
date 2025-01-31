@@ -16,11 +16,10 @@ interface Feature {
 
 interface DeleteFeatureResponseCardProps {
   feature: Feature
-  message: string
   isCompact?: boolean
 }
 
-export function DeleteFeatureResponseCard({ feature, message, isCompact = false }: DeleteFeatureResponseCardProps) {
+export function DeleteFeatureResponseCard({ feature, isCompact = false }: DeleteFeatureResponseCardProps) {
   const { projects, fetchProjects } = useProjectsStore()
   const [projectName, setProjectName] = useState<string>('')
 

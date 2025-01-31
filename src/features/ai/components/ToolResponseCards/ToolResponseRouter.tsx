@@ -23,12 +23,11 @@ interface ToolResponseRouterProps {
     message?: string
     updates_applied?: Record<string, any>
   }
-  timestamp: Date
   isCompact?: boolean
   onNavigate?: () => void
 }
 
-export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact = false, onNavigate }: ToolResponseRouterProps) {
+export function ToolResponseRouter({ toolName, toolResult, isCompact = false, onNavigate }: ToolResponseRouterProps) {
   if (toolName === 'create_feature' && toolResult.success && toolResult.feature) {
     return (
       <>
@@ -60,7 +59,6 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
       <>
         <DeleteFeatureResponseCard 
           feature={toolResult.feature}
-          message={toolResult.message || "Feature has been successfully deleted."}
           isCompact={isCompact}
         />
         <Message isCompact={isCompact}>

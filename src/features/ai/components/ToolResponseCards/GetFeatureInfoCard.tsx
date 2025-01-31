@@ -2,8 +2,6 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { UserCircle } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { cn } from '@/lib/utils'
 
 interface Validation {
   id: string
