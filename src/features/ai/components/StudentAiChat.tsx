@@ -13,9 +13,10 @@ import { cn } from '@/lib/utils'
 
 interface StudentAiChatProps {
   isCompact?: boolean
+  onNavigate?: () => void
 }
 
-export function StudentAiChat({ isCompact = false }: StudentAiChatProps) {
+export function StudentAiChat({ isCompact = false, onNavigate }: StudentAiChatProps) {
   const [input, setInput] = useState('')
   const { toast } = useToast()
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -89,6 +90,7 @@ export function StudentAiChat({ isCompact = false }: StudentAiChatProps) {
                           }}
                           timestamp={message.timestamp}
                           isCompact={isCompact}
+                          onNavigate={onNavigate}
                         />
                       ) : (
                         <Message isCompact={isCompact}>

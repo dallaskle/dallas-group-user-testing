@@ -18,9 +18,10 @@ interface ToolResponseRouterProps {
   }
   timestamp: Date
   isCompact?: boolean
+  onNavigate?: () => void
 }
 
-export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact = false }: ToolResponseRouterProps) {
+export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact = false, onNavigate }: ToolResponseRouterProps) {
   if (toolName === 'create_feature' && toolResult.success && toolResult.feature) {
     return (
       <>
@@ -82,6 +83,7 @@ export function ToolResponseRouter({ toolName, toolResult, timestamp, isCompact 
         <GetProjectInfoCard 
           project={toolResult.project}
           isCompact={isCompact}
+          onNavigate={onNavigate}
         />
         <Message isCompact={isCompact}>
           {toolResult.message || "Here are the project details. Click the card to view the full project page. Let me know if you need any specific information or would like to make changes."}

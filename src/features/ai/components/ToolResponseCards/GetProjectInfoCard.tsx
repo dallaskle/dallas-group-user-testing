@@ -1,7 +1,9 @@
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { ExternalLink } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface Feature {
   id: string
@@ -40,20 +42,40 @@ interface Project {
 interface GetProjectInfoCardProps {
   project: Project
   isCompact?: boolean
+  onNavigate?: () => void
 }
 
-export function GetProjectInfoCard({ project, isCompact = false }: GetProjectInfoCardProps) {
+export function GetProjectInfoCard({ project, isCompact = false, onNavigate }: GetProjectInfoCardProps) {
+  const navigate = useNavigate()
+
+  const handleViewProject = (e: React.MouseEvent) => {
+    e.preventDefault()
+    onNavigate?.()
+    navigate(`/student/projects/${project.id}`)
+  }
+
   return (
-    <Link to={`/student/projects/${project.id}`} className="block">
+    <Link to={`/student/projects/${project.id}`} className="block" onClick={handleViewProject}>
       <Card className={`p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors ${
         isCompact ? 'p-2' : ''
       }`}>
         <div className="space-y-2">
-          <h3 className={`font-semibold text-blue-700 dark:text-blue-300 ${
-            isCompact ? 'text-sm' : 'text-lg'
-          }`}>
-            {project.name}
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className={`font-semibold text-blue-700 dark:text-blue-300 ${
+              isCompact ? 'text-sm' : 'text-lg'
+            }`}>
+              {project.name}
+            </h3>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2 text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200"
+              onClick={handleViewProject}
+            >
+              View Full Project
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          </div>
           <p className={`text-muted-foreground ${isCompact ? 'text-xs' : 'text-sm'}`}>
             Based on {project.registry.name}
           </p>
